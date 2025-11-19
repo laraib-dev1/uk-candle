@@ -1,0 +1,100 @@
+import React, { useState } from "react";
+import TwoColumnLayout from "@/components/ui/TwoColumnLayout";
+import Navbar from "../../components/layout/Navbar";
+import Footer from "../../components/layout/Footer";
+import CheckoutModal from "@/components/ui/modals/CheckoutModal";
+
+
+const CartPage = () => {
+    const [openCheckout, setOpenCheckout] = useState(false);
+
+  const leftContent = (
+    <div className="space-y-4">
+
+      {/* ITEM CARD */}
+      <div className="flex items-center justify-between p-5 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
+        <div className="flex items-center gap-4">
+          <img
+            src="/product1.png"
+            className="w-20 h-20 object-cover rounded-lg"
+          />
+          <div>
+            <h3 className="font-semibold text-gray-800">Product Name</h3>
+            <p className="text-gray-500 text-sm">category</p>
+            <p className="text-gray-400 line-through text-sm">$145</p>
+            <p className="text-lg font-bold">$145</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">
+            −
+          </button>
+          <span className="text-lg">1</span>
+          <button className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">
+            +
+          </button>
+        </div>
+
+        <button className="text-red-500 text-xl ml-4">🗑</button>
+      </div>
+
+      {/* Repeat items */}
+    </div>
+  );
+
+  const rightContent = (
+    <div className="p-6 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
+      <h2 className="font-semibold mb-4 text-lg">Order Summary</h2>
+
+      <div className="space-y-3 text-gray-700 text-sm">
+        <div className="flex justify-between">
+          <span>Items</span>
+          <span className="font-medium">3</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>Subtotal</span>
+          <span className="font-medium">$565</span>
+        </div>
+
+        <div className="flex justify-between text-green-600">
+          <span>Discount</span>
+          <span className="font-medium">-$113</span>
+        </div>
+
+        <div className="flex justify-between text-amber-700 font-bold text-lg">
+          <span>Total</span>
+          <span>$467</span>
+        </div>
+      </div>
+
+      <button
+  onClick={() => setOpenCheckout(true)}
+  className="mt-6 w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-all flex items-center justify-center gap-2"
+>
+  Go to Checkout →
+</button>
+
+    </div>
+  );
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+
+        {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
+        <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
+
+        <TwoColumnLayout left={leftContent} right={rightContent} />
+      </div>
+<CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+
+      <Footer />
+    </>
+  );
+};
+
+export default CartPage;

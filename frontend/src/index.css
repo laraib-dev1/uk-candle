@@ -1,0 +1,25 @@
+/* @import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/aspect-ratio";
+@plugin "@tailwindcss/container-queries"; */
+
+/* You can define themes or layers using @theme now */
+/* @theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+} */
+
+/* Example custom styles */
+/* body {
+  font-family: var(--font-sans);
+  @apply bg-gray-50 text-gray-900;
+} */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* custom styles */
+body {
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
