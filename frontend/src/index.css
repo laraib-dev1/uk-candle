@@ -1,25 +1,67 @@
-/* @import "tailwindcss";
+@import "tailwindcss";
+
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/aspect-ratio";
-@plugin "@tailwindcss/container-queries"; */
+@plugin "@tailwindcss/container-queries";
 
-/* You can define themes or layers using @theme now */
-/* @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-} */
-
-/* Example custom styles */
-/* body {
-  font-family: var(--font-sans);
-  @apply bg-gray-50 text-gray-900;
-} */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* custom styles */
 body {
-  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  @apply bg-white dark:bg-gray-900 text-black dark:text-white;
+  overflow-y: overlay; 
+}
+
+::-webkit-scrollbar {
+  height: 0px;
+  width: 0px;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; 
+  scrollbar-width: none;    
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;            
+}
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 222.2 47.4% 11.2%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+}
+/* FIX for table hiding dropdown */
+/* Fix for react-data-table-component blocking dropdowns */
+.rdt_Table,
+.rdt_TableRow,
+.rdt_TableCell,
+.rdt_TableCol,
+.rdt_TableCol_Sortable {
+  overflow: visible !important;
+}
+
+
+/* Ensure Radix dropdown is visible */
+[data-radix-dropdown-menu-content] {
+  z-index: 999999 !important;
+  position: relative !important;
+}
+@layer utilities {
+  .rdt_TableCell {
+    overflow: visible !important;
+  }
 }

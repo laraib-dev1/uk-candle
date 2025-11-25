@@ -20,7 +20,7 @@ const Hero2 = ({
 
   return (
     <section className="py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {fullWidthText ? (
           // Full width text layout
           <div className="flex flex-col justify-center py-10 text-center">

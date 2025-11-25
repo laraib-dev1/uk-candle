@@ -30,7 +30,8 @@ const allProducts = [
 
 export default function () {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 dark:text-white text-gray-800">
+    <div className="min-h-screen bg-white dark:bg-gray-900 dark:text-white text-gray-800 overflow-x-hidden">
+
       <Navbar />
       <main>
         {/* <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-30"> */}

@@ -25,21 +25,26 @@ const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white">
       <Navbar />
 
       <main className="flex-1">
-        
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 my-20">
+        {/* Main container with consistent spacing */}
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           
-          <Banner imageSrc="/hero.png"/>
-          <div className="flex justify-between items-center mt-8">
-            <h2 className="text-2xl font-bold text-gray-800">Products</h2>
+          {/* Banner */}
+          <Banner imageSrc="/hero.png" />
+
+          {/* Products header */}
+          <div className="flex justify-between items-center mt-10 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Products</h2>
             <DynamicButton label="All" variant="filled" shape="pill" />
           </div>
 
+          {/* Product grid */}
           <ProductGrid items={sampleProducts} limit={limit} />
 
+          {/* Load more button */}
           <div className="flex justify-center mt-10">
             <DynamicButton
               label="Load More"

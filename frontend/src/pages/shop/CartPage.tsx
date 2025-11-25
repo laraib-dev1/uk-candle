@@ -3,6 +3,7 @@ import TwoColumnLayout from "@/components/ui/TwoColumnLayout";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import CheckoutModal from "@/components/ui/modals/CheckoutModal";
+import { Trash2 } from "lucide-react";
 
 
 const CartPage = () => {
@@ -15,7 +16,7 @@ const CartPage = () => {
       <div className="flex items-center justify-between p-5 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
         <div className="flex items-center gap-4">
           <img
-            src="/product1.png"
+            src="/product.png"
             className="w-20 h-20 object-cover rounded-lg"
           />
           <div>
@@ -36,7 +37,10 @@ const CartPage = () => {
           </button>
         </div>
 
-        <button className="text-red-500 text-xl ml-4">🗑</button>
+        <button className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition">
+  <Trash2 className="w-5 h-5" />
+</button>
+
       </div>
 
       {/* Repeat items */}

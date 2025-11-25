@@ -47,7 +47,7 @@ const AtYourService = () => {
           <img
             src={service.img}
             alt={service.text}
-            className="w-10 h-10 object-contain"
+            className="w-16 h-16 object-cover"
           />
         </div>
         <p className="text-[10px] text-gray-600 max-w-[100px] leading-tight text-center">

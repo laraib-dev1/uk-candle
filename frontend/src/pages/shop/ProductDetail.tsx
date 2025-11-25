@@ -62,7 +62,7 @@ export default function ProductDetail() {
 <div className="md:col-span-7 flex flex-col h-full">
 
   {/* TOP SECTION */}
-  <div className="flex flex-col gap-4 md:flex-grow">
+  <div className="flex flex-col gap-4 md:grow">
 
     <span className="inline-block bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded">
       Category

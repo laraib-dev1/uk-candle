@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation  } from "react-router-dom";
 import { Menu, ShoppingCart } from "lucide-react";
 import Button from "../ui/buttons/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,10 +8,14 @@ import { useTheme } from "@/lib/ThemeProvider";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { pathname } = useLocation();
 
+  const linkClasses = (path: string) =>
+    `text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white 
+     ${pathname === path ? "underline underline-offset-4 font-medium" : ""}`;
   return (
     <header className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-sm fixed top-0 w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* LEFT: Logo */}
         <Link
@@ -23,35 +27,25 @@ export default function Navbar() {
 
         {/* CENTER: Nav links (desktop only) */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">
-            Home
-          </Link>
-          <Link to="/shop" className="text-sm text-gray-600 hover:text-gray-900">
-            Shop
-          </Link>
-          {/* <Link to="/pages" className="text-sm text-gray-600 hover:text-gray-900">
-            Pages
-          </Link>
-          <Link to="/blog" className="text-sm text-gray-600 hover:text-gray-900">
-            Blog
-          </Link> */}
+          <Link to="/" className={linkClasses("/")}>Home</Link>
+          <Link to="/shop" className={linkClasses("/shop")}>Shop</Link>
         </nav>
 
         {/* RIGHT: Cart + Sign In + Mobile Menu */}
         <div className="flex items-center gap-4">
           {/* Cart icon (always visible) */}
-          <div className="relative cursor-pointer">
-            <ShoppingCart className="w-6 h-6 text-gray-700" />
-            <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-              0
-            </span>
-          </div>
-<button
+          <Link to="/cart" className="relative cursor-pointer">
+  <ShoppingCart className="w-6 h-6 text-gray-700" />
+  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+    0
+  </span>
+</Link>
+{/* <button
   onClick={toggleTheme}
   className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
 >
   {theme === "light" ? "🌙" : "☀️"}
-</button>
+</button> */}
 
           {/* Sign In (desktop only) */}
           <div className="hidden md:block">
@@ -68,7 +62,7 @@ export default function Navbar() {
                   type="button"
                   className="p-2 bg-transparent hover:bg-gray-100 focus:outline-none focus:ring-0 border-0"
                 >
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-6 h-6 text-black dark:text-white" />
                 </Button>
               </SheetTrigger>
 

@@ -39,7 +39,7 @@ const CategorySection = () => {
               </div>
 
               <p className="mt-3 text-lg text-gray-800 font-medium italic">
-                • {cat.title} •
+                {cat.title} 
               </p>
             </div>
           ))}

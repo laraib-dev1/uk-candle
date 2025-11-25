@@ -37,14 +37,14 @@ export default function Footer() {
 
           {/* Column 4: small images / gallery */}
           <div className="grid grid-cols-4 gap-2">
-            <img src="/demo1.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo2.png" className="w-12 h-12 object-cover rounded" />
-            <img src="//demo3.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo4.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo5.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo6.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo7.png" className="w-12 h-12 object-cover rounded" />
-            <img src="/demo8.png" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
+            <img src="/client.jpeg" className="w-12 h-12 object-cover rounded" />
           </div>
         </div>
 

@@ -112,7 +112,7 @@ const Hero = ({
       >
         <div className="bg-black/40 w-full h-full absolute inset-0"></div>
 
-        <div className="relative max-w-5xl mx-auto px-6 py-24 text-white  flex flex-col justify-center h-full">
+        <div className="relative max-w-8xl mx-auto px-6 py-24 text-white  flex flex-col justify-center h-full">
           <h1 className="text-4xl md:text-5xl font-serif leading-tight ">
             {title || "Welcome to Our Store"}
           </h1>
