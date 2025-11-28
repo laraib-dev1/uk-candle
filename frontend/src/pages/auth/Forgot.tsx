@@ -1,63 +1,51 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import AuthLayout from "../../components/auth/AuthLayout";
 import { Button } from "@/components/ui/buttons/Button";
 import Input from "@/pages/admin/components/form/Input";
 import API from "@/api/axios";
 
-export default function Access() {
-  const [name, setName] = useState("");
+export default function ResetPassword() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
 
-  const handleRegister = async () => {
+  const handleReset = async () => {
     try {
-      const res = await API.post("/register", { name, email, password });
-      alert("Signup successful! Please login.");
-      navigate("/login");
+      const res = await API.post("/reset-password", { email });
+
+      setMessage("Password reset link has been sent to your email.");
+      setError("");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Signup failed");
+      setError(err.response?.data?.message || "Failed to send reset link");
+      setMessage("");
     }
   };
 
   return (
     <AuthLayout>
-      <h2 className="text-white text-2xl font-semibold mb-6">Get Access</h2>
+      <h2 className="text-white text-2xl font-semibold mb-6">Reset Password</h2>
 
       <div className="flex flex-col gap-4">
         <Input
-          label="Full Name"
-          placeholder="Enter name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
           label="Email"
-          placeholder="Enter email"
+          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Create password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
 
         {error && <p className="text-red-400">{error}</p>}
+        {message && <p className="text-green-400">{message}</p>}
 
         <Button
           className="bg-orange-400 hover:bg-orange-500 text-white rounded-md mt-3"
-          onClick={handleRegister}
+          onClick={handleReset}
         >
-          Get Access
+          Send Reset Link
         </Button>
 
         <p className="text-white/80 text-sm mt-2">
-          Already have an account? <Link to="/login" className="underline">Login</Link>
+          Back to login? <Link to="/login" className="underline">Login</Link>
         </p>
       </div>
     </AuthLayout>

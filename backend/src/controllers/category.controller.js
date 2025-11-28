@@ -68,10 +68,14 @@ export const updateCategory = async (req, res) => {
 
 // DELETE
 export const deleteCategory = async (req, res) => {
+  const id = req.params.id;
+  if (!id) return res.status(400).json({ success: false, message: "Category ID required" });
+
   try {
-    await Category.findByIdAndDelete(req.params.id);
+    await Category.findByIdAndDelete(id);
     res.json({ success: true, message: "Category deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

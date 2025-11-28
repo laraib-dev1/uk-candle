@@ -1,326 +1,280 @@
-import React, { useEffect, useMemo, useState } from "react";
-import DataTable, { TableColumn } from "react-data-table-component";
-import ProductModal from "../../../components/admin/product/ProductModal";
-import { Product } from "@/types/Product";
+// frontend/src/pages/admin/pages/CategoriesPage.tsx
+import React, { useEffect, useState } from "react";
+import DataTable from "../components/table/DataTable";
 import { ProductActions } from "../../../components/admin/product/ProductActions";
+import { TableColumn } from "react-data-table-component";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import ProductModal from "../../../components/admin/product/ProductModal";
+import { getProducts, createProduct, updateProduct, deleteProduct as apiDelete } from "@/api/product.api";
+import { getCategories } from "@/api/category.api"; 
+import DeleteModal from "@/components/admin/product/DeleteModal";
+interface Product {
+  id?: string; // ✅ make optional
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  currency: string;
+  status: "active" | "inactive";
+  discount?: number;
+  image?: string;
+}
 
-/**
- * NOTE: using the uploaded file path as sample image (dev environment).
- * If your server doesn't serve /mnt/data, update it to a public URL or static folder.
- */
-const SAMPLE_IMAGE = "/mnt/data/8030fe7d-4145-4924-b18c-634a71efd451.png";
-
-const LOCAL_KEY = "products_v1";
-
-const defaultProducts: Product[] = [
-  {
-    id: 1,
-    name: "Lorem ipsum dolor sit",
-    description: "Description details here...",
-    price: 340,
-    stock: 10,
-    category: "Category",
-    image: SAMPLE_IMAGE,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Lorem ipsum dolor sit",
-    description: "Description details here...",
-    price: 570,
-    stock: 5,
-    category: "Category",
-    image: SAMPLE_IMAGE,
-    status: "active",
-  },
-];
-
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [query, setQuery] = useState("");
-  const [openModal, setOpenModal] = useState(false);
+interface Category {
+  _id: string;
+  name: string;
+}
+export default function ProductPage() {
+  const [search, setSearch] = useState("");
+   const [products, setProducts] = useState<Product[]>([]); // all products
+  const [filtered, setFiltered] = useState<Product[]>([]); // filtered by search
+  const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selected, setSelected] = useState<Product | null>(null);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+const [deleteId, setDeleteId] = useState<string | null>(null);
+const [deleteLoading, setDeleteLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get("/api/products");
-        setProducts(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        // ignore — fallback to local storage / defaults
-        console.error("API products not available, falling back:", err);
-      }
-    };
-    fetchProducts();
+const [categories, setCategories] = useState<Category[]>([]);
+useEffect(() => {
+const fetchData = async () => {
+  try {
+    // 1️⃣ Fetch categories
+    const cats: Category[] = await getCategories();
+    console.log("Fetched categories:", cats);
+    setCategories(cats);
+
+    // 2️⃣ Fetch products
+    const productsArray = await getProducts(); // already array
+    console.log("getProducts response:", productsArray);
+
+    // 3️⃣ Map category IDs to names
+    const mapped = productsArray.map((p: any) => ({
+      ...p,
+      id: p._id?.toString(),
+      category:
+        typeof p.category === "string"
+          ? cats.find((c) => c._id === p.category)?.name || p.category
+          : p.category?.name || "Unknown",
+    }));
+
+    console.log("Mapped products:", mapped);
+
+    setProducts(mapped);
+    setFiltered(mapped);
+  } catch (err) {
+    console.error("Error loading products or categories:", err);
+    setProducts([]);
+    setFiltered([]);
+  }
+};
+
+
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        setProducts(Array.isArray(parsed) ? parsed : defaultProducts);
-      } catch {
-        setProducts(defaultProducts);
-      }
-    } else {
-      setProducts((prev) => (prev.length ? prev : defaultProducts));
-    }
-  }, []);
+  // -------- ADD PRODUCT --------
 
-  // persist
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(products));
-  }, [products]);
-
-  const openAdd = () => {
-    setModalMode("add");
-    setSelected(null);
-    setOpenModal(true);
-  };
-
-  const openEdit = (row: Product) => {
-    setModalMode("edit");
-    setSelected(row);
-    setOpenModal(true);
-  };
-
-  const openView = (row: Product) => {
-    setModalMode("view");
-    setSelected(row);
-    setOpenModal(true);
-  };
-
-  const handleDelete = async (row: Product) => {
-    if (!window.confirm("Delete this product?")) return;
-    try {
-      await axios.delete(`/api/products/${row.id}`);
-      setProducts((p) => p.filter((x) => x.id !== row.id));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete product — fallback removed locally.");
-      setProducts((p) => p.filter((x) => x.id !== row.id));
-    }
-  };
-
-  const handleSubmit = (data: Product | Partial<Product>) => {
-    const product: Product = {
-      id: (data as any).id ?? selected?.id ?? Date.now(),
-      name: data.name ?? "",
-      description: data.description ?? "",
-      price: data.price ?? 0,
-      stock: data.stock ?? 0,
-      category: data.category ?? "",
-      image: data.image ?? SAMPLE_IMAGE,
-      status: data.status ?? "active",
+const addProduct = async (product: Product) => {
+    const newProduct = await createProduct(product);
+    const mapped = {
+      ...newProduct,
+      id: newProduct._id,
+      category:
+        categories.find((c) => c._id === newProduct.category)?.name ||
+        newProduct.category,
     };
-
-    if (modalMode === "add") {
-      setProducts((prev) => [product, ...prev]);
-    } else if (modalMode === "edit" && selected) {
-      setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
-    }
-
-    setOpenModal(false);
+    setProducts((prev) => [...prev, mapped]);
+    setFiltered((prev) => [...prev, mapped]);
   };
 
-  // Data table column definitions with tight/compact styling
-  const columns: TableColumn<Product>[] = useMemo(
-    () => [
-      {
-        name: "ID",
-        selector: (row) => String(row.id),
-        width: "70px",
-        cell: (row) => <div className="text-sm text-gray-600">{row.id}</div>,
-      },
-      {
-        name: "Image",
-        cell: (row) => (
-          <div className="h-10 w-10 rounded overflow-hidden bg-white border">
-            <img
-              src={row.image || SAMPLE_IMAGE}
-              alt={row.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
-        ),
-        width: "80px",
-      },
-      {
-        name: "Item Title",
-        selector: (row) => row.name || "",
-        grow: 2,
-        cell: (row) => <div className="font-medium">{row.name}</div>,
-      },
-      {
-        name: "Description",
-        selector: (row) => row.description || "",
-        grow: 3,
-        cell: (row) => <div className="text-sm text-gray-500">{row.description}</div>,
-      },
-      {
-        name: "Category",
-        selector: (row) => row.category || "",
-        width: "140px",
-        cell: (row) => <div className="text-sm">{row.category}</div>,
-      },
-      {
-        name: "Price",
-        selector: (row) => `$${row.price}`,
-        width: "100px",
-        right: true,
-        cell: (row) => <div className="text-sm font-medium">${row.price}</div>,
-      },
-      {
-        name: "Status",
-        cell: (row) =>
-          row.status === "active" ? (
-            <Badge className="bg-green-100 text-green-800">active</Badge>
-          ) : (
-            <Badge className="bg-gray-200 text-gray-700">disable</Badge>
-          ),
-        width: "120px",
-      },
-      {
-        name: "Actions",
-        cell: (row) => (
-          <ProductActions<Product>
-            row={row}
-            onView={openView}
-            onEdit={openEdit}
-            onDelete={handleDelete}
-          />
-        ),
-        width: "160px",
-        right: true,
-      },
-    ],
-    // handlers are stable within component
-    []
-  );
 
-  // Filter logic
-  const filtered = Array.isArray(products)
-    ? products.filter(
-        (p) =>
-          (p.name || "").toLowerCase().includes(query.toLowerCase()) ||
-          (p.description || "").toLowerCase().includes(query.toLowerCase()) ||
-          (p.category || "").toLowerCase().includes(query.toLowerCase())
+
+const updateProductApi = async (id: string, product: Product) => {
+  await updateProduct(id, product);
+  fetchProducts();
+};
+
+const deleteProduct = async (id: string) => {
+  await apiDelete(id);
+  fetchProducts();
+};
+const fetchProducts = async () => {
+  if (categories.length === 0) return;
+
+  try {
+    const productsArray = await getProducts(); // already array
+    console.log("productsArray", productsArray);
+
+    const mapped = productsArray.map((p: any) => ({
+      ...p,
+      id: p._id,
+      category: categories.find((c) => c._id === p.category)?.name ?? "Unknown",
+    }));
+
+    console.log("Mapped products:", mapped);
+
+    setProducts(mapped);
+    setFiltered(mapped);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+  }
+};
+
+
+
+useEffect(() => {
+  if (search) {
+    setFiltered(
+      products.filter((p) =>
+        p.name.toLowerCase().includes(search.toLowerCase())
       )
-    : [];
+    );
+  } else {
+    setFiltered(products);
+  }
+}, [search, products]);
 
-  // react-data-table-component custom styles for the look
-  const customStyles = {
-    header: {
-      style: {
-        minHeight: "56px",
-        background: "#f6f2ef", // subtle header tint (not the table header row)
-      },
-    },
-    headRow: {
-      style: {
-        background: "#a87f6f", // brown header like screenshot
-        color: "#fff",
-        borderRadius: "8px",
-        paddingLeft: "12px",
-        paddingRight: "12px",
-        minHeight: "40px",
-      },
-    },
-    headCells: {
-      style: {
-        color: "#fff",
-        fontSize: "13px",
-        fontWeight: 600,
-      },
-    },
-    rows: {
-      style: {
-        minHeight: "56px",
-        fontSize: "13px",
-      },
-    },
-    pagination: {
-      style: {
-        borderTopStyle: "solid",
-        borderTopWidth: "1px",
-        borderTopColor: "#eee",
-        paddingTop: "8px",
-      },
-    },
-  } as const;
+    const openAddModal = () => {
+    setSelected(null);
+    setModalMode("add");
+    setModalOpen(true);
+  };
+
+  const openEditModal = (product: Product) => {
+    setSelected(product);
+    setModalMode("edit");
+    setModalOpen(true);
+  };
+
+  const openViewModal = (product: Product) => {
+    setSelected(product);
+    setModalMode("view");
+    setModalOpen(true);
+  };
+  const confirmDelete = async () => {
+  if (!deleteId) return;
+
+  try {
+    setDeleteLoading(true);
+    await apiDelete(deleteId); // use your delete API
+    setDeleteOpen(false);
+    await fetchProducts(); // refresh table
+  } finally {
+    setDeleteLoading(false);
+  }
+};
+
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-black">
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-[#a87f6f]">Products</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your product catalog</p>
-          </div>
+    <div className="bg-white shadow rounded-lg p-6 overflow-visible">
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 border rounded p-2">
-              <span className="text-sm text-gray-600">Show</span>
-              <select
-                className="text-sm outline-none bg-transparent"
-                value={rowsPerPage}
-                onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              >
-                <option value={15}>15</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-              </select>
-              <span className="text-sm text-gray-600">entries</span>
-            </div>
+      {/* -------- Header Row -------- */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-[#8B5E3C]">Products</h2>
 
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative">
             <Input
               placeholder="Search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="max-w-xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-64 border-[#C4A484] text-gray-900"
             />
-
-            <Button onClick={openAdd} className="bg-[#a87f6f] text-white">
-              + Add New
-            </Button>
           </div>
-        </div>
 
-        {/* DataTable */}
-        <div className="shadow-sm rounded-xl overflow-hidden border">
-          <DataTable
-            columns={columns}
-            data={filtered}
-            customStyles={customStyles}
-            pagination
-            paginationPerPage={rowsPerPage}
-            paginationRowsPerPageOptions={[15, 25, 50]}
-            paginationComponentOptions={{ rowsPerPageText: "Show", rangeSeparatorText: "of" }}
-            highlightOnHover
-            pointerOnHover
-            dense
-            noDataComponent={<div className="p-8 text-center text-gray-600">There are no records to display</div>}
-          />
+          {/* Add Button */}
+          <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white"
+          onClick={openAddModal}
+          >
+            + Add New
+          </Button>
         </div>
+      </div>
 
-        {/* Modal */}
-        <ProductModal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          onOpenChange={(val: boolean) => setOpenModal(val)}
-          mode={modalMode}
-          initialData={selected || undefined}
-          onSubmit={handleSubmit}
+      {/* -------- Table -------- */}
+      <div className="w-full overflow-x-auto bg-white p-3 rounded-lg shadow">
+  <DataTable
+  columns={[
+{
+  name: "ID",
+  cell: (row, index) => index + 1, // 👈 Auto row number
+  width: "60px",
+  sortable: false,
+},
+{
+      name: "Image",
+      cell: (row) => (
+        <img
+          src={row.image || "/product.png"}
+          alt={row.name}
+          className="w-8 h-8 rounded-full object-cover"
         />
-      </main>
+      ),
+      width: "100px",
+    },
+
+    { name: "Name", selector: (row) => row.name, sortable: true },
+    { name: "Description", selector: (row) => row.description, sortable: true },
+    { name: "Category", selector: (row) => row.category, sortable: true },
+    { name: "Price", selector: (row) => `${row.price} ${row.currency}`, sortable: true },
+    { name: "Status", selector: (row) => row.status, sortable: true },
+
+    // ✅ FIXED ROW ACTIONS
+    {
+      name: "Actions",
+      cell: (row) => (
+        <ProductActions
+          row={row}
+          onView={() => openViewModal(row)}
+          onEdit={() => openEditModal(row)}
+          onDelete={() => {
+  setDeleteId(row.id || null);
+  setDeleteOpen(true);
+}}
+
+        />
+      ),
+      // allowOverflow: true,
+      // button: true,
+      // width: "150px",
+    },
+  ]}
+  data={filtered}
+  pagination
+/>
+
+</div>
+<ProductModal
+  open={modalOpen}
+  mode={modalMode}
+  categories={categories}  // ✅ added
+  data={selected ?? undefined}
+  onClose={() => setModalOpen(false)}
+  onSubmit={async (formData) => {
+    if (modalMode === "add") {
+  await addProduct(formData); // id can be undefined
+} else if (modalMode === "edit" && selected && selected.id) {
+  await updateProductApi(selected.id, formData);
+}
+
+    setModalOpen(false);
+    fetchProducts();
+  }}
+/>
+
+<DeleteModal
+  open={deleteOpen}
+  onClose={() => setDeleteOpen(false)}
+  onConfirm={confirmDelete}
+  loading={deleteLoading}
+  title="Delete Product"
+  message="Are you sure you want to delete this product? This action cannot be undone."
+/>
+
+
     </div>
   );
 }

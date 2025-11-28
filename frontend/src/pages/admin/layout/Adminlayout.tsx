@@ -25,7 +25,7 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-white">
 
       {/* ============ SIDEBAR ============ */}
       <aside className="w-64 bg-[#A8734B] text-white flex flex-col py-6 shadow-lg">
@@ -74,9 +74,9 @@ export default function AdminLayout() {
 
       {/* ============ MAIN CONTENT ============ */}
       <main className="flex-1 p-8">
-        <div className="bg-white rounded-xl shadow p-6">
-          <Outlet />
-        </div>
+         <React.Suspense fallback={<div>Loading admin page...</div>}>
+      <Outlet />
+    </React.Suspense>
       </main>
     </div>
   );

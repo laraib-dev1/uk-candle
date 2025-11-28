@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 
+import React, { useEffect, useState } from "react";
+import { z, ZodIssue } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -8,213 +8,561 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Product } from "@/types/Product";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type Mode = "add" | "edit" | "view";
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  onOpenChange?: (open: boolean) => void;
-  mode?: Mode;
-  initialData?: Partial<Product>;
-  onSubmit: (data: Product | Partial<Product>) => void;
+interface Category {
+  _id: string;
+  name: string;
 }
 
-/**
- * Keep using your dev uploaded sample image — replace if necessary
- */
-const SAMPLE_IMAGE = "/mnt/data/8030fe7d-4145-4924-b18c-634a71efd451.png";
+type Status = "active" | "inactive";
 
-const ProductModal: React.FC<Props> = ({
+export interface Product {
+  id?: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  currency: string;
+  status: Status;
+  discount?: number;
+  // image URLs (if existing)
+  image1?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
+  image5?: string;
+  image6?: string;
+  // meta & videos
+  metaFeatures?: string;
+  metaInfo?: string;
+  video1?: string;
+  video2?: string;
+}
+
+interface ProductModalProps {
+  open: boolean;
+  mode: "add" | "edit" | "view";
+  categories: Category[];
+  data?: Product;
+  onClose: () => void;
+  onSubmit: (formData: ProductForm) => void;
+}
+
+export interface ProductForm extends Product {
+  // files for upload (keys image1..image6)
+  imageFiles?: Partial<Record<`image${1|2|3|4|5|6}`, File>>;
+}
+
+
+const defaultImage = "/product.png";
+
+const productSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  description: z.string().min(5, "Description must be at least 5 characters"),
+  category: z.string().min(1, "Category is required"),
+  price: z.number().nonnegative("Price must be 0 or more"),
+  currency: z.string().min(1, "Currency is required"),
+  status: z.enum(["active", "inactive"]),
+  discount: z.number().min(0).max(100).optional(),
+  image1: z.string().optional(),
+  image2: z.string().optional(),
+  image3: z.string().optional(),
+  image4: z.string().optional(),
+  image5: z.string().optional(),
+  image6: z.string().optional(),
+  metaFeatures: z.string().optional(),
+  metaInfo: z.string().optional(),
+  video1: z.string().optional(),
+  video2: z.string().optional(),
+});
+
+export default function ProductModal({
   open,
+  mode,
+  categories,
+  data,
   onClose,
-  onOpenChange,
-  mode = "add",
-  initialData = {},
   onSubmit,
-}) => {
-  const [form, setForm] = useState<Product>({
-    id: Date.now(),
-    name: "",
-    description: "",
-    price: 0,
-    stock: 0,
-    category: "",
-    image: SAMPLE_IMAGE,
-    status: "active",
+}: ProductModalProps) {
+  const isView = mode === "view";
+
+const [toggles, setToggles] = useState({
+  images: true,
+  discount: true,
+  metaFeatures: true,
+  metaInfo: true,
+  videos: true,
+});
+
+const toggleSection = (name: keyof typeof toggles) => {
+  setToggles(prev => ({ ...prev, [name]: !prev[name] }));
+};
+
+  const [form, setForm] = React.useState<ProductForm>({
+    name: data?.name || "",
+    description: data?.description || "",
+    category: data?.category || "",
+    price: data?.price || 0,
+    currency: data?.currency || "PKR",
+    status: data?.status || "active",
+    discount: data?.discount || 0,
+    image1: data?.image1 || "",
+    image2: data?.image2 || "",
+    image3: data?.image3 || "",
+    image4: data?.image4 || "",
+    image5: data?.image5 || "",
+    image6: data?.image6 || "",
+    metaFeatures: data?.metaFeatures || "",
+    metaInfo: data?.metaInfo || "",
+    video1: data?.video1 || "",
+    video2: data?.video2 || "",
+    imageFiles: {},
   });
+type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6";
 
-  useEffect(() => {
-    if ((mode === "edit" || mode === "view") && initialData) {
-      setForm((prev) => ({
-        ...prev,
-        ...(initialData as Product),
-      }));
-    } else if (mode === "add") {
-      setForm({
-        id: Date.now(),
-        name: "",
-        description: "",
-        price: 0,
-        stock: 0,
-        category: "",
-        image: SAMPLE_IMAGE,
-        status: "active",
-      });
+  const [error, setError] = React.useState<Partial<Record<keyof Product, string>>>({});
+
+  React.useEffect(() => {
+    setForm({
+      name: data?.name || "",
+      description: data?.description || "",
+      category: data?.category || "",
+      price: data?.price || 0,
+      currency: data?.currency || "PKR",
+      status: data?.status || "active",
+      discount: data?.discount || 0,
+      image1: data?.image1 || "",
+      image2: data?.image2 || "",
+      image3: data?.image3 || "",
+      image4: data?.image4 || "",
+      image5: data?.image5 || "",
+      image6: data?.image6 || "",
+      metaFeatures: data?.metaFeatures || "",
+      metaInfo: data?.metaInfo || "",
+      video1: data?.video1 || "",
+      video2: data?.video2 || "",
+      imageFiles: {},
+    });
+    setError({});
+  }, [data, open]);
+
+  // preview URL helper (prefer file preview if present)
+  const previewFor = (key: `image${1|2|3|4|5|6}`) =>
+    (form.imageFiles && (form.imageFiles as any)[key]
+      ? URL.createObjectURL((form.imageFiles as any)[key] as File)
+      : (form as any)[key]) || defaultImage;
+
+  const handleSelectFile = (key: `image${1|2|3|4|5|6}`, file?: File) => {
+    if (!file) return;
+    // size check (< 1MB)
+    if (file.size > 1024 * 1024) {
+      setError(prev => ({ ...prev, [key]: "Image must be smaller than 1MB" }));
+      return;
     }
-  }, [mode, initialData, open]);
-
-  const handleOpenChange = (val: boolean) => {
-    if (onOpenChange) onOpenChange(val);
-    if (!val) onClose();
-  };
-
-  const disabled = mode === "view";
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((f) => ({
-      ...f,
-      [name]: name === "price" || name === "stock" ? Number(value || 0) : value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      if (mode === "add") {
-        try {
-          const res = await axios.post("/api/products", form);
-          onSubmit(res.data);
-        } catch (err) {
-          onSubmit(form);
-        }
-      } else if (mode === "edit" && initialData?.id) {
-        try {
-          const res = await axios.put(`/api/products/${initialData.id}`, form);
-          onSubmit(res.data);
-        } catch (err) {
-          onSubmit(form);
-        }
+    // aspect ratio validation via Image
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      if (Math.abs(aspectRatio - 4 / 3) > 0.02) {
+        setError(prev => ({ ...prev, [key]: "Image must be 4:3 aspect ratio" }));
+        return;
       }
+      // ok
+      setForm(prev => ({
+        ...prev,
+        imageFiles: { ...(prev.imageFiles || {}), [key]: file },
+        // set the preview URL in imageX (only for UI; not necessary but useful)
+        [key]: URL.createObjectURL(file),
+      } as ProductForm));
+      setError(prev => ({ ...prev, [key]: undefined }));
+    };
+    img.onerror = () => {
+      setError(prev => ({ ...prev, [key]: "Invalid image file" }));
+    };
+  };
 
-      handleOpenChange(false);
-    } catch (err: any) {
-      console.error(err);
-      alert(err?.response?.data?.message || "Something went wrong");
+  const handleRemoveImage = (key: `image${1|2|3|4|5|6}`) => {
+    setForm(prev => {
+      const newFiles = { ...(prev.imageFiles || {}) };
+      delete (newFiles as any)[key];
+      return {
+        ...prev,
+        imageFiles: newFiles,
+        [key]: "", // remove preview / url
+      } as ProductForm;
+    });
+    setError(prev => ({ ...prev, [key]: undefined }));
+  };
+
+  const currencies = ["PKR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD"];
+
+  const handleSubmit = () => {
+    // client-side zod validation
+    const candidate = {
+      name: form.name,
+      description: form.description,
+      category: form.category,
+      price: form.price,
+      currency: form.currency,
+      status: form.status,
+      discount: form.discount,
+      image1: form.image1,
+      image2: form.image2,
+      image3: form.image3,
+      image4: form.image4,
+      image5: form.image5,
+      image6: form.image6,
+      metaFeatures: form.metaFeatures,
+      metaInfo: form.metaInfo,
+      video1: form.video1,
+      video2: form.video2,
+    };
+    const result = productSchema.safeParse(candidate);
+    if (!result.success) {
+      const issues: Partial<Record<keyof Product, string>> = {};
+      result.error.issues.forEach((err: ZodIssue) => {
+        const key = err.path[0] as keyof Product;
+        if (key) issues[key] = err.message;
+      });
+      setError(issues);
+      return;
     }
+
+    // ensure primary image1 exists for add mode
+    if (mode === "add") {
+      const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
+      const hasUrl1 = !!form.image1;
+      if (!hasFile1 && !hasUrl1) {
+        setError(prev => ({ ...prev, image1: "Primary image is required" }));
+        return;
+      }
+    }
+
+    // prepare form data object to send to API (onSubmit expects ProductForm)
+    onSubmit(form);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => handleOpenChange(val)}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-auto w-[760px] md:w-[900px]">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
-            {mode === "add" ? "Add Product" : mode === "edit" ? "Edit Product" : "View Product"}
+          <DialogTitle>
+            {mode === "add" && "Add Product"}
+            {mode === "edit" && "Edit Product"}
+            {mode === "view" && "View Product"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Image preview + URL */}
-          <div className="space-y-2">
-            <Label>Thumbnail URL</Label>
+        <div className="p-4 space-y-4">
+          {/* Top row: name */}
+          <div>
+            <label className="text-sm font-medium">Product Title</label>
             <Input
-              name="image"
-              value={form.image || ""}
-              onChange={handleChange}
-              placeholder="Image URL"
-              disabled={disabled}
+              value={form.name}
+              disabled={isView}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className={error.name ? "border-red-500" : ""}
             />
-            <div className="h-32 w-full bg-gray-100 rounded flex items-center justify-center border overflow-hidden">
-              {form.image ? (
-                <img src={form.image} alt={form.name} className="h-full object-contain" />
-              ) : (
-                <span className="text-sm text-gray-400">No image</span>
-              )}
-            </div>
+            {error.name && <p className="text-red-500 text-sm">{error.name}</p>}
           </div>
 
-          {/* Right side fields */}
-          <div className="space-y-3">
+          {/* Category / Price */}
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label>Product Name</Label>
-              <Input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter product name"
-                disabled={disabled}
-              />
-            </div>
-
-            <div>
-              <Label>Category</Label>
-              <Input
-                name="category"
+              <label className="text-sm font-medium">Category</label>
+              <select
                 value={form.category}
-                onChange={handleChange}
-                placeholder="e.g. Electronics"
-                disabled={disabled}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                disabled={isView}
+                className="border rounded p-2 w-full"
+              >
+                <option value="">Select category</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              {error.category && <p className="text-red-500 text-sm">{error.category}</p>}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Price</label>
+              <Input
+                type="number"
+                value={form.price}
+                disabled={isView}
+                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                className={error.price ? "border-red-500" : ""}
+              />
+              {error.price && <p className="text-red-500 text-sm">{error.price}</p>}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Currency</label>
+              <select
+                value={form.currency}
+                onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                disabled={isView}
+                className="border rounded p-2 w-full"
+              >
+                {currencies.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              {error.currency && <p className="text-red-500 text-sm">{error.currency}</p>}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium">Description</label>
+            <Textarea
+              value={form.description}
+              disabled={isView}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className={error.description ? "border-red-500" : ""}
+            />
+            {error.description && <p className="text-red-500 text-sm">{error.description}</p>}
+          </div>
+
+          {/* % Off + Sale Rate simplified (left as inputs) */}
+          <div className="border-t pt-3">
+            <label className="flex items-center gap-2">
+             <input
+  type="checkbox"
+  checked={toggles.discount}
+  onChange={() => toggleSection("discount")}
+  disabled={isView}
+/>
+
+              <span className="text-sm font-medium">% Off</span>
+            </label>
+             {toggles.discount && (
+            <div className="flex gap-3 mt-2">
+              <Input
+                type="number"
+                value={form.discount}
+                disabled={isView}
+                onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })}
+                className="flex-1"
+                placeholder="%"
+              />
+              <Input
+                value={form.metaInfo || ""}
+                disabled={isView}
+                onChange={(e) => setForm({ ...form, metaInfo: e.target.value })}
+                placeholder="Sale Rate"
+                className="w-48"
               />
             </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Price</Label>
-                <Input
-                  name="price"
-                  type="number"
-                  value={form.price}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  disabled={disabled}
-                />
-              </div>
-              <div>
-                <Label>Stock</Label>
-                <Input
-                  name="stock"
-                  type="number"
-                  value={form.stock}
-                  onChange={handleChange}
-                  placeholder="Quantity"
-                  disabled={disabled}
-                />
-              </div>
-            </div>
+            )}
           </div>
+          {/* Images grid */}
+<div className="border-t pt-3">
+  <label className="flex items-center gap-2">
+    <div className="flex items-center gap-2 mb-3">
+  <input
+    type="checkbox"
+    checked={toggles.images}
+    onChange={() => toggleSection("images")}
+    disabled={isView}
+  />
+  <label className="font-semibold">Images</label>
+</div>
+  </label>
+    {toggles.images && (
+  <div className="grid grid-cols-3 gap-4 mt-3">
 
-          {/* Full width description */}
-          <div className="md:col-span-2">
-            <Label>Description</Label>
-            <Textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Product description"
-              disabled={disabled}
+    {/* MAIN LARGE IMAGE (image1) */}
+
+    <div
+      className="col-span-2 relative group cursor-pointer"
+      onClick={() => !isView && document.getElementById("file-image1")?.click()}
+    >
+      <div className="w-full h-[360px] bg-gray-50 rounded overflow-hidden border flex items-center justify-center">
+        <img src={previewFor("image1")} className="w-full h-full object-cover" />
+      </div>
+
+      {/* Remove Button */}
+      {!isView && form.image1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); handleRemoveImage("image1"); }}
+          className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+        >
+          ✕
+        </button>
+      )}
+
+      <input
+        id="file-image1"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => handleSelectFile("image1", e.target.files?.[0])}
+      />
+
+      {error.image1 && <p className="text-red-500 text-sm">{error.image1}</p>}
+    </div>
+
+    {/* RIGHT-SIDE SMALL IMAGES */}
+    <div className="space-y-3">
+      {/* First row image2, image3 */}
+      <div className="grid grid-cols-2 gap-3">
+        {[2, 3].map((n) => (
+          <div
+            key={n}
+            className="relative group cursor-pointer h-36 bg-gray-50 rounded border overflow-hidden flex items-center justify-center"
+            onClick={() => !isView && document.getElementById(`file-image${n}`)?.click()}
+          >
+            <img
+              src={previewFor(`image${n}` as ImageField)}
+              className="w-full h-full object-cover"
+            />
+
+            {!isView && form[`image${n}` as ImageField] && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
+                className="absolute top-1 right-1 bg-white text-gray-900 rounded-full w-6 h-6 flex items-center justify-center  group-hover:opacity-100 transition"
+              >
+                ✕
+              </button>
+            )}
+
+            <input
+              id={`file-image${n}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleSelectFile(`image${n}` as any, e.target.files?.[0])}
             />
           </div>
+        ))}
+      </div>
+
+      {/* Second row image4, image5 */}
+      <div className="grid grid-cols-2 gap-3">
+        {[4, 5].map((n) => (
+          <div
+            key={n}
+            className="relative group cursor-pointer h-36 bg-gray-50 rounded border overflow-hidden flex items-center justify-center"
+            onClick={() => !isView && document.getElementById(`file-image${n}`)?.click()}
+          >
+            <img
+              src={previewFor(`image${n}` as ImageField)}
+              className="w-full h-full object-cover"
+            />
+
+            {!isView && form[`image${n}` as ImageField] && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+              >
+                ✕
+              </button>
+            )}
+
+            <input
+              id={`file-image${n}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleSelectFile(`image${n}` as any, e.target.files?.[0])}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+  )}
+</div>
+
+
+          {/* Advance Meta Info */}
+          <div className="border-t pt-3">
+            <label className="flex items-center gap-2">
+              <div className="mb-4">
+                 
+  <div className="flex items-center gap-2 mb-2">
+    <input
+      type="checkbox"
+      checked={toggles.metaFeatures}
+      onChange={() => toggleSection("metaFeatures")}
+      disabled={isView}
+    />
+    <label className="font-semibold">Meta Features</label>
+  </div>
+</div>
+ </label>
+ {toggles.metaFeatures && (
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <Input placeholder="Meta Features" value={form.metaFeatures} disabled={isView} onChange={(e)=> setForm({...form, metaFeatures: e.target.value})} />
+              <Input placeholder="Meta Info" value={form.metaInfo} disabled={isView} onChange={(e)=> setForm({...form, metaInfo: e.target.value})} />
+            </div>
+            )}
+          </div>
+
+          {/* Demo Videos */}
+          <div className="border-t pt-3">
+            <label className="flex items-center gap-2">
+              <div className="mb-4">
+  <div className="flex items-center gap-2 mb-2">
+    <input
+      type="checkbox"
+      checked={toggles.videos}
+      onChange={() => toggleSection("videos")}
+      disabled={isView}
+    />
+    <label className="font-semibold">Demo Videos</label>
+  </div>
+
+  {toggles.videos && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Video 1 - required */}
+      <Input
+        placeholder="Video URL 1"
+        value={form.video1}
+        disabled={isView}
+        required={toggles.videos}
+        onChange={(e) =>
+          setForm({ ...form, video1: e.target.value })
+        }
+      />
+
+      {/* Video 2 - optional */}
+      <Input
+        placeholder="Video URL 2 (optional)"
+        value={form.video2}
+        disabled={isView}
+        onChange={(e) =>
+          setForm({ ...form, video2: e.target.value })
+        }
+      />
+    </div>
+  )}
+</div>
+            </label>
+          </div>
+
         </div>
 
-        <DialogFooter className="mt-4 space-x-2">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Close
-          </Button>
-
-          {mode !== "view" && (
-            <Button onClick={handleSubmit}>
-              {mode === "add" ? "Add Product" : "Update Product"}
+        {!isView && (
+          <DialogFooter>
+            <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" onClick={handleSubmit}>
+              {mode === "add" ? "Add" : "Update"}
             </Button>
-          )}
-        </DialogFooter>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
-};
-
-export default ProductModal;
+}

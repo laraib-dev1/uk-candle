@@ -86,59 +86,60 @@ export const me = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-export const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+// export const forgotPassword = async (req, res) => {
+//   try {
+//     const { email } = req.body;
+//     if (!email) return res.status(400).json({ message: "Email is required" });
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+//     // Generate reset token
+//     const resetToken = crypto.randomBytes(32).toString("hex");
+//     const resetTokenExpiry = Date.now() + 3600000; // 1 hour
 
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpiry = resetTokenExpiry;
-    await user.save();
+//     user.resetPasswordToken = resetToken;
+//     user.resetPasswordExpiry = resetTokenExpiry;
+//     await user.save();
 
-    // TODO: Send email with reset link
-    // Example reset link: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
-    console.log(`Reset link: http://localhost:5173/reset-password/${resetToken}`);
+//     // TODO: Send email with reset link
+//     // Example reset link: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
+//     console.log(`Reset link: http://localhost:5173/reset-password/${resetToken}`);
 
-    res.json({ message: "Password reset link has been sent to your email." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+//     res.json({ message: "Password reset link has been sent to your email." });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 // RESET PASSWORD
-export const resetPassword = async (req, res) => {
-  try {
-    const { token, password } = req.body;
-    if (!token || !password) return res.status(400).json({ message: "Token and new password required" });
 
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpiry: { $gt: Date.now() },
-    });
+// export const resetPassword = async (req, res) => {
+//   try {
+//     const { token, password } = req.body;
+//     if (!token || !password) return res.status(400).json({ message: "Token and new password required" });
 
-    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+//     const user = await User.findOne({
+//       resetPasswordToken: token,
+//       resetPasswordExpiry: { $gt: Date.now() },
+//     });
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+//     if (!user) return res.status(400).json({ message: "Invalid or expired token" });
 
-    // Clear reset token fields
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiry = undefined;
+//     // Hash new password
+//     const salt = await bcrypt.genSalt(10);
+//     user.password = await bcrypt.hash(password, salt);
 
-    await user.save();
+//     // Clear reset token fields
+//     user.resetPasswordToken = undefined;
+//     user.resetPasswordExpiry = undefined;
 
-    res.json({ message: "Password has been reset successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+//     await user.save();
+
+//     res.json({ message: "Password has been reset successfully" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };

@@ -4,47 +4,37 @@ import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import CheckoutModal from "@/components/ui/modals/CheckoutModal";
 import { Trash2 } from "lucide-react";
+import { useCart } from "@/components/products/CartContext";
 
 
 const CartPage = () => {
     const [openCheckout, setOpenCheckout] = useState(false);
+const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
 
   const leftContent = (
     <div className="space-y-4">
-
-      {/* ITEM CARD */}
-      <div className="flex items-center justify-between p-5 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
-        <div className="flex items-center gap-4">
-          <img
-            src="/product.png"
-            className="w-20 h-20 object-cover rounded-lg"
-          />
-          <div>
-            <h3 className="font-semibold text-gray-800">Product Name</h3>
-            <p className="text-gray-500 text-sm">category</p>
-            <p className="text-gray-400 line-through text-sm">$145</p>
-            <p className="text-lg font-bold">$145</p>
-          </div>
+  {cartItems.map((item) => (
+    <div key={item.id} className="flex items-center justify-between p-5 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
+      <div className="flex items-center gap-4">
+        <img src={item.image || "/product.png"} className="w-20 h-20 object-cover rounded-lg" />
+        <div>
+          <h3 className="font-semibold text-gray-800">{item.name}</h3>
+          <p className="text-lg font-bold">${item.price}</p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">
-            −
-          </button>
-          <span className="text-lg">1</span>
-          <button className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">
-            +
-          </button>
-        </div>
-
-        <button className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition">
-  <Trash2 className="w-5 h-5" />
-</button>
-
       </div>
 
-      {/* Repeat items */}
+      <div className="flex items-center gap-3">
+        <button onClick={() => decreaseQuantity(item.id)} className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">−</button>
+        <span className="text-lg">{item.quantity}</span>
+        <button onClick={() => increaseQuantity(item.id)} className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">+</button>
+      </div>
+
+      <button onClick={() => removeFromCart(item.id)} className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition">
+        <Trash2 className="w-5 h-5" />
+      </button>
     </div>
+  ))}
+</div>
   );
 
   const rightContent = (

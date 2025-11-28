@@ -4,11 +4,12 @@ import { Menu, ShoppingCart } from "lucide-react";
 import Button from "../ui/buttons/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "@/lib/ThemeProvider";
-
+import { useCart } from "../products/CartContext";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
+  const { totalItems } = useCart();
 
   const linkClasses = (path: string) =>
     `text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white 
@@ -37,8 +38,8 @@ export default function Navbar() {
           <Link to="/cart" className="relative cursor-pointer">
   <ShoppingCart className="w-6 h-6 text-gray-700" />
   <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-    0
-  </span>
+  {totalItems}
+</span>
 </Link>
 {/* <button
   onClick={toggleTheme}

@@ -1,16 +1,39 @@
+// backend/src/routes/product.routes.js
 import express from "express";
-import * as productController from "../controllers/product.controller.js";
-import { protect } from "../middleware/auth.js";
+import {
+  createProduct,
+  getProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct,
+} from "../controllers/product.controller.js";
+import { uploadMultiple } from "../middleware/upload.js";
 
 const router = express.Router();
 
-// Public routes
-router.get("/", productController.getProducts);
-router.get("/:id", productController.getProductById);
+// fields array for multer
+const fields = [
+  { name: "image1", maxCount: 1 },
+  { name: "image2", maxCount: 1 },
+  { name: "image3", maxCount: 1 },
+  { name: "image4", maxCount: 1 },
+  { name: "image5", maxCount: 1 },
+  { name: "image6", maxCount: 1 },
+];
 
-// Protected routes
-router.post("/", protect, productController.createProduct);
-router.put("/:id", protect, productController.updateProduct);
-router.delete("/:id", protect, productController.deleteProduct);
+// create (multipart/form-data)
+router.post("/", uploadMultiple.fields(fields), createProduct);
+
+// list
+router.get("/", getProducts);
+
+// get one
+router.get("/:id", getProduct);
+
+// update (optionally with new image fields)
+router.put("/:id", uploadMultiple.fields(fields), updateProduct);
+
+// delete
+router.delete("/:id", deleteProduct);
 
 export default router;

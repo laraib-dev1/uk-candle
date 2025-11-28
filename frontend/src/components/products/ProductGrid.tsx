@@ -1,36 +1,35 @@
 import React from "react";
-import { Card, CardContent } from "../ui/Card";
 import ProductCard from "./ProductCard";
 
 interface Product {
-  id: number;
-  title: string;
+  id: string | number;
+  name: string;
   price: number;
   image?: string;
-  offer?: string;
+  discount?: number;
 }
 
 interface ProductGridProps {
   items: Product[];
-  limit?: number; 
+  limit?: number;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ items, limit }) => {
-  const displayedItems = limit ? items.slice(0, limit) : items; // slice if limit provided
+  const displayedItems = limit ? items.slice(0, limit) : items;
 
   return (
     <section className="py-10 px-4">
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-       {displayedItems.map((product) => (
-  <ProductCard
-    key={product.id}
-    id={product.id} 
-    title={product.title}
-    price={product.price}
-    image={product.image}
-    offer={product.offer}
-  />
-))}
+        {displayedItems.map((product, index) => (
+          <ProductCard
+            key={product.id || index} // unique key
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            image={product.image?.[0] ?? product.image ?? "/product.png"}
+            offer={product.discount?.toString()}
+          />
+        ))}
       </div>
     </section>
   );

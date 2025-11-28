@@ -1,28 +1,57 @@
 // pages/shop/Shop.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import ProductGrid from "../../components/products/ProductGrid";
 import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
+import { getProducts } from "@/api/product.api";
 
-const sampleProducts = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  title: `Product ${i + 1}`,
-  price: 50 + i * 5,
-}));
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  discount?: number;
+  image?: string; // image URL from backend
+  description?: string;
+  currency?: string;
+}
 
 const Shop = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(8);
 
-  const handleLoadMore = () => {
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+  try {
     setLoading(true);
-    setTimeout(() => {
-      setLimit((prev) => prev + 4);
-      setLoading(false);
-    }, 1000);
+    const data = await getProducts();
+
+    // Map _id to id for ProductCard
+    const mapped = data.map((p: any) => ({
+      ...p,
+      id: p._id, // crucial
+    }));
+
+    setProducts(mapped);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+   const handleLoadMore = () => {
+    setLimit((prev) => prev + 4);
   };
+
+  const displayedProducts = products.slice(0, limit);
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-black dark:text-white">
@@ -42,18 +71,20 @@ const Shop = () => {
           </div>
 
           {/* Product grid */}
-          <ProductGrid items={sampleProducts} limit={limit} />
+          <ProductGrid items={displayedProducts} />
 
           {/* Load more button */}
-          <div className="flex justify-center mt-10">
-            <DynamicButton
-              label="Load More"
-              loading={loading}
-              onClick={handleLoadMore}
-              variant="transparent"
-              shape="rounded"
-            />
-          </div>
+          {limit < products.length && (
+            <div className="flex justify-center mt-10">
+              <DynamicButton
+                label="Load More"
+                loading={loading}
+                onClick={handleLoadMore}
+                variant="transparent"
+                shape="rounded"
+              />
+            </div>
+          )}
         </div>
       </main>
 

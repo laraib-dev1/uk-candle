@@ -8,7 +8,7 @@ router.post("/register", register);       // POST /api/auth/register
 router.post("/login", login);             // POST /api/auth/login
 router.post("/admin-login", adminLogin);  // POST /api/auth/admin-login
 router.get("/me", protect, me);           // GET /api/auth/me
-router.post("/forgot-password", forgotPassword); // POST /api/auth/forgot-password
-router.post("/reset-password", resetPassword);
+// router.post("/forgot-password", forgotPassword); // POST /api/auth/forgot-password
+// router.post("/reset-password", resetPassword);
 
 export default router;

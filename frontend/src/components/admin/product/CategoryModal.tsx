@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 
 
 interface Category {
-  id?: number;
+  id?: string;
   name: string;
   icon: string;
   products: number;
