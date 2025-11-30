@@ -7,6 +7,8 @@ import AddToCartButton from "@/components/ui/buttons/AddToCartButton";
 import SocialShare from "@/components/products/SocialShare";
 import ProductCard from "@/components/products/ProductCard";
 import { getProduct, getProducts } from "@/api/product.api";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 
 interface Product {
   _id: string;
@@ -17,6 +19,12 @@ interface Product {
   images?: string[];
   category?: string;
   categoryName?: string;
+  metaFeatures?: string;  // HTML content
+  metaInfo?: string;      // HTML content
+  video1?: string;        // YouTube URL
+  video2?: string;        // YouTube URL (optional)
+  stock?: number;
+  [key: string]: any; 
 }
 
 export default function ProductDetail() {
@@ -28,27 +36,43 @@ export default function ProductDetail() {
 
   // Fetch single product
    useEffect(() => {
-    if (!id) return;
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const res = await getProduct(id);
-        setProduct(res.data); // backend now returns both categoryId & categoryName
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [id]);
+  if (!id) return;
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const res = await getProduct(id);  
+      console.log("GET PRODUCT RESPONSE:", res);
+
+      const productData = res;  // ← FIXED
+
+      const images = [
+        productData.image1,
+        productData.image2,
+        productData.image3,
+        productData.image4,
+        productData.image5,
+        productData.image6
+      ].filter(Boolean);
+
+      setProduct({ ...productData, images });
+
+    } catch (err) {
+      console.error("PRODUCT FETCH ERROR =>", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProduct();
+}, [id]);
+
 
   // Fetch all products for similar products
 useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await getProducts();
-        const mapped = res.map((p: any) => ({
+        const res = await getProducts(); // returns { success, data }
+const mapped = res.data.map((p: any) => ({
           ...p,
           id: p._id,
           categoryId: p.category?._id,
@@ -85,7 +109,7 @@ useEffect(() => {
                   {product.categoryName || "Category"}
                 </span>
 
-                <h1 className="text-2xl md:text-3xl font-semibold text-slate-800">
+                <h1 className="text-2xl md:text-3xl font-semibold  bg-white dark:bg-gray-900 text-black dark:text-white">
                   {product.name}
                 </h1>
 
@@ -110,7 +134,7 @@ useEffect(() => {
                 </div>
 
                 {/* description */}
-                <p className="text-sm text-slate-500 leading-relaxed">
+                <p className="text-sm  bg-white dark:bg-gray-900 text-black dark:text-white leading-relaxed">
                   {product.description}
                 </p>
               </div>
@@ -118,10 +142,11 @@ useEffect(() => {
               {/* Add to cart + share */}
               <div className="mt-6 md:mt-auto md:pt-4">
                 <AddToCartButton
-  product={{
-    id: product._id,               // map _id → id
+ product={{
+    id: product._id,
     name: product.name,
-    price: product.price - (product.discount || 0),
+    price: product.price,       // store original price
+    discount: product.discount, // <-- add this
     image: product.images?.[0],
   }}
 />
@@ -133,6 +158,74 @@ useEffect(() => {
             </div>
           </div>
         </div>
+{/* Description + Videos Section */}
+<div className="mt-10 bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+
+  <Tabs defaultValue="description" className="w-full">
+    {/* TABS HEADER */}
+    <TabsList className="grid grid-cols-2 w-full mb-6">
+      <TabsTrigger value="description">Description</TabsTrigger>
+      <TabsTrigger value="videos">Demo Video</TabsTrigger>
+    </TabsList>
+
+    {/* TAB — DESCRIPTION */}
+    <TabsContent value="description">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* LEFT — META FEATURES */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Features</h3>
+          <div
+            className="prose max-w-none text-gray-700 dark:text-gray-300"
+            dangerouslySetInnerHTML={{ __html: product.metaFeatures || "<p>No features added.</p>" }}
+          />
+        </div>
+
+        {/* RIGHT — META INFO */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Info</h3>
+          <div
+            className="prose max-w-none text-gray-700 dark:text-gray-300"
+            dangerouslySetInnerHTML={{ __html: product.metaInfo || "<p>No additional info.</p>" }}
+          />
+        </div>
+
+      </div>
+    </TabsContent>
+
+    {/* TAB — DEMO VIDEO */}
+    <TabsContent value="videos">
+
+      {/* VIDEO 1 */}
+      {product.video1 ? (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-2 text-amber-700">Demo Video 1</h3>
+          <iframe
+            className="w-full h-64 md:h-96 rounded-lg"
+            src={product.video1.replace("watch?v=", "embed/")}
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <p>No demo video available.</p>
+      )}
+
+      {/* VIDEO 2 (optional) */}
+      {product.video2 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2 text-amber-700">Demo Video 2</h3>
+          <iframe
+            className="w-full h-64 md:h-96 rounded-lg"
+            src={product.video2.replace("watch?v=", "embed/")}
+            allowFullScreen
+          />
+        </div>
+      )}
+
+    </TabsContent>
+  </Tabs>
+
+</div>
 
         {/* Similar products */}
         <div className="mt-10">

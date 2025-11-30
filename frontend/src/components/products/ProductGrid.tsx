@@ -22,13 +22,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({ items, limit }) => {
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {displayedItems.map((product, index) => (
           <ProductCard
-            key={product.id || index} // unique key
-            id={product.id}
-            name={product.name}
-            price={product.price}
-            image={product.image?.[0] ?? product.image ?? "/product.png"}
-            offer={product.discount?.toString()}
-          />
+  key={product.id || index}
+  id={product.id}
+  name={product.name}
+  price={product.price}
+  image={product.image && product.image.trim() !== "" ? product.image : "/product.png"}
+  offer={product.discount?.toString()}
+/>
+
         ))}
       </div>
     </section>

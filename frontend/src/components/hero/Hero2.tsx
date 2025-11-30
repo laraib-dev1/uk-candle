@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "../ui/buttons/Button";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   title?: string;
@@ -16,13 +17,17 @@ const Hero2 = ({
   imagePosition = "right",
   fullWidthText = false,
 }: Props) => {
+  const navigate = useNavigate(); // <-- useNavigate hook
   const heroImage = image || "/hero.png";
+
+  const handleShopMore = () => {
+    navigate("/shop"); // navigate to shop page
+  };
 
   return (
     <section className="py-10">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {fullWidthText ? (
-          // Full width text layout
           <div className="flex flex-col justify-center py-10 text-center">
             <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
@@ -31,11 +36,10 @@ const Hero2 = ({
               {subtitle || "Explore our latest collections and exclusive deals."}
             </p>
             <div className="mt-6 flex justify-center">
-              <Button>Shop More</Button>
+              <Button onClick={handleShopMore}>Shop More</Button>
             </div>
           </div>
         ) : (
-          // Grid with image + text
           <div
             className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-center ${
               imagePosition === "left" ? "md:flex-row-reverse" : ""
@@ -59,7 +63,7 @@ const Hero2 = ({
                 {subtitle || "Explore our latest collections and exclusive deals."}
               </p>
               <div className="mt-6">
-                <Button>Shop More</Button>
+                <Button onClick={handleShopMore}>Shop More</Button>
               </div>
             </div>
 

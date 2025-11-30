@@ -7,6 +7,7 @@ type Props = {
     id: string;
     name: string;
     price: number;
+    discount?: number; 
     image?: string;
   };
 };
@@ -25,7 +26,6 @@ export default function AddToCartButton({ product }: Props) {
     await new Promise((res) => setTimeout(res, 500));
 
     setLoading(false);
-    navigate("/cart");
   };
 
   return (

@@ -108,7 +108,7 @@ const handleSubmit = () => {
 
   return (
     <Dialog open={open} onOpenChange={onClose} >
-      <DialogContent className=" bg-white">
+      <DialogContent className=" bg-white text-black">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" && "Add Category"}

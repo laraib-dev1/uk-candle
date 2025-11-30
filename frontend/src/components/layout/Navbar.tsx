@@ -10,12 +10,17 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const { totalItems } = useCart();
+ const linkClasses = (path: string) => {
+  const base = "text-sm hover:text-gray-900 transition-colors";
+  const color = pathname === path 
+    ? "text-gray-900  font-medium underline underline-offset-4" 
+    : "text-gray-600";
 
-  const linkClasses = (path: string) =>
-    `text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white 
-     ${pathname === path ? "underline underline-offset-4 font-medium" : ""}`;
+  return `${base} ${color}`;
+};
+
   return (
-    <header className="bg-white dark:bg-gray-900 text-black dark:text-white shadow-sm fixed top-0 w-full z-50">
+    <header className="bg-white  text-black  shadow-sm fixed top-0 w-full z-50">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* LEFT: Logo */}
@@ -28,7 +33,7 @@ export default function Navbar() {
 
         {/* CENTER: Nav links (desktop only) */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className={linkClasses("/")}>Home</Link>
+          <Link to="/" className= {linkClasses("/")}>Home</Link>
           <Link to="/shop" className={linkClasses("/shop")}>Shop</Link>
         </nav>
 
@@ -36,21 +41,24 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {/* Cart icon (always visible) */}
           <Link to="/cart" className="relative cursor-pointer">
-  <ShoppingCart className="w-6 h-6 text-gray-700" />
+  <ShoppingCart className="w-6 h-6 text-gray-700 " />
   <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
   {totalItems}
 </span>
 </Link>
+{/* Theme toggle button */}
 {/* <button
   onClick={toggleTheme}
-  className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
+  className="p-2 rounded-lg bg-white  text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+  title="Toggle Theme"
 >
   {theme === "light" ? "🌙" : "☀️"}
 </button> */}
 
+
           {/* Sign In (desktop only) */}
           <div className="hidden md:block">
-            <Button className="border text-gray-700 bg-white dark:bg-gray-900 dark:text-white hover:bg-gray-100">
+            <Button className="border text-gray-700 bg-white  hover:bg-gray-100">
               Sign In
             </Button>
           </div>

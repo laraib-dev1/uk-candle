@@ -13,26 +13,26 @@ export default function Footer() {
 
           {/* Column 1 */}
           <div className="flex flex-col space-y-2 text-sm">
-            <a href="#" className="hover:underline">Contact Us</a>
-            <a href="#" className="hover:underline">Shop Categories</a>
-            <a href="#" className="hover:underline">Store Location</a>
-            <a href="#" className="hover:underline">FAQs</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Contact Us</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Shop Categories</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Store Location</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">FAQs</a>
           </div>
 
           {/* Column 2 */}
           <div className="flex flex-col space-y-2 text-sm">
-            <a href="#" className="hover:underline">Terms & Conditions</a>
-            <a href="#" className="hover:underline">Delivery</a>
-            <a href="#" className="hover:underline">Privacy Policy</a>
-            <a href="#" className="hover:underline">Services</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Terms & Conditions</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Delivery</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Privacy Policy</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Services</a>
           </div>
 
           {/* Column 3 */}
           <div className="flex flex-col space-y-2 text-sm">
-            <a href="#" className="hover:underline">Handmade Soap</a>
-            <a href="#" className="hover:underline">Scented Candle</a>
-            <a href="#" className="hover:underline">Perfume</a>
-            <a href="#" className="hover:underline">Accessories</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Handmade Soap</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Scented Candle</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Perfume</a>
+            <a href="#" className="text-gray-700 dark:text-gray-300 hover:underline">Accessories</a>
           </div>
 
           {/* Column 4: small images / gallery */}

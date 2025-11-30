@@ -2,7 +2,7 @@ import React from "react";
 
 const FeatureHero = () => {
   return (
-    <section className="bg-white dark:bg-gray-900 text-black dark:text-white py-10">
+    <section className="bg-white text-black  py-4">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Text content */}
         <div className="max-w-3xl mx-auto mb-6">

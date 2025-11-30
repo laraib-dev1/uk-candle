@@ -10,6 +10,13 @@ import { useCart } from "@/components/products/CartContext";
 const CartPage = () => {
     const [openCheckout, setOpenCheckout] = useState(false);
 const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
+const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+// Example: you can calculate discount if needed
+const discount = cartItems.reduce((sum, item) => sum + ((item.discount || 0) / 100) * item.price * item.quantity, 0);
+
+const total = subtotal - discount;
 
   const leftContent = (
     <div className="space-y-4">
@@ -39,38 +46,40 @@ const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCar
 
   const rightContent = (
     <div className="p-6 bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl shadow-sm border">
-      <h2 className="font-semibold mb-4 text-lg">Order Summary</h2>
+  <h2 className="font-semibold mb-4 text-lg">Order Summary</h2>
 
-      <div className="space-y-3 text-gray-700 text-sm">
-        <div className="flex justify-between">
-          <span>Items</span>
-          <span className="font-medium">3</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Subtotal</span>
-          <span className="font-medium">$565</span>
-        </div>
-
-        <div className="flex justify-between text-green-600">
-          <span>Discount</span>
-          <span className="font-medium">-$113</span>
-        </div>
-
-        <div className="flex justify-between text-amber-700 font-bold text-lg">
-          <span>Total</span>
-          <span>$467</span>
-        </div>
-      </div>
-
-      <button
-  onClick={() => setOpenCheckout(true)}
-  className="mt-6 w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-all flex items-center justify-center gap-2"
->
-  Go to Checkout →
-</button>
-
+  <div className="space-y-3 text-gray-700 text-sm">
+    <div className="flex justify-between">
+      <span>Items</span>
+      <span className="font-medium">{totalItems}</span>
     </div>
+
+    <div className="flex justify-between">
+      <span>Subtotal</span>
+      <span className="font-medium">${subtotal.toFixed(2)}</span>
+    </div>
+
+    {discount > 0 && (
+      <div className="flex justify-between text-green-600">
+        <span>Discount</span>
+        <span className="font-medium">-${discount.toFixed(2)}</span>
+      </div>
+    )}
+
+    <div className="flex justify-between text-amber-700 font-bold text-lg">
+      <span>Total</span>
+      <span>${total.toFixed(2)}</span>
+    </div>
+  </div>
+
+  <button
+    onClick={() => setOpenCheckout(true)}
+    className="mt-6 w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-all flex items-center justify-center gap-2"
+  >
+    Go to Checkout →
+  </button>
+</div>
+
   );
 
   return (

@@ -25,7 +25,7 @@ const features = [
 
 const FeatureSection = () => {
   return (
-    <section className="py-12 bg-white dark:bg-gray-900 text-black dark:text-white text-center">
+    <section className="py-12 bg-white text-black text-center">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-center gap-10">
     {features.map((feature, i) => (
       <div

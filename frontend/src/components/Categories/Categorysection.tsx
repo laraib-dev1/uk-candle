@@ -1,35 +1,37 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const categories = [
-  {
-    title: "Fragrances",
-    image: "/category.png",
-  },
-  {
-    title: "Candles & Home",
-    image: "/category.png",
-  },
-  {
-    title: "Bath & Body",
-    image: "/product.png",
-  },
-  {
-    title: "Home Decor",
-    image: "/category.png",
-  },
-];
+interface Category {
+  title: string;
+  image?: string;
+}
 
-const CategorySection = () => {
+interface CategorySectionProps {
+  categories: Category[];
+}
+
+const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (category: Category) => {
+    // Navigate to shop page with category as query param
+    navigate(`/shop?category=${encodeURIComponent(category.title)}`);
+  };
+
   return (
-    <section className="py-0 bg-white dark:bg-gray-900 text-black dark:text-white">
+    <section className="py-6 bg-white text-black">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl font-semibold mb-10 tracking-wide">
+        <h2 className="text-center text-2xl font-semibold mb-6 tracking-wide">
           ALL GIFT IDEAS
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="flex gap-4 overflow-x-auto pb-4">
           {categories.map((cat, index) => (
-            <div key={index} className="text-center group cursor-pointer">
+            <div
+              key={index}
+              className="shrink-0 w-48 text-center group cursor-pointer"
+              onClick={() => handleCategoryClick(cat)} // <-- navigate on click
+            >
               <div className="overflow-hidden rounded-2xl shadow-md bg-gray-200 aspect-square">
                 <img
                   src={cat.image}
@@ -37,9 +39,8 @@ const CategorySection = () => {
                   className="w-full h-full object-cover transform group-hover:scale-105 transition duration-300"
                 />
               </div>
-
               <p className="mt-3 text-lg text-gray-800 font-medium italic">
-                {cat.title} 
+                {cat.title}
               </p>
             </div>
           ))}

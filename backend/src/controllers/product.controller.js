@@ -59,18 +59,31 @@ export const createProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find().populate("category", "name").sort({ createdAt: -1 });
-    const mapped = products.map(p => ({
-      ...p.toObject(),
-      id: p._id,
-      categoryId: p.category?._id || null,
-      categoryName: p.category?.name || null,
-    }));
+
+    const mapped = products.map(p => {
+      const obj = p.toObject();
+      return {
+        ...obj,
+        id: obj._id,
+        categoryId: obj.category?._id || null,
+        categoryName: obj.category?.name || null,
+        // Replace empty strings with default image
+        image1: obj.image1 || "/product.png",
+        image2: obj.image2 || "/product.png",
+        image3: obj.image3 || "/product.png",
+        image4: obj.image4 || "/product.png",
+        image5: obj.image5 || "/product.png",
+        image6: obj.image6 || "/product.png",
+      };
+    });
+
     res.json({ success: true, data: mapped });
   } catch (err) {
     console.error("getProducts:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 export const getProduct = async (req, res) => {
   try {

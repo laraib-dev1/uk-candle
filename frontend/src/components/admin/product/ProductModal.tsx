@@ -1,4 +1,4 @@
-
+import { RichTextEditor } from "@mantine/rte";
 import React, { useEffect, useState } from "react";
 import { z, ZodIssue } from "zod";
 import {
@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,7 @@ export interface Product {
   id?: string;
   name: string;
   description: string;
-  category: string;
+   category: string | Category;
   price: number;
   currency: string;
   status: Status;
@@ -56,6 +57,7 @@ interface ProductModalProps {
 export interface ProductForm extends Product {
   // files for upload (keys image1..image6)
   imageFiles?: Partial<Record<`image${1|2|3|4|5|6}`, File>>;
+  category: string | Category;
 }
 
 
@@ -106,7 +108,7 @@ const toggleSection = (name: keyof typeof toggles) => {
   const [form, setForm] = React.useState<ProductForm>({
     name: data?.name || "",
     description: data?.description || "",
-    category: data?.category || "",
+    category: typeof data?.category === "object" ? data.category._id : data?.category || (categories[0]?._id ?? ""),
     price: data?.price || 0,
     currency: data?.currency || "PKR",
     status: data?.status || "active",
@@ -131,7 +133,7 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
     setForm({
       name: data?.name || "",
       description: data?.description || "",
-      category: data?.category || "",
+      category: typeof data?.category === "object" ? data.category._id : data?.category || (categories[0]?._id ?? ""),
       price: data?.price || 0,
       currency: data?.currency || "PKR",
       status: data?.status || "active",
@@ -202,63 +204,59 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 
   const currencies = ["PKR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD"];
 
-  const handleSubmit = () => {
-    // client-side zod validation
-    const candidate = {
-      name: form.name,
-      description: form.description,
-      category: form.category,
-      price: form.price,
-      currency: form.currency,
-      status: form.status,
-      discount: form.discount,
-      image1: form.image1,
-      image2: form.image2,
-      image3: form.image3,
-      image4: form.image4,
-      image5: form.image5,
-      image6: form.image6,
-      metaFeatures: form.metaFeatures,
-      metaInfo: form.metaInfo,
-      video1: form.video1,
-      video2: form.video2,
-    };
-    const result = productSchema.safeParse(candidate);
-    if (!result.success) {
-      const issues: Partial<Record<keyof Product, string>> = {};
-      result.error.issues.forEach((err: ZodIssue) => {
-        const key = err.path[0] as keyof Product;
-        if (key) issues[key] = err.message;
-      });
-      setError(issues);
+const handleSubmit = () => {
+  const categoryId = typeof form.category === "object" ? form.category._id : form.category;
+
+  const candidate = { ...form, category: categoryId };
+
+  const result = productSchema.safeParse(candidate);
+  if (!result.success) {
+    const issues: Partial<Record<keyof Product, string>> = {};
+    result.error.issues.forEach((err: ZodIssue) => {
+      const key = err.path[0] as keyof Product;
+      if (key) issues[key] = err.message;
+    });
+    setError(issues);
+    return;
+  }
+
+  if (mode === "add") {
+    const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
+    const hasUrl1 = !!form.image1;
+    if (!hasFile1 && !hasUrl1) {
+      setError(prev => ({ ...prev, image1: "Primary image is required" }));
       return;
     }
+  }
 
-    // ensure primary image1 exists for add mode
-    if (mode === "add") {
-      const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
-      const hasUrl1 = !!form.image1;
-      if (!hasFile1 && !hasUrl1) {
-        setError(prev => ({ ...prev, image1: "Primary image is required" }));
-        return;
-      }
-    }
-
-    // prepare form data object to send to API (onSubmit expects ProductForm)
-    onSubmit(form);
+  // ✅ Final payload
+  const payload: ProductForm = {
+    ...form,
+    category: categoryId,       // string ID
+    metaInfo: form.metaInfo,    // HTML string
   };
+
+  console.log("Sending payload:", payload);
+  onSubmit(payload);
+};
+
+
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-auto w-[760px] md:w-[900px]">
+      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-auto w-[360px] sm:w-[600px] md:w-[760px] lg:w-[900px]">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" && "Add Product"}
             {mode === "edit" && "Edit Product"}
             {mode === "view" && "View Product"}
+            
           </DialogTitle>
         </DialogHeader>
-
+<DialogDescription>
+      Fill in all product details below.
+    </DialogDescription>
         <div className="p-4 space-y-4">
           {/* Top row: name */}
           <div>
@@ -273,22 +271,23 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
           </div>
 
           {/* Category / Price */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-sm font-medium">Category</label>
               <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                disabled={isView}
-                className="border rounded p-2 w-full"
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+  value={typeof form.category === "string" ? form.category : form.category._id}
+  onChange={(e) => setForm({ ...form, category: e.target.value })}
+  disabled={isView}
+  className="border rounded p-2 w-full"
+>
+  
+  {categories.map((cat) => (
+    <option key={cat._id} value={cat._id}>
+      {cat.name}
+    </option>
+  ))}
+</select>
+
               {error.category && <p className="text-red-500 text-sm">{error.category}</p>}
             </div>
 
@@ -380,7 +379,7 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 </div>
   </label>
     {toggles.images && (
-  <div className="grid grid-cols-3 gap-4 mt-3">
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
 
     {/* MAIN LARGE IMAGE (image1) */}
 
@@ -487,29 +486,51 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 </div>
 
 
+
           {/* Advance Meta Info */}
-          <div className="border-t pt-3">
-            <label className="flex items-center gap-2">
-              <div className="mb-4">
-                 
-  <div className="flex items-center gap-2 mb-2">
-    <input
-      type="checkbox"
-      checked={toggles.metaFeatures}
-      onChange={() => toggleSection("metaFeatures")}
-      disabled={isView}
-    />
-    <label className="font-semibold">Meta Features</label>
-  </div>
+<div className="border-t pt-3">
+  <label className="flex items-center gap-2">
+    <div className="mb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <input
+          type="checkbox"
+          checked={toggles.metaFeatures}
+          onChange={() => toggleSection("metaFeatures")}
+          disabled={isView}
+        />
+        <label className="font-semibold">Meta Features</label>
+      </div>
+    </div>
+  </label>
+
+  {toggles.metaFeatures && (
+    <div className="grid grid-cols-1 gap-3 mt-2">
+      {/* Meta Features rich text editor */}
+      <div>
+        <label className="font-medium mb-1">Meta Features</label>
+        <RichTextEditor
+          value={form.metaFeatures || ""}
+          readOnly={isView}
+          onChange={(value) => setForm({ ...form, metaFeatures: value })}
+          className="bg-white text-gray-900 min-h-[120px]"
+        />
+      </div>
+
+      {/* Meta Info rich text editor */}
+      <div>
+        <label className="font-medium mb-1">Meta Info</label>
+        <RichTextEditor
+  value={form.metaInfo || ""}
+  readOnly={isView}
+  onChange={(value) => setForm({ ...form, metaInfo: value })}
+  className="bg-white text-gray-900 min-h-[120px]"
+/>
+
+      </div>
+    </div>
+  )}
 </div>
- </label>
- {toggles.metaFeatures && (
-            <div className="grid grid-cols-2 gap-3 mt-2">
-              <Input placeholder="Meta Features" value={form.metaFeatures} disabled={isView} onChange={(e)=> setForm({...form, metaFeatures: e.target.value})} />
-              <Input placeholder="Meta Info" value={form.metaInfo} disabled={isView} onChange={(e)=> setForm({...form, metaInfo: e.target.value})} />
-            </div>
-            )}
-          </div>
+
 
           {/* Demo Videos */}
           <div className="border-t pt-3">

@@ -1,90 +1,7 @@
-// import React from "react";
-// import Button from "../ui/buttons/Button";
-
-// type Props = {
-//   title?: string;
-//   subtitle?: string;
-//   image?: string;
-//   imagePosition?: "left" | "right";
-//   variant?: "side-image" | "full-background";
-// };
-
-// const Hero = ({
-//   title,
-//   subtitle,
-//   image,
-//   imagePosition = "right",
-//   variant = "side-image",
-// }: Props) => {
-//   const heroImage = image || "/hero.png";
-
-//   /* ----------------------------
-//        FULL BACKGROUND VERSION
-//   ----------------------------- */
-//   if (variant === "full-background") {
-//     return (
-//       <section
-//         className="relative bg-cover bg-center bg-no-repeat aspect-w-21 aspect-h-9"
-//         style={{ backgroundImage: `url(${heroImage})` }}
-//       >
-//         {/* Dark overlay */}
-//         <div className="absolute inset-0 bg-black/40"></div>
-
-//         {/* Text */}
-//         <div className="relative max-w-5xl mx-auto px-6 flex flex-col justify-center h-full text-white">
-//           <h1 className="text-4xl md:text-5xl font-serif leading-tight">
-//             {title || "Welcome to Our Store"}
-//           </h1>
-
-//           <p className="mt-4 text-gray-200 max-w-xl">
-//             {subtitle || "Explore our latest collections and exclusive deals."}
-//           </p>
-
-//           <div className="mt-8">
-//             <Button>Shop More</Button>
-//           </div>
-//         </div>
-//       </section>
-//     );
-//   }
-
-//   /* ----------------------------
-//        LEFT / RIGHT IMAGE VERSION
-//   ----------------------------- */
-//   return (
-//     <section className="relative bg-gray-50">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-16">
-
-//         {/* Text */}
-//         <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"}`}>
-//           <h1 className="text-4xl md:text-5xl font-serif leading-tight tracking-tight">
-//             {title || "Welcome to Our Store"}
-//           </h1>
-
-//           <p className="mt-4 text-gray-600 max-w-xl">
-//             {subtitle || "Explore our latest collections and exclusive deals."}
-//           </p>
-
-//           <div className="mt-8">
-//             <Button>Shop More</Button>
-//           </div>
-//         </div>
-
-//         {/* Side Image */}
-//         <div
-//           className={`w-full h-80 md:h-[420px] rounded bg-cover bg-center ${
-//             imagePosition === "left" ? "order-1 md:order-2" : "order-2"
-//           }`}
-//           style={{ backgroundImage: `url(${heroImage})` }}
-//         ></div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default Hero;
 import React from "react";
 import Button from "../ui/buttons/Button";
+import { useNavigate } from "react-router-dom";
+
 
 type Props = {
   title?: string;
@@ -102,7 +19,10 @@ const Hero = ({
   variant = "side-image",
 }: Props) => {
   const heroImage = image || "/hero.png";
-
+  const navigate = useNavigate();
+const handleShopMore = () => {
+    navigate("/shop"); // <-- navigate to your shop page
+  };
   // FULL BACKGROUND VERSION
   if (variant === "full-background") {
     return (
@@ -121,7 +41,7 @@ const Hero = ({
           </p>
 
           <div className="mt-8">
-            <Button>Shop More</Button>
+            <Button onClick={handleShopMore}>Shop More</Button>
           </div>
         </div>
       </section>
@@ -144,7 +64,7 @@ const Hero = ({
           </p>
 
           <div className="mt-8">
-            <Button>Shop More</Button>
+            <Button onClick={handleShopMore}>Shop More</Button>
           </div>
         </div>
 

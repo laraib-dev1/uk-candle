@@ -1,15 +1,37 @@
 // frontend/src/api/product.api.ts
 import API from "./axios"; // your axios instance
 
+const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
+
+const mapImages = (p: any) => {
+  const getFull = (img: string | null) => {
+    if (!img || img.trim() === "") return "/product.png";
+    // if it's already an absolute URL or default image, return as is
+    if (img.startsWith("http") || img === "/product.png") return img;
+    return `${BASE_URL}${img}`;
+  };
+
+  return {
+    ...p,
+    image1: getFull(p.image1),
+    image2: getFull(p.image2),
+    image3: getFull(p.image3),
+    image4: getFull(p.image4),
+    image5: getFull(p.image5),
+    image6: getFull(p.image6),
+  };
+};
+
 export const getProducts = async () => {
   const res = await API.get("/products");
-  return res.data.data;
+  return res.data.data.map(mapImages);
 };
 
 export const getProduct = async (id: string) => {
   const res = await API.get(`/products/${id}`);
-  return res.data.data;
+  return mapImages(res.data.data);
 };
+
 
 export const createProduct = async (product: any) => {
   const fd = new FormData();
