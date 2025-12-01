@@ -26,7 +26,7 @@ export default function ResetPassword() {
     <AuthLayout>
       <h2 className="text-white text-2xl font-semibold mb-6">Reset Password</h2>
 
-      <div className="flex flex-col gap-4">
+      <div className="text-black/80 flex flex-col gap-4">
         <Input
           label="Email"
           placeholder="Enter your email"

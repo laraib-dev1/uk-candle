@@ -1,4 +1,6 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -23,6 +25,7 @@ export default function AdminLayout() {
     { label: "Notifications", icon: Bell, path: "/admin/notifications" },
     { label: "Setting", icon: Settings, path: "/admin/settings" },
   ];
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -65,10 +68,16 @@ export default function AdminLayout() {
 
         {/* LOGOUT BUTTON (bottom) */}
         <div className="mt-auto px-2">
-          <button className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/20 w-full">
-            <LogOut size={18} />
-            Log out
-          </button>
+          <button
+  onClick={() => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  }}
+  className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white/20 w-full"
+>
+  <LogOut size={18} />
+  Log out
+</button>
         </div>
       </aside>
 

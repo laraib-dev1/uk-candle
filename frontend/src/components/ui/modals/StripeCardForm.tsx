@@ -1,5 +1,4 @@
 import {
-  
   CardNumberElement,
   CardExpiryElement,
   CardCvcElement,
@@ -19,11 +18,9 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
 
     setLoading(true);
 
-    // create payment intent
     const res = await createPaymentIntent(Math.round(amount * 100));
     const clientSecret = res.clientSecret;
 
-    // confirm card payment
     const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardNumberElement)!,
@@ -32,11 +29,9 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
 
     if (result.error) {
       alert(result.error.message);
-    } else {
-      if (result.paymentIntent.status === "succeeded") {
-        alert("Payment Successful!");
-        onSuccess();
-      }
+    } else if (result.paymentIntent.status === "succeeded") {
+      alert("Payment Successful!");
+      onSuccess();
     }
 
     setLoading(false);
@@ -45,64 +40,37 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
   return (
     <div className="space-y-4">
       <div>
-  <label className="text-sm font-medium">Card Number</label>
-  <div className="p-3 border rounded-lg">
-    <CardNumberElement
-      options={{
-        style: {
-          base: {
-            fontSize: "16px",
-            color: "#333",
-          },
-        },
-      }}
-    />
-  </div>
-</div>
-
-<div className="grid grid-cols-2 gap-2">
-  <div>
-    <label className="text-sm font-medium">Expiry</label>
-    <div className="p-3 border rounded-lg">
-      <CardExpiryElement
-        options={{
-          style: {
-            base: {
-              fontSize: "16px",
-              color: "#333",
-            },
-          },
-        }}
-      />
-    </div>
-  </div>
-
-  <div>
-    <label className="text-sm font-medium">CVC</label>
-    <div className="p-3 border rounded-lg">
-      <CardCvcElement
-        options={{
-          style: {
-            base: {
-              fontSize: "16px",
-              color: "#333",
-            },
-          },
-        }}
-      />
-    </div>
-  </div>
-</div>
-
+        <label className="text-sm font-medium">Card Number</label>
+        <div className="p-3 border rounded-lg">
+          <CardNumberElement
+            options={{
+              style: { base: { fontSize: "16px", color: "#333" } },
+            }}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="text-sm font-medium">Expiry</label>
-          <CardExpiryElement className="p-3 border rounded-lg" />
+          <div className="p-3 border rounded-lg">
+            <CardExpiryElement
+              options={{
+                style: { base: { fontSize: "16px", color: "#333" } },
+              }}
+            />
+          </div>
         </div>
+
         <div>
           <label className="text-sm font-medium">CVC</label>
-          <CardCvcElement className="p-3 border rounded-lg" />
+          <div className="p-3 border rounded-lg">
+            <CardCvcElement
+              options={{
+                style: { base: { fontSize: "16px", color: "#333" } },
+              }}
+            />
+          </div>
         </div>
       </div>
 

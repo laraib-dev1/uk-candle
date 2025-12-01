@@ -5,28 +5,48 @@ import Shop from "./pages/shop/Shop";
 import ProductDetail from "./pages/shop/ProductDetail";
 import CartPage from "./pages/shop/CartPage";
 import { CartProvider } from "./components/products/CartContext";
-// lazy or normal — choose whichever you prefer
-const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
-const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
-// const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
-const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
-const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
 import AdminCategories from "@/pages/admin/pages/CategoriesPage";
-
+import { AuthProvider } from "./hooks/useAuth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/auth/Login";
 import Access from "./pages/auth/Access";
 import Forgot from "./pages/auth/Forgot";
+// lazy or normal — choose whichever you prefer
+const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
+const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
+const AdminSettings = React.lazy(() => import("./pages/admin/pages/SettingsPage"));
+
+// const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
+const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
+const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
+
 
 export default function App() {
   return (
-    <CartProvider>
+    <AuthProvider>
+      <CartProvider>
       <Suspense fallback={<div>Loading...</div>}>
       <Routes>
              {/* ---------- SHOP ROUTES ---------- */}
       <Route path="/" element={<Landing />} />
       <Route path="/shop" element={<Shop />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-      <Route path="/cart" element={<CartPage />} /> 
+       {/* Protected routes */}
+              <Route
+                path="/product/:id"
+                element={
+                  <ProtectedRoute>
+                    <ProductDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <CartPage />
+                  </ProtectedRoute>
+                }
+              />
 
       {/* ---------- AUTH ROUTES (Login, Signup, Forgot) ---------- */}
         <Route path="/login" element={<Login />} />
@@ -40,6 +60,7 @@ export default function App() {
           <Route path="orders" element={<AdminOrders />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
    {/* ---------- 404 PAGE ---------- */}
           <Route path="*" element={<div>Not found</div>} />
@@ -47,6 +68,8 @@ export default function App() {
     </Routes>
      </Suspense>
     </CartProvider>
+    </AuthProvider>
+    
      
     
   );

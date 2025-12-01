@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link, useLocation  } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, ShoppingCart } from "lucide-react";
 import Button from "../ui/buttons/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
 export default function Navbar() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
@@ -58,7 +59,7 @@ export default function Navbar() {
 
           {/* Sign In (desktop only) */}
           <div className="hidden md:block">
-            <Button className="border text-gray-700 bg-white  hover:bg-gray-100">
+            <Button className="border text-gray-700 bg-white  hover:bg-gray-100" onClick={() => navigate("/login")} >
               Sign In
             </Button>
           </div>

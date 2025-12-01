@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCart } from "@/components/products/CartContext";
 import StripeCardForm from "./StripeCardForm";
+
 type CheckoutModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -39,43 +40,40 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-const handleAddressSave = () => {
-  const requiredFields = [
-    newAddress.firstName,
-    newAddress.lastName,
-    newAddress.phone,
-    newAddress.line1,
-    newAddress.city,
-    newAddress.province,
-    newAddress.postalCode,
-  ];
+  const handleAddressSave = () => {
+    const requiredFields = [
+      newAddress.firstName,
+      newAddress.lastName,
+      newAddress.phone,
+      newAddress.line1,
+      newAddress.city,
+      newAddress.province,
+      newAddress.postalCode,
+    ];
 
-  if (requiredFields.some(field => !field.trim())) {
-    alert("Please fill all required fields.");
-    return;
-  }
+    if (requiredFields.some(field => !field.trim())) {
+      alert("Please fill all required fields.");
+      return;
+    }
 
-  setAddresses(prev => [...prev, newAddress]);
-  setSelectedAddressIndex(addresses.length);
-  setAddressType("existing");
+    setAddresses(prev => [...prev, newAddress]);
+    setSelectedAddressIndex(addresses.length);
+    setAddressType("existing");
 
-  // Reset fields
-  setNewAddress({
-    firstName: "",
-    lastName: "",
-    province: "",
-    city: "",
-    area: "",
-    postalCode: "",
-    phone: "",
-    line1: "",
-  });
-};
-
-
+    // Reset fields
+    setNewAddress({
+      firstName: "",
+      lastName: "",
+      province: "",
+      city: "",
+      area: "",
+      postalCode: "",
+      phone: "",
+      line1: "",
+    });
+  };
 
   const handlePhoneChange = (value: string) => {
-    // only allow numbers
     if (/^\d*$/.test(value)) {
       setNewAddress(prev => ({ ...prev, phone: value }));
     }
@@ -84,7 +82,7 @@ const handleAddressSave = () => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white text-gray-900 w-full max-w-3xl p-6 rounded-xl shadow-xl relative max-h-[90vh] overflow-y-auto">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -98,18 +96,22 @@ const handleAddressSave = () => {
         {/* 1️⃣ Order Summary */}
         <div className="mb-6 p-4 border rounded-lg">
           <h3 className="font-semibold mb-2 text-lg">Order Summary</h3>
-          <div className="space-y-2">
-            {cartItems.map(item => (
-              <div key={item.id} className="flex justify-between">
-                <span>{item.name} x {item.quantity}</span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
+          {cartItems.length === 0 ? (
+            <p className="text-red-600 font-medium">Your cart is empty. You can still test payment with $10.</p>
+          ) : (
+            <div className="space-y-2">
+              {cartItems.map(item => (
+                <div key={item.id} className="flex justify-between">
+                  <span>{item.name} x {item.quantity}</span>
+                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between font-bold mt-2">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
               </div>
-            ))}
-          </div>
-          <div className="flex justify-between font-bold mt-2">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* 2️⃣ Address */}
@@ -238,29 +240,16 @@ const handleAddressSave = () => {
               />
               <span>Credit / Debit Card</span>
             </label>
-
-            {/* <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="payment"
-                value="paypal"
-                checked={paymentMethod === "paypal"}
-                onChange={() => setPaymentMethod("paypal")}
-              />
-              <span>PayPal</span>
-            </label> */}
           </div>
         </div>
-{/* Payment Section */}
-{paymentMethod === "card" && (
-  <StripeCardForm amount={total} onSuccess={onClose} />
-)}
 
-        {/* <button
-          className="w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition"
-        >
-          Place Order (£{total.toFixed(2)})
-        </button> */}
+        {/* Payment Section */}
+        {paymentMethod === "card" && (
+          <StripeCardForm
+            amount={total > 0 ? total : 10} // $10 for testing if cart is empty
+            onSuccess={onClose}
+          />
+        )}
       </div>
     </div>
   );

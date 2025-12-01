@@ -86,6 +86,60 @@ export const me = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, email },
+      { new: true }
+    ).select("-password");
+
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if (!match) return res.status(400).json({ message: "Old password incorrect" });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+    res.json({ message: "Password updated" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    const avatarUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`; // ye relative path
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar: avatarUrl },
+      { new: true }
+    ).select("-password");
+
+    res.json({ avatar: avatarUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 // export const forgotPassword = async (req, res) => {
 //   try {
 //     const { email } = req.body;

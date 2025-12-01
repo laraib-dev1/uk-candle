@@ -9,11 +9,15 @@ if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_
 }
 
 router.post("/create-payment-intent", async (req, res) => {
+  console.log("Body received:", req.body);
+  console.log("Stripe initialized:", !!stripe);
+
   if (!stripe) {
     return res.status(400).send({ error: "Stripe API key not configured yet." });
   }
 
-  const { amount } = req.body; // amount in cents
+  const { amount } = req.body;
+  console.log("Amount received:", amount);
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
@@ -21,14 +25,12 @@ router.post("/create-payment-intent", async (req, res) => {
       currency: "usd",
       automatic_payment_methods: { enabled: true },
     });
-
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
-
+    res.send({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
+    console.error(error);
     res.status(400).send({ error: error.message });
   }
 });
+
 
 export default router;

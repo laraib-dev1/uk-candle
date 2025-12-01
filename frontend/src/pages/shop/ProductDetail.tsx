@@ -94,8 +94,8 @@ const mapped = res.data.map((p: any) => ({
   return (
     <>
       <Navbar />
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-2xl shadow p-6">
+      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="bg-white text-black rounded-2xl shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
             {/* gallery */}
             <div className="md:col-span-5">
@@ -109,7 +109,7 @@ const mapped = res.data.map((p: any) => ({
                   {product.categoryName || "Category"}
                 </span>
 
-                <h1 className="text-2xl md:text-3xl font-semibold  bg-white dark:bg-gray-900 text-black dark:text-white">
+                <h1 className="text-2xl md:text-3xl font-semibold  bg-white text-black">
                   {product.name}
                 </h1>
 
@@ -134,7 +134,7 @@ const mapped = res.data.map((p: any) => ({
                 </div>
 
                 {/* description */}
-                <p className="text-sm  bg-white dark:bg-gray-900 text-black dark:text-white leading-relaxed">
+                <p className="text-sm  bg-white text-black leading-relaxed">
                   {product.description}
                 </p>
               </div>
@@ -159,11 +159,11 @@ const mapped = res.data.map((p: any) => ({
           </div>
         </div>
 {/* Description + Videos Section */}
-<div className="mt-10 bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+<div className="mt-10 bg-white rounded-xl shadow p-6">
 
   <Tabs defaultValue="description" className="w-full">
     {/* TABS HEADER */}
-    <TabsList className="grid grid-cols-2 w-full mb-6">
+    <TabsList className="text-black grid grid-cols-2 w-full mb-6">
       <TabsTrigger value="description">Description</TabsTrigger>
       <TabsTrigger value="videos">Demo Video</TabsTrigger>
     </TabsList>
@@ -176,7 +176,7 @@ const mapped = res.data.map((p: any) => ({
         <div>
           <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Features</h3>
           <div
-            className="prose max-w-none text-gray-700 dark:text-gray-300"
+            className="prose max-w-none text-gray-700 "
             dangerouslySetInnerHTML={{ __html: product.metaFeatures || "<p>No features added.</p>" }}
           />
         </div>
@@ -185,7 +185,7 @@ const mapped = res.data.map((p: any) => ({
         <div>
           <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Info</h3>
           <div
-            className="prose max-w-none text-gray-700 dark:text-gray-300"
+            className="prose max-w-none text-gray-700 "
             dangerouslySetInnerHTML={{ __html: product.metaInfo || "<p>No additional info.</p>" }}
           />
         </div>

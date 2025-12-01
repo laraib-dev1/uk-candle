@@ -21,10 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploads directory
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// Connect to DB
-const MONGO = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mydb";
-mongoose.connect(MONGO).then(() => console.log("Mongo connected")).catch(console.error);
-
 app.use("/api/auth", authRoutes);
 // app.use("/api", protectedRoutes);
 app.use("/api/products", productRoutes);
