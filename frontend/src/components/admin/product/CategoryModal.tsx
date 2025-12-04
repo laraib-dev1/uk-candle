@@ -174,7 +174,7 @@ const handleSubmit = () => {
 
         {!isView && (
           <DialogFooter>
-            <Button onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>
+            <Button className="bg-[#A8734B] text-white" onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>
           </DialogFooter>
         )}
       </DialogContent>

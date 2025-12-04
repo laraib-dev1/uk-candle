@@ -1,13 +1,25 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-export const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      // options not required with latest mongoose, kept default
-    });
-    console.log("MongoDB connected:", conn.connection.host);
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+const connectDB = async () => {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(process.env.MONGO_URI)
+      .then((m) => m);
   }
+
+  cached.conn = await cached.promise;
+  console.log("MongoDB connected:", cached.conn.connection.host);
+  return cached.conn;
 };
+
+export default connectDB;

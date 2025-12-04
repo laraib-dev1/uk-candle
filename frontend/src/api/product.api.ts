@@ -1,4 +1,3 @@
-// frontend/src/api/product.api.ts
 import API from "./axios"; // your axios instance
 
 const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
@@ -6,7 +5,6 @@ const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 const mapImages = (p: any) => {
   const getFull = (img: string | null) => {
     if (!img || img.trim() === "") return "/product.png";
-    // if it's already an absolute URL or default image, return as is
     if (img.startsWith("http") || img === "/product.png") return img;
     return `${BASE_URL}${img}`;
   };
@@ -32,69 +30,86 @@ export const getProduct = async (id: string) => {
   return mapImages(res.data.data);
 };
 
-
+// ---------------- CREATE PRODUCT ----------------
 export const createProduct = async (product: any) => {
-  const fd = new FormData();
-  fd.append("name", product.name);
-  fd.append("description", product.description);
-  fd.append("category", product.category);
-  fd.append("price", String(product.price));
-  fd.append("currency", product.currency);
-  fd.append("status", product.status);
-  fd.append("discount", String(product.discount || 0));
+  const formData = new FormData();
 
-  // meta + videos
-  if (product.metaFeatures !== undefined) fd.append("metaFeatures", product.metaFeatures);
-  if (product.metaInfo !== undefined) fd.append("metaInfo", product.metaInfo);
-  if (product.video1 !== undefined) fd.append("video1", product.video1);
-  if (product.video2 !== undefined) fd.append("video2", product.video2);
+  Object.entries(product).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
 
-  // image files: image1..image6 (optional except image1 for add)
-  if (product.imageFiles) {
-    for (let i = 1; i <= 6; i++) {
-      const key = `image${i}`;
-      const file = product.imageFiles[key];
-      if (file) fd.append(key, file);
+    // Skip image files for now
+    if (key === "imageFiles") return;
+
+    // If value is a File, append directly
+    if (value instanceof File) {
+      formData.append(key, value);
+    } 
+    // For numbers, convert to string
+    else if (typeof value === "number") {
+      formData.append(key, value.toString());
+    } 
+    // For arrays or objects, stringify
+    else if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value));
+    } 
+    // Otherwise, append as string
+    else {
+      formData.append(key, String(value));
     }
+  });
+
+  // Append image files
+  if (product.imageFiles) {
+    Object.entries(product.imageFiles).forEach(([key, file]) => {
+      if (file instanceof File) {
+        formData.append(key, file);
+      }
+    });
   }
 
-  const res = await API.post("/products", fd, {
+  const res = await API.post("/products", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+
   return res.data.data;
 };
 
+// ---------------- UPDATE PRODUCT ----------------
 export const updateProduct = async (id: string | number, product: any) => {
-  const fd = new FormData();
-  // append fields if provided
-  if (product.name !== undefined) fd.append("name", product.name);
-  if (product.description !== undefined) fd.append("description", product.description);
-  if (product.category !== undefined) fd.append("category", product.category);
-  if (product.price !== undefined) fd.append("price", String(product.price));
-  if (product.currency !== undefined) fd.append("currency", product.currency);
-  if (product.status !== undefined) fd.append("status", product.status);
-  if (product.discount !== undefined) fd.append("discount", String(product.discount));
+  const formData = new FormData();
 
-  if (product.metaFeatures !== undefined) fd.append("metaFeatures", product.metaFeatures);
-  if (product.metaInfo !== undefined) fd.append("metaInfo", product.metaInfo);
-  if (product.video1 !== undefined) fd.append("video1", product.video1);
-  if (product.video2 !== undefined) fd.append("video2", product.video2);
+  Object.entries(product).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key === "imageFiles") return;
 
-  // image files for replace
-  if (product.imageFiles) {
-    for (let i = 1; i <= 6; i++) {
-      const key = `image${i}`;
-      const file = product.imageFiles[key];
-      if (file) fd.append(key, file);
+    if (value instanceof File) {
+      formData.append(key, value);
+    } else if (typeof value === "number") {
+      formData.append(key, value.toString());
+    } else if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
     }
+  });
+
+  if (product.imageFiles) {
+    Object.entries(product.imageFiles).forEach(([key, file]) => {
+      if (file instanceof File) {
+        formData.append(key, file);
+      }
+    });
   }
 
-  const res = await API.put(`/products/${id}`, fd, {
+  const res = await API.put(`/products/${id}`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+
   return res.data.data;
 };
 
+
+// ---------------- DELETE PRODUCT ----------------
 export const deleteProduct = async (id: string | number) => {
   const res = await API.delete(`/products/${id}`);
   return res.data.success;

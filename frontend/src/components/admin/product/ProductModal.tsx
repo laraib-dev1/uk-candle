@@ -204,11 +204,51 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 
   const currencies = ["PKR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD"];
 
+// const handleSubmit = () => {
+//   const categoryId = typeof form.category === "object" ? form.category._id : form.category;
+
+//   const candidate = { ...form, category: categoryId };
+
+//   const result = productSchema.safeParse(candidate);
+//   if (!result.success) {
+//     const issues: Partial<Record<keyof Product, string>> = {};
+//     result.error.issues.forEach((err: ZodIssue) => {
+//       const key = err.path[0] as keyof Product;
+//       if (key) issues[key] = err.message;
+//     });
+//     setError(issues);
+//     return;
+//   }
+
+//   if (mode === "add") {
+//     const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
+//     const hasUrl1 = !!form.image1;
+//     if (!hasFile1 && !hasUrl1) {
+//       setError(prev => ({ ...prev, image1: "Primary image is required" }));
+//       return;
+//     }
+//   }
+
+//   // ✅ Final payload
+//   const payload: ProductForm = {
+//     ...form,
+//     category: categoryId,       // string ID
+//     metaInfo: form.metaInfo,    // HTML string
+//   };
+
+//   console.log("Sending payload:", payload);
+//   onSubmit(payload);
+// };
+
+
 const handleSubmit = () => {
+  // Convert category to string ID if it's an object
   const categoryId = typeof form.category === "object" ? form.category._id : form.category;
 
+  // Prepare candidate for validation
   const candidate = { ...form, category: categoryId };
 
+  // Validate using Zod
   const result = productSchema.safeParse(candidate);
   if (!result.success) {
     const issues: Partial<Record<keyof Product, string>> = {};
@@ -220,6 +260,7 @@ const handleSubmit = () => {
     return;
   }
 
+  // Ensure primary image exists in add mode
   if (mode === "add") {
     const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
     const hasUrl1 = !!form.image1;
@@ -229,7 +270,7 @@ const handleSubmit = () => {
     }
   }
 
-  // ✅ Final payload
+  // Final payload
   const payload: ProductForm = {
     ...form,
     category: categoryId,       // string ID
@@ -237,6 +278,8 @@ const handleSubmit = () => {
   };
 
   console.log("Sending payload:", payload);
+
+  // Call the parent onSubmit
   onSubmit(payload);
 };
 
@@ -245,7 +288,7 @@ const handleSubmit = () => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-auto w-[360px] sm:w-[600px] md:w-[760px] lg:w-[900px]">
+      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" && "Add Product"}
@@ -328,7 +371,7 @@ const handleSubmit = () => {
               value={form.description}
               disabled={isView}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className={error.description ? "border-red-500" : ""}
+              className={`w-full text-left min-h-32 ${error.description ? "border-red-500" : ""}`}
             />
             {error.description && <p className="text-red-500 text-sm">{error.description}</p>}
           </div>
@@ -512,7 +555,7 @@ const handleSubmit = () => {
           value={form.metaFeatures || ""}
           readOnly={isView}
           onChange={(value) => setForm({ ...form, metaFeatures: value })}
-          className="bg-white text-gray-900 min-h-[120px]"
+          className="w-full bg-white text-gray-900"
         />
       </div>
 
@@ -523,7 +566,7 @@ const handleSubmit = () => {
   value={form.metaInfo || ""}
   readOnly={isView}
   onChange={(value) => setForm({ ...form, metaInfo: value })}
-  className="bg-white text-gray-900 min-h-[120px]"
+  className="w-full bg-white text-gray-900"
 />
 
       </div>

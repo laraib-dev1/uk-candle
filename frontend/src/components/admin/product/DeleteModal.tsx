@@ -37,7 +37,7 @@ export default function DeleteModal({
         <DialogFooter className="mt-4">
           <Button
             variant="outline"
-            className="border-gray-400 hover:bg-gray-100"
+            className="border-gray-400 text-gray-900 hover:bg-gray-100"
             onClick={onClose}
             disabled={loading}
           >

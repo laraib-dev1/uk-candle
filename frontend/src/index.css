@@ -9,6 +9,20 @@ body {
   @apply bg-white dark:bg-gray-900 text-black dark:text-white;
   overflow-y: overlay; 
 }
+/* Fix Mantine RTE toolbar jumping */
+.mantine-RichTextEditor-root {
+  width: 100% !important;
+}
+
+.mantine-RichTextEditor-toolbar {
+  position: static !important;   /* prevent moving with scroll */
+  top: auto !important;
+  z-index: 10;
+}
+
+.mantine-RichTextEditor-content {
+  min-height: 160px !important;
+}
 
 ::-webkit-scrollbar {
   height: 0px;
