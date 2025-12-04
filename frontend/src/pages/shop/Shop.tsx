@@ -95,7 +95,7 @@ console.log("Mapped Products:", mapped);
     <div className="min-h-screen flex flex-col bg-white text-black">
       <Navbar />
 
-      <main className="flex-1">
+      <main className="flex-1 py-20">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Banner imageSrc="/hero.png" />
 
