@@ -1,10 +1,14 @@
 import axios from "axios";
 
+const urls = import.meta.env.VITE_API_URLS.split(",");
+const API_URL = window.location.hostname === "localhost" ? urls[0] : urls[1];
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URLS, 
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Important if your backend uses cookies/auth
 });
 
 // Optional: Add token automatically if stored in localStorage

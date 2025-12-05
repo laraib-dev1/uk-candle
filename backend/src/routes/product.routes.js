@@ -6,6 +6,7 @@ import {
   getProduct,
   updateProduct,
   deleteProduct,
+  withHandler
 } from "../controllers/product.controller.js";
 import { uploadMultiple } from "../middleware/upload.js";
 
@@ -21,19 +22,10 @@ const fields = [
   { name: "image6", maxCount: 1 },
 ];
 
-// create (multipart/form-data)
-router.post("/", uploadMultiple.fields(fields), createProduct);
-
-// list
-router.get("/", getProducts);
-
-// get one
-router.get("/:id", getProduct);
-
-// update (optionally with new image fields)
-router.put("/:id", uploadMultiple.fields(fields), updateProduct);
-
-// delete
-router.delete("/:id", deleteProduct);
+router.post("/", uploadMultiple.fields(fields), withHandler(createProduct));
+router.get("/", withHandler(getProducts));
+router.get("/:id", withHandler(getProduct));
+router.put("/:id", uploadMultiple.fields(fields), withHandler(updateProduct));
+router.delete("/:id", withHandler(deleteProduct));
 
 export default router;

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/auth/AuthLayout";
 import { Button } from "@/components/ui/buttons/Button";
 import Input from "@/pages/admin/components/form/Input";
+import PasswordInput from "@/components/auth/PasswordInput";
 // import API from "@/api/axios";
 import { registerUser } from "@/api/auth.api";
 import { useLocation } from "react-router-dom";
@@ -26,6 +27,9 @@ const location = useLocation();
 
   return (
     <AuthLayout>
+       {location.state?.message && (
+        <p className="text-green-400 mb-2">{location.state.message}</p>
+      )}
       <h2 className="text-white text-2xl font-semibold mb-6">Get Access</h2>
 
       <div className="text-black/80 flex flex-col gap-4">
@@ -33,20 +37,27 @@ const location = useLocation();
           label="Full Name"
           placeholder="Enter name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+          // onChange={(e) => setName(e.target.value)}
         />
         <Input
           label="Email"
           placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          // onChange={(e) => setEmail(e.target.value)}
         />
-        <Input
+        {/* <Input
           label="Password"
           type="password"
           placeholder="Create password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        /> */}
+        <PasswordInput
+          label="Password"
+          placeholder="Create password"
+          value={password}
+onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
         />
 
         {error && <p className="text-red-400">{error}</p>}

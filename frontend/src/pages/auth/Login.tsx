@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../components/auth/AuthLayout";
 import { Button } from "@/components/ui/buttons/Button";
 import Input from "@/pages/admin/components/form/Input";
+import PasswordInput from "@/components/auth/PasswordInput";
 import { loginUser } from "@/api/auth.api";
 import { useLocation } from "react-router-dom";
 export default function Login() {
@@ -13,9 +14,7 @@ export default function Login() {
 
 
 const location = useLocation();
-{location.state?.message && (
-  <p className="text-green-600">{location.state.message}</p>
-)}
+
 const handleLogin = async () => {
   try {
     const data = await loginUser({ email, password });
@@ -45,6 +44,9 @@ const handleLogin = async () => {
 
   return (
     <AuthLayout>
+      {location.state?.message && (
+  <p className="text-green-600">{location.state.message}</p>
+)}
       <h2 className="text-white text-2xl font-semibold mb-6">Welcome Back!</h2>
 
       <div className="text-black/80 flex flex-col gap-4">
@@ -52,14 +54,24 @@ const handleLogin = async () => {
           label="Email"
           placeholder="Enter email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          // onChange={(e) => setEmail(e.target.value)}
         />
-        <Input
+        {/* <Input
           label="Password"
           type="password"
           placeholder="Enter password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        /> */}
+
+         <PasswordInput
+          label="Password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+
+          // onChange={(e) => setPassword(e.target.value)}
         />
 
         {error && <p className="text-red-400">{error}</p>}

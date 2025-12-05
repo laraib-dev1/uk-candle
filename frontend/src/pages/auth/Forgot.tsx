@@ -12,7 +12,7 @@ export default function ResetPassword() {
 
   const handleReset = async () => {
     try {
-      const res = await API.post("/reset-password", { email });
+      await API.post("/reset-password", { email });
 
       setMessage("Password reset link has been sent to your email.");
       setError("");

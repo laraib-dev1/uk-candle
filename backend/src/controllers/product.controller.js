@@ -4,6 +4,7 @@ import "../models/Category.js";
 import fs from "fs";
 import path from "path";
 import cloudinary from "cloudinary";
+import connectDB from "../config/db.js";
 
 // Configure Cloudinary
 cloudinary.v2.config({ 
@@ -19,15 +20,12 @@ const uploadToCloud = async (file) => {
   const filepath = file.filepath || file.path;  // support both local & Vercel
 
   const result = await cloudinary.v2.uploader.upload(filepath);
-
-  fs.unlink(filepath, () => {});
+try { fs.unlinkSync(filepath); } catch(e){}
   return result.secure_url;
 };
 
-
-// Remove local file helper
 const uploadsPath = path.join(process.cwd(), "uploads");
-const tryRemoveFileFromUrl = (url) => {
+export const tryRemoveFileFromUrl = (url) => {
   if (!url) return;
   if (url.includes("/uploads/")) {
     const filename = url.split("/uploads/").pop();
@@ -37,11 +35,10 @@ const tryRemoveFileFromUrl = (url) => {
     });
   }
 };
-
 // ---------------- CREATE PRODUCT ----------------
 export const createProduct = async (req) => {
-  // Convert arrays to strings
-  Object.keys(req.body).forEach((key) => {
+  await connectDB(); // ensure DB connection for serverless
+  Object.keys(req.body).forEach(key => {
     if (Array.isArray(req.body[key])) req.body[key] = req.body[key][0];
   });
 
@@ -82,12 +79,13 @@ export const createProduct = async (req) => {
     video2: video2 || "",
   });
 
-  return product; // ✅ return instead of res
+  return product;
 };
 
 // ---------------- UPDATE PRODUCT ----------------
 export const updateProduct = async (req) => {
-  Object.keys(req.body).forEach((key) => {
+  await connectDB();
+  Object.keys(req.body).forEach(key => {
     if (Array.isArray(req.body[key])) req.body[key] = req.body[key][0];
   });
 
@@ -100,7 +98,6 @@ export const updateProduct = async (req) => {
   const product = await Product.findById(req.params.id);
   if (!product) throw new Error("Product not found");
 
-  // Upload new images if provided
   for (let i = 1; i <= 6; i++) {
     const key = `image${i}`;
     const fileArr = files[key];
@@ -108,11 +105,12 @@ export const updateProduct = async (req) => {
   }
 
   const updated = await Product.findByIdAndUpdate(req.params.id, updates, { new: true });
-  return updated; // ✅ return instead of res
+  return updated;
 };
 
 // ---------------- GET ALL PRODUCTS ----------------
 export const getProducts = async () => {
+  await connectDB();
   const products = await Product.find().populate("category", "name").sort({ createdAt: -1 });
   return products.map(p => ({
     ...p.toObject(),
@@ -130,52 +128,54 @@ export const getProducts = async () => {
 
 
 // ---------------- GET SINGLE PRODUCT ----------------
-export const getProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const product = await Product.findById(id).populate("category", "name");
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
-
-    res.status(200).json({
-      success: true,
-      data: {
-        ...product.toObject(),
-        id: product._id,
-        categoryId: product.category?._id || null,
-        categoryName: product.category?.name || null,
-        image1: product.image1 || "/product.png",
-        image2: product.image2 || "/product.png",
-        image3: product.image3 || "/product.png",
-        image4: product.image4 || "/product.png",
-        image5: product.image5 || "/product.png",
-        image6: product.image6 || "/product.png",
-      },
-    });
-  } catch (err) {
-    console.error("getProduct:", err);
-    res.status(500).json({ success: false, message: err.message });
-  }
+export const getProduct = async (req) => {
+  await connectDB();
+  const { id } = req.params;
+  const product = await Product.findById(id).populate("category", "name");
+  if (!product) throw new Error("Product not found");
+  return {
+    ...product.toObject(),
+    id: product._id,
+    categoryId: product.category?._id || null,
+    categoryName: product.category?.name || null,
+    image1: product.image1 || "/product.png",
+    image2: product.image2 || "/product.png",
+    image3: product.image3 || "/product.png",
+    image4: product.image4 || "/product.png",
+    image5: product.image5 || "/product.png",
+    image6: product.image6 || "/product.png",
+  };
 };
 
 
-
 // ---------------- DELETE PRODUCT ----------------
-export const deleteProduct = async (req, res) => {
+export const deleteProduct = async (req) => {
+  await connectDB();
+  const product = await Product.findByIdAndDelete(req.params.id);
+  if (!product) throw new Error("Product not found");
+
+  for (let i = 1; i <= 6; i++) {
+    const key = `image${i}`;
+    if (product[key] && product[key].includes("/uploads/")) tryRemoveFileFromUrl(product[key]);
+  }
+  return product;
+};
+
+export const withHandler = (handler) => async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ success: false, message: "Not found" });
-
-    // remove local files if any
-    for (let i = 1; i <= 6; i++) {
-      const key = `image${i}`;
-      if (product[key] && product[key].includes("/uploads/")) {
-        tryRemoveFileFromUrl(product[key]);
-      }
+    const data = await handler(req, res);
+    if (!res.headersSent) {
+      res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URLS.split(",").includes(req.headers.origin) ? req.headers.origin : "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      if (req.method === "OPTIONS") return res.status(200).end();
+      res.status(200).json({ success: true, data });
     }
-
-    res.json({ success: true, message: "Deleted", data: product });
+    return data;
   } catch (err) {
-    console.error("deleteProduct:", err);
-    res.status(500).json({ success: false, message: err.message });
+    console.error("Handler Error:", err);
+    if (!res.headersSent) res.status(500).json({ success: false, message: err.message });
+    throw err;
   }
 };
