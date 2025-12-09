@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import ImageCropperModal from "./ImageCropperModal";
 
 interface Category {
   _id: string;
@@ -92,7 +92,10 @@ export default function ProductModal({
   onSubmit,
 }: ProductModalProps) {
   const isView = mode === "view";
-
+const [cropModalOpen, setCropModalOpen] = useState(false);
+const [selectedFileForCrop, setSelectedFileForCrop] = useState<File | null>(null);
+const [currentImageKey, setCurrentImageKey] =
+  useState<`image${1|2|3|4|5|6}` | null>(null);
 const [toggles, setToggles] = useState({
   images: true,
   discount: true,
@@ -159,36 +162,83 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
       ? URL.createObjectURL((form.imageFiles as any)[key] as File)
       : (form as any)[key]) || defaultImage;
 
+  // const handleSelectFile = (key: `image${1|2|3|4|5|6}`, file?: File) => {
+  //   if (!file) return;
+  //   // size check (< 1MB)
+  //   if (file.size > 1024 * 1024) {
+  //     setError(prev => ({ ...prev, [key]: "Image must be smaller than 1MB" }));
+  //     return;
+  //   }
+  //   // aspect ratio validation via Image
+  //   const img = new Image();
+  //   img.src = URL.createObjectURL(file);
+  //   img.onload = () => {
+  //     const aspectRatio = img.width / img.height;
+  //     if (Math.abs(aspectRatio - 4 / 3) > 0.02) {
+  //       setError(prev => ({ ...prev, [key]: "Image must be 4:3 aspect ratio" }));
+  //       return;
+  //     }
+  //     // ok
+  //     setForm(prev => ({
+  //       ...prev,
+  //       imageFiles: { ...(prev.imageFiles || {}), [key]: file },
+  //       // set the preview URL in imageX (only for UI; not necessary but useful)
+  //       [key]: URL.createObjectURL(file),
+  //     } as ProductForm));
+  //     setError(prev => ({ ...prev, [key]: undefined }));
+  //   };
+  //   img.onerror = () => {
+  //     setError(prev => ({ ...prev, [key]: "Invalid image file" }));
+  //   };
+  // };
+
   const handleSelectFile = (key: `image${1|2|3|4|5|6}`, file?: File) => {
-    if (!file) return;
-    // size check (< 1MB)
-    if (file.size > 1024 * 1024) {
-      setError(prev => ({ ...prev, [key]: "Image must be smaller than 1MB" }));
+  if (!file) return;
+
+  setCurrentImageKey(key);       // किस image के लिए crop हो रहा है
+  setSelectedFileForCrop(file);  // cropper को भेजने के लिए file
+  setCropModalOpen(true);        // modal open
+};
+
+  const handleCropDone = (croppedBlob: Blob) => {
+  if (!currentImageKey) return;
+
+  const file = new File([croppedBlob], "cropped.jpg", { type: "image/jpeg" });
+
+  // validate size <1MB
+  if (file.size > 1024 * 1024) {
+    setError(prev => ({ ...prev, [currentImageKey]: "Image must be smaller than 1MB" }));
+    return;
+  }
+
+  // validate aspect ratio
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+
+  img.onload = () => {
+    const aspectRatio = img.width / img.height;
+
+    if (Math.abs(aspectRatio - 4 / 3) > 0.02) {
+      setError(prev => ({ ...prev, [currentImageKey]: "Image must be 4:3 aspect ratio" }));
       return;
     }
-    // aspect ratio validation via Image
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      if (Math.abs(aspectRatio - 4 / 3) > 0.02) {
-        setError(prev => ({ ...prev, [key]: "Image must be 4:3 aspect ratio" }));
-        return;
-      }
-      // ok
-      setForm(prev => ({
-        ...prev,
-        imageFiles: { ...(prev.imageFiles || {}), [key]: file },
-        // set the preview URL in imageX (only for UI; not necessary but useful)
-        [key]: URL.createObjectURL(file),
-      } as ProductForm));
-      setError(prev => ({ ...prev, [key]: undefined }));
-    };
-    img.onerror = () => {
-      setError(prev => ({ ...prev, [key]: "Invalid image file" }));
-    };
+
+    // Save into form
+    setForm(prev => ({
+      ...prev,
+      imageFiles: { ...(prev.imageFiles || {}), [currentImageKey]: file },
+      [currentImageKey]: url, // preview
+    }));
+
+    setError(prev => ({ ...prev, [currentImageKey]: undefined }));
   };
 
+  img.src = url;
+
+  setCropModalOpen(false);
+};
+
+  
   const handleRemoveImage = (key: `image${1|2|3|4|5|6}`) => {
     setForm(prev => {
       const newFiles = { ...(prev.imageFiles || {}) };
@@ -528,6 +578,13 @@ const handleSubmit = () => {
   )}
 </div>
 
+<ImageCropperModal
+  open={cropModalOpen}
+  onClose={() => setCropModalOpen(false)}
+  file={selectedFileForCrop}
+  onCropDone={handleCropDone}
+   aspect={4 / 3}
+/>
 
 
           {/* Advance Meta Info */}

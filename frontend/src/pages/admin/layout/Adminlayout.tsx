@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../hooks/useAuth"; // adjust path
 
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
@@ -12,17 +13,49 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import { getMe } from "@/api/auth.api"; // make sure path is correct
+
+interface UserType {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
 
 export default function AdminLayout() {
   const loc = useLocation();
+ const [user, setUser] = useState<UserType | null>(null);  
 
-  const menu = [
+ useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
+
+      try {
+        const data = await getMe(token);
+        // prepend backend URL if avatar exists
+        const fullUser = {
+          ...data.user,
+          avatar: data.user.avatar ? `${import.meta.env.VITE_API_URL}${data.user.avatar}` : undefined
+        };
+        setUser(fullUser);
+      } catch (err) {
+        console.log(err);
+        navigate("/login");
+      }
+    };
+
+    loadUser();
+  }, []);
+
+ const menu = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
     { label: "Products", icon: Package, path: "/admin/products" },
     { label: "Categories", icon: Layers, path: "/admin/categories" },
     { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
-    { label: "Notifications", icon: Bell, path: "/admin/notifications" },
+    // { label: "Notifications", icon: Bell, path: "/admin/notifications" },
     { label: "Setting", icon: Settings, path: "/admin/settings" },
   ];
   const navigate = useNavigate();
@@ -36,13 +69,13 @@ export default function AdminLayout() {
         {/* Profile Box */}
         <div className="flex items-center gap-3 px-5 pb-6 border-b border-white/20">
           <img
-            src="/avatar.png"
-            alt="User"
+            src={user?.avatar || "/avatar.png"} // show real avatar if exists
+            alt={user?.name || "User"}
             className="w-12 h-12 rounded-full object-cover"
           />
           <div>
-            <h4 className="font-semibold leading-5">Full Name</h4>
-            <p className="text-sm opacity-80">user@gmail.com</p>
+            <h4 className="font-semibold leading-5">{user?.name || "Full Name"}</h4>
+            <p className="text-sm opacity-80">{user?.email || "user@gmail.com"}</p>
           </div>
         </div>
 

@@ -25,7 +25,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
           ALL GIFT IDEAS
         </h2>
 
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 justify-center mx-auto">
           {categories.map((cat, index) => (
             <div
               key={index}

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 // Shape of auth context
 interface AuthContextType {
@@ -10,12 +10,27 @@ interface AuthContextType {
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
 
-  const login = (userData: any) => setUser(userData);
-  const logout = () => setUser(null);
+  // ⚡ Load user from localStorage on initial render
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const login = (userData: any) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData)); // optional, keeps it in sync
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

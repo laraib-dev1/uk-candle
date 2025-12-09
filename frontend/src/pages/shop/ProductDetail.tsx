@@ -8,7 +8,7 @@ import SocialShare from "@/components/products/SocialShare";
 import ProductCard from "@/components/products/ProductCard";
 import { getProduct, getProducts } from "@/api/product.api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
+import { Helmet } from "react-helmet";
 
 interface Product {
   _id: string;
@@ -90,7 +90,14 @@ const mapped = res.data.map((p: any) => ({
 
   // similar products
   const similar = allProducts.filter((p) => p._id !== product._id).slice(0, 4);
-
+<Helmet>
+  <title>{product.name} | My Shop</title>
+  <meta property="og:title" content={product.name} />
+  <meta property="og:description" content={product.description || ""} />
+  <meta property="og:image" content={product.images?.[0] || "/product.png"} />
+  <meta property="og:url" content={window.location.href} />
+  <meta property="og:type" content="product" />
+</Helmet>
   return (
     <>
       <Navbar />
@@ -152,7 +159,12 @@ const mapped = res.data.map((p: any) => ({
 />
 
                 <div className="mt-4">
-                  <SocialShare />
+                  <SocialShare
+  productName={product.name}
+  productUrl={window.location.href}
+  productImage={product.images?.[0]}
+  productDescription={product.description}
+/>
                 </div>
               </div>
             </div>

@@ -21,13 +21,16 @@ export default function PasswordInput({
       <label className="text-white/80 text-sm">{label}</label>
 
       <div className="relative">
-        <input
-          type={show ? "text" : "password"}
-          value={value}
-          placeholder={placeholder}
-          onChange={onChange}
-          className="w-full rounded-md bg-white/70 px-3 py-2 text-black focus:outline-none"
-        />
+       <input
+  id={label}
+  name={label}
+  type={show ? "text" : "password"}
+  value={value}
+  placeholder={placeholder}
+  onChange={onChange}
+  className="w-full rounded-md bg-white/70 px-3 py-2 text-black focus:outline-none"
+/>
+
 
         <button
           type="button"

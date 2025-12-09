@@ -1,8 +1,30 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
+import connectDB from "../config/db.js";
+import cloudinary from "cloudinary";
+import fs from "fs";
 
+// Cloudinary config
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Upload helper for serverless
+const uploadToCloud = async (file) => {
+  if (!file) return "";
+
+  const filepath = file.filepath || file.path; // Local + Vercel support
+
+  const result = await cloudinary.v2.uploader.upload(filepath);
+  try { fs.unlinkSync(filepath); } catch (e) {}
+
+  return result.secure_url;
+};
+
+// JWT helper
 const signToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
@@ -11,189 +33,145 @@ const signToken = (user) => {
   );
 };
 
-export const register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "All fields are required" });
+/* ----------------------------- REGISTER ----------------------------- */
+export const registerUser = async (req) => {
+  await connectDB();
+  const { name, email, password } = req.body;
 
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email already registered" });
+  if (!name || !email || !password)
+    throw new Error("All fields are required");
 
-    const salt = await bcrypt.genSalt(10);
-    const hashed = await bcrypt.hash(password, salt);
+  const exists = await User.findOne({ email });
+  if (exists) throw new Error("Email already registered");
 
-    const user = await User.create({ name, email, password: hashed, role: "user" });
-    const token = signToken(user);
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const hashed = await bcrypt.hash(password, 10);
+
+  const user = await User.create({
+    name,
+    email,
+    password: hashed,
+    role: "user",
+  });
+
+  const token = signToken(user);
+
+  return {
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 };
 
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+/* ----------------------------- LOGIN ----------------------------- */
+export const loginUser = async (req) => {
+  await connectDB();
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+  if (!email || !password)
+    throw new Error("Email and password required");
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Invalid credentials");
 
-    if (user.role !== "user") {
-      // Users should use /auth/admin-login for admin if you want separate flow
-      // but we still allow login and return their role
-    }
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new Error("Invalid credentials");
 
-    const token = signToken(user);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const token = signToken(user);
+
+  return {
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 };
 
-export const adminLogin = async (req, res) => {
-  // Optional separate endpoint for admin-only login
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+/* ----------------------------- ADMIN LOGIN ----------------------------- */
+export const adminLoginUser = async (req) => {
+  await connectDB();
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
-    if (user.role !== "admin") return res.status(403).json({ message: "Not an admin" });
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Invalid credentials");
+  if (user.role !== "admin") throw new Error("Not an admin");
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) throw new Error("Invalid credentials");
 
-    const token = signToken(user);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const token = signToken(user);
+
+  return {
+    token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 };
 
-export const me = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+/* ----------------------------- GET PROFILE ----------------------------- */
+export const getMe = async (req) => {
+  await connectDB();
+  const user = await User.findById(req.user.id).select("-password");
+  if (!user) throw new Error("User not found");
+
+  return { user };
 };
 
-export const updateProfile = async (req, res) => {
-  try {
-    const { name, email } = req.body;
+/* ----------------------------- UPDATE PROFILE ----------------------------- */
+export const updateProfileUser = async (req) => {
+  await connectDB();
+  const { name, email } = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { name, email },
-      { new: true }
-    ).select("-password");
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, email },
+    { new: true }
+  ).select("-password");
 
-    res.json({ user });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  return { user };
 };
 
-export const changePassword = async (req, res) => {
-  try {
-    const { oldPassword, newPassword } = req.body;
-    const user = await User.findById(req.user.id);
+/* ----------------------------- CHANGE PASSWORD ----------------------------- */
+export const changePasswordUser = async (req) => {
+  await connectDB();
+  const { oldPassword, newPassword } = req.body;
 
-    const match = await bcrypt.compare(oldPassword, user.password);
-    if (!match) return res.status(400).json({ message: "Old password incorrect" });
+  const user = await User.findById(req.user.id);
+  if (!user) throw new Error("User not found");
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+  const match = await bcrypt.compare(oldPassword, user.password);
+  if (!match) throw new Error("Old password incorrect");
 
-    await user.save();
-    res.json({ message: "Password updated" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  return { message: "Password updated" };
 };
 
-export const updateAvatar = async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+/* ----------------------------- UPDATE AVATAR ----------------------------- */
+export const updateAvatarUser = async (req) => {
+  await connectDB();
 
-    const avatarUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`; // ye relative path
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { avatar: avatarUrl },
-      { new: true }
-    ).select("-password");
+  const file = req.files?.avatar?.[0];
+  if (!file) throw new Error("No file uploaded");
 
-    res.json({ avatar: avatarUrl });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const avatarUrl = await uploadToCloud(file);
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { avatar: avatarUrl },
+    { new: true }
+  ).select("-password");
+
+  return { avatar: avatarUrl };
 };
-
-
-// export const forgotPassword = async (req, res) => {
-//   try {
-//     const { email } = req.body;
-//     if (!email) return res.status(400).json({ message: "Email is required" });
-
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(404).json({ message: "User not found" });
-
-//     // Generate reset token
-//     const resetToken = crypto.randomBytes(32).toString("hex");
-//     const resetTokenExpiry = Date.now() + 3600000; // 1 hour
-
-//     user.resetPasswordToken = resetToken;
-//     user.resetPasswordExpiry = resetTokenExpiry;
-//     await user.save();
-
-//     // TODO: Send email with reset link
-//     // Example reset link: `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
-//     console.log(`Reset link: http://localhost:5173/reset-password/${resetToken}`);
-
-//     res.json({ message: "Password reset link has been sent to your email." });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-// RESET PASSWORD
-
-// export const resetPassword = async (req, res) => {
-//   try {
-//     const { token, password } = req.body;
-//     if (!token || !password) return res.status(400).json({ message: "Token and new password required" });
-
-//     const user = await User.findOne({
-//       resetPasswordToken: token,
-//       resetPasswordExpiry: { $gt: Date.now() },
-//     });
-
-//     if (!user) return res.status(400).json({ message: "Invalid or expired token" });
-
-//     // Hash new password
-//     const salt = await bcrypt.genSalt(10);
-//     user.password = await bcrypt.hash(password, salt);
-
-//     // Clear reset token fields
-//     user.resetPasswordToken = undefined;
-//     user.resetPasswordExpiry = undefined;
-
-//     await user.save();
-
-//     res.json({ message: "Password has been reset successfully" });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };

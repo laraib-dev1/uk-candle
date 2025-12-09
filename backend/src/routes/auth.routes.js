@@ -1,20 +1,90 @@
 import express from "express";
-import { register, login, adminLogin, me } from "../controllers/auth.controller.js";
-import { protect } from "../middleware/auth.js";
-import { updateProfile, changePassword } from "../controllers/auth.controller.js";
+import { protect, isAdmin  } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
-import { updateAvatar } from "../controllers/auth.controller.js";
+import { withHandler } from "../controllers/product.controller.js";
+
+// Auth controller serverless handlers
+import {
+  registerUser,
+  loginUser,
+  adminLoginUser,
+  getMe,
+  updateProfileUser,
+  changePasswordUser,
+  updateAvatarUser,
+} from "../controllers/auth.controller.js";
 
 const router = express.Router();
+router.get("/dashboard", protect, isAdmin, (req, res) => {
+  res.json({ message: "Welcome to admin dashboard", admin: req.user });
+});
+// router.post("/register", withHandler(registerUser));
+// router.post("/login", withHandler(loginUser));
+router.post("/register", async (req, res) => {
+  try {
+    const data = await registerUser(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
-router.post("/register", register);       // POST /api/auth/register
-router.post("/login", login);             // POST /api/auth/login
-router.post("/admin-login", adminLogin);  // POST /api/auth/admin-login
-router.get("/me", protect, me);  
-router.put("/update-profile", protect, updateProfile);
-router.put("/change-password", protect, changePassword); 
-router.put("/update-avatar", protect, upload.single("avatar"), updateAvatar);        // GET /api/auth/me
-// router.post("/forgot-password", forgotPassword); // POST /api/auth/forgot-password
-// router.post("/reset-password", resetPassword);
+router.post("/login", async (req, res) => {
+   console.log("LOGIN BODY:", req.body);
+  try {
+    const data = await loginUser(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+router.post("/admin-login", withHandler(adminLoginUser));
+
+// router.get("/me", protect, withHandler(getMe));
+router.get("/me", protect, async (req, res) => {
+  try {
+    const data = await getMe(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// router.put("/update-profile", protect, withHandler(updateProfileUser));
+// router.put("/change-password", protect, withHandler(changePasswordUser));
+
+// router.put(
+//   "/update-avatar",
+//   protect,
+//   upload.fields([{ name: "avatar", maxCount: 1 }]),
+//   withHandler(updateAvatarUser)
+// );
+router.put("/update-profile", protect, async (req, res) => {
+  try {
+    const data = await updateProfileUser(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.put("/change-password", protect, async (req, res) => {
+  try {
+    const data = await changePasswordUser(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.put("/update-avatar", protect, async (req, res) => {
+  try {
+    const data = await updateAvatarUser(req);
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 
 export default router;

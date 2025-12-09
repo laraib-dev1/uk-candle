@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         
         {/* Left Logo Box */}
         <div className="hidden md:flex w-[200px] h-[200px] rounded-full bg-white/20 items-center justify-center backdrop-blur-md">
-          <img src="/logo.png"  alt="Logo" className="w-20 opacity-90" />
+          <img src="/logo.png"  alt="Logo" className="w-full h-full object-contain" />
         </div>
 
         {/* Vertical line */}

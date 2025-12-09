@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import ImageCropperModal from "./ImageCropperModal";
 
 interface Category {
   id?: string;
@@ -51,6 +51,8 @@ export default function CategoryModal({
   });
 
   const [error, setError] = React.useState<{ name?: string; icon?: string; products?: string }>({});
+const [cropModalOpen, setCropModalOpen] = React.useState(false);
+  const [selectedFileForCrop, setSelectedFileForCrop] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     setForm({
@@ -63,15 +65,18 @@ export default function CategoryModal({
 
   const isView = mode === "view";
 
-  // Handle image upload with size validation (1MB max)
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   // open cropper when file selected
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1024 * 1024) {
-      setError({ ...error, icon: "Image must be smaller than 1MB" });
-      return;
-    }
+    setSelectedFileForCrop(file);
+    setCropModalOpen(true);
+  };
+
+  // when crop done
+  const handleCropDone = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], "cropped.jpg", { type: "image/jpeg" });
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -81,29 +86,62 @@ export default function CategoryModal({
     reader.readAsDataURL(file);
   };
 
-
-const handleSubmit = () => {
-  // Add default image if icon is empty
-  const updatedForm = {
-    ...form,
-    icon: form.icon || "/category.png",
+  const handleSubmit = () => {
+    const updatedForm = { ...form, icon: form.icon || "/category.png" };
+    const result = categorySchema.safeParse(updatedForm);
+    if (!result.success) {
+      const issues: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        const key = err.path[0] as string;
+        if (key) issues[key] = err.message;
+      });
+      setError(issues);
+      return;
+    }
+    onSubmit(updatedForm);
   };
 
-  const result = categorySchema.safeParse(updatedForm);
+  // Handle image upload with size validation (1MB max)
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
 
-  if (!result.success) {
-    const issues: Record<string, string> = {};
-    result.error.issues.forEach((err: ZodIssue) => {
-      const key = err.path[0] as string;
-      if (key) issues[key] = err.message;
-    });
+  //   if (file.size > 1024 * 1024) {
+  //     setError({ ...error, icon: "Image must be smaller than 1MB" });
+  //     return;
+  //   }
 
-    setError(issues);
-    return;
-  }
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     setForm({ ...form, icon: reader.result as string });
+  //     setError({ ...error, icon: undefined });
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
 
-  onSubmit(updatedForm);
-};
+
+// const handleSubmit = () => {
+//   // Add default image if icon is empty
+//   const updatedForm = {
+//     ...form,
+//     icon: form.icon || "/category.png",
+//   };
+
+//   const result = categorySchema.safeParse(updatedForm);
+
+//   if (!result.success) {
+//     const issues: Record<string, string> = {};
+//     result.error.issues.forEach((err: ZodIssue) => {
+//       const key = err.path[0] as string;
+//       if (key) issues[key] = err.message;
+//     });
+
+//     setError(issues);
+//     return;
+//   }
+
+//   onSubmit(updatedForm);
+// };
 
 
   return (
@@ -158,7 +196,7 @@ const handleSubmit = () => {
               )
             ) : (
               <>
-                <input type="file" accept="image/*" onChange={handleImageChange} />
+                <input type="file" accept="image/*" onChange={handleFileSelect} />
                 {form.icon && (
                   <img
                     src={form.icon}
@@ -171,7 +209,13 @@ const handleSubmit = () => {
             {error.icon && <p className="text-red-500 text-sm">{error.icon}</p>}
           </div>
         </div>
-
+ <ImageCropperModal
+          open={cropModalOpen}
+          file={selectedFileForCrop}
+          onClose={() => setCropModalOpen(false)}
+          onCropDone={handleCropDone}
+          aspect={1} // always 1:1 for category icon
+        />
         {!isView && (
           <DialogFooter>
             <Button className="bg-[#A8734B] text-white" onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>

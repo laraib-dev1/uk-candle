@@ -30,7 +30,7 @@ const location = useLocation();
        {location.state?.message && (
         <p className="text-green-400 mb-2">{location.state.message}</p>
       )}
-      <h2 className="text-white text-2xl font-semibold mb-6">Get Access</h2>
+      <h2 className="text-white text-2xl font-semibold mb-6">Sign Up</h2>
 
       <div className="text-black/80 flex flex-col gap-4">
         <Input
@@ -57,7 +57,7 @@ const location = useLocation();
           label="Password"
           placeholder="Create password"
           value={password}
-onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
         />
 
         {error && <p className="text-red-400">{error}</p>}
@@ -66,7 +66,7 @@ onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           className="bg-orange-400 hover:bg-orange-500 text-white rounded-md mt-3"
           onClick={handleRegister}
         >
-          Get Access
+          Sign Up
         </Button>
 
         <p className="text-white/80 text-sm mt-2">

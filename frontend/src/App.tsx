@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/auth/Login";
 import Access from "./pages/auth/Access";
 import Forgot from "./pages/auth/Forgot";
+import AdminRoute from "./components/AdminRoute";
 // lazy or normal — choose whichever you prefer
 const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
 const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
@@ -53,8 +54,21 @@ export default function App() {
         <Route path="/access" element={<Access />} />
         <Route path="/forgot" element={<Forgot />} />
 
+                {/* ---------- PROTECTED ADMIN ROUTES ---------- */}
+              <Route
+  path="/admin/*"
+  element={
+    <AdminRoute>
+      <Suspense fallback={<div>Loading admin...</div>}>
+        <AdminLayout />
+      </Suspense>
+    </AdminRoute>
+  }
+>
+
+
   {/* ---------- ADMIN ROUTES ---------- */}
-      <Route path="/admin" element={<AdminLayout />}>
+      {/* <Route path="/admin" element={<AdminLayout />}> */}
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />

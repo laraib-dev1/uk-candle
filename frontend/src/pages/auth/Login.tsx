@@ -6,16 +6,14 @@ import Input from "@/pages/admin/components/form/Input";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { loginUser } from "@/api/auth.api";
 import { useLocation } from "react-router-dom";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-
-const location = useLocation();
-
-const handleLogin = async () => {
+  const location = useLocation();
+  const handleLogin = async () => {
   try {
     const data = await loginUser({ email, password });
 
@@ -25,10 +23,12 @@ const handleLogin = async () => {
     // check previous page user came from
     const from = location.state?.from;
 
-    if (data.user.role === "admin") {
-      return navigate("/admin/dashboard");
-    }
+    const role = data.user.role?.toLowerCase();
 
+      if (role === "admin") {
+        // Redirect admin to dashboard
+        return navigate("/admin/dashboard");
+      }
     // if user came from a protected page → redirect back there
     if (from) {
       return navigate(from);
