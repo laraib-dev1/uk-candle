@@ -13,16 +13,44 @@ cloudinary.v2.config({
 });
 
 // Upload helper for serverless
+// const uploadToCloud = async (file) => {
+//   if (!file) return "";
+
+//   const filepath = file.filepath || file.path; // Local + Vercel support
+
+//   const result = await cloudinary.v2.uploader.upload(filepath);
+//   try { fs.unlinkSync(filepath); } catch (e) {}
+
+//   return result.secure_url;
+// };
+
 const uploadToCloud = async (file) => {
   if (!file) return "";
 
-  const filepath = file.filepath || file.path; // Local + Vercel support
+  // Vercel (no filepath → use buffer)
+  if (file.buffer) {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.v2.uploader.upload_stream(
+        { folder: "products" },
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result.secure_url);
+        }
+      );
+      stream.end(file.buffer);
+    });
+  }
 
-  const result = await cloudinary.v2.uploader.upload(filepath);
-  try { fs.unlinkSync(filepath); } catch (e) {}
+  // LOCAL (file.path exists)
+  if (file.path) {
+    const result = await cloudinary.v2.uploader.upload(file.path);
+    try { fs.unlinkSync(file.path); } catch (e) {}
+    return result.secure_url;
+  }
 
-  return result.secure_url;
+  return "";
 };
+
 
 // JWT helper
 const signToken = (user) => {
