@@ -1,45 +1,51 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-// Shape of auth context
 interface AuthContextType {
   user: any | null;
+  token: string | null;
   login: (userData: any) => void;
   logout: () => void;
+  loading: boolean; // ⚡ add loading
 }
 
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // ⚡ true initially
 
-  // ⚡ Load user from localStorage on initial render
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    const storedToken = localStorage.getItem("token");
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
+      setToken(storedToken);
     }
+    setLoading(false); // finished loading
   }, []);
 
   const login = (userData: any) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData)); // optional, keeps it in sync
+    setToken(userData.token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userData.token);
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to use auth context
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

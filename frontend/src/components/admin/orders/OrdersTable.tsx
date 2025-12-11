@@ -1,93 +1,156 @@
-import OrderStatusBadge from "./OrderStatusBadge";
-import { Button } from "@/components/ui/button";
-
-// Sample data (replace with API call if needed)
-const data = [
-  {
-    customer: "Noe Pitt",
-    phone: "666-773-1378",
-    type: "Cash On-delivery",
-    bill: "$240",
-    status: "paid",
-  },
-  {
-    customer: "Jo Comrie",
-    phone: "785-203-1317",
-    type: "Pay Online",
-    bill: "$130",
-    status: "pending",
-  },
-  {
-    customer: "Verna Thiel",
-    phone: "456-210-9956",
-    type: "Pay Online",
-    bill: "$90",
-    status: "cancelled",
-  },
-];
+import React, { useEffect, useState } from "react";
+import DataTable from "../../../pages/admin/components/table/DataTable";
+import { fetchOrders } from "../../../api/order.api";
+import { Input } from "@/components/ui/input";
+interface Order {
+  _id: string;
+  id?: string;
+  customerName: string;
+  address: string;
+  phoneNumber: string;
+  items: string;
+  type: string;
+  bill: number;
+  payment: string;
+  status: string;
+  createdAt: string;
+}
 
 export default function OrdersTable() {
-  return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      {/* Header with Filters */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Orders</h2>
-        <div className="flex gap-2">
-          <Button variant="default" className="bg-orange-500 hover:bg-orange-600 ">
-            All
-          </Button>
-          <Button  variant="outline" className="text-gray-900" >Cancel</Button>
-          <Button  variant="outline" className="text-gray-900" >Complete</Button>
-          <Button  variant="outline" className="text-gray-900" >Returned</Button>
-        </div>
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
+  const [selectedTab, setSelectedTab] = useState<"All" | "cancel" | "complete" | "Returned">("All");
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+
+  // Fetch orders
+  useEffect(() => {
+    const getOrders = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchOrders();
+        const mapped = data.map((o: Order) => ({ ...o, id: o._id }));
+        setOrders(mapped);
+        setFilteredOrders(mapped);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
+      setLoading(false);
+    };
+    getOrders();
+  }, []);
+
+  // Track window resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Filter orders by tab and search
+  useEffect(() => {
+    let data = [...orders];
+
+    // Filter by tab
+    if (selectedTab !== "All") {
+      data = data.filter(order => order.status.toLowerCase() === selectedTab.toLowerCase());
+    }
+
+    // Filter by search
+    if (search.trim() !== "") {
+      const s = search.toLowerCase();
+      data = data.filter(order => 
+        order.customerName.toLowerCase().includes(s) ||
+        order.phoneNumber.toLowerCase().includes(s)
+      );
+    }
+
+    setFilteredOrders(data);
+  }, [orders, selectedTab, search]);
+
+  const getColumns = () => {
+    const allColumns = [
+      { name: "Customer", selector: (row: Order) => row.customerName, sortable: true },
+      { name: "Address", selector: (row: Order) => row.address, sortable: true },
+      { name: "Phone Number", selector: (row: Order) => row.phoneNumber, sortable: true },
+      { name: "Items", selector: (row: Order) => row.items, sortable: false },
+      { name: "Type", selector: (row: Order) => row.type, sortable: true },
+      { name: "Bill", selector: (row: Order) => `$${row.bill}`, sortable: true },
+      { name: "Payment", selector: (row: Order) => row.payment, sortable: true },
+      { name: "Status", selector: (row: Order) => row.status, sortable: true },
+      { name: "Created At", selector: (row: Order) => new Date(row.createdAt).toLocaleString(), sortable: true },
+    ];
+
+     if (windowWidth < 640) {
+    // small screens: show only most important
+    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+  }
+
+  if (windowWidth <786) {
+    // medium screens: show a few more columns
+    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+  }
+  if (windowWidth < 800) {
+    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+  }
+  if (windowWidth < 1024) {
+    // small screens: show only most important
+    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+  }
+
+  if (windowWidth <1250) {
+    // medium screens: show a few more columns
+    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+  }
+  // large screens: show all
+  return allColumns;
+  };
+
+ return (
+  <div className="w-full">
+    {/* Tabs + Search */}
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
+      {/* Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        <h2 className="text-2xl font-semibold text-[#8B5E3C] mr-4">Orders</h2>
+        {["All", "cancel", "complete", "Returned"].map(tab => (
+          <button
+            key={tab}
+            className={`px-4 py-1 rounded-full border ${
+              selectedTab === tab ? "bg-[#8B5E3C] text-white" : "bg-white text-gray-700 border-gray-300"
+            }`}
+            onClick={() => setSelectedTab(tab as any)}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b bg-gray-50">
-            <tr>
-              <th className="py-2 px-3 text-gray-900">Customer</th>
-              <th className="py-2 px-3 text-gray-900">Phone Number</th>
-              <th className="py-2 px-3 text-gray-900">Type</th>
-              <th className="py-2 px-3 text-gray-900">Bill</th>
-              <th className="py-2 px-3 text-gray-900">Status</th>
-              <th className="py-2 px-3 text-gray-900">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index} className="border-b hover:bg-gray-50 text-gray-900">
-                <td className="py-2 px-3 text-gray-900">{item.customer}</td>
-                <td className="py-2 px-3 text-gray-900">{item.phone}</td>
-                <td className="py-2 px-3 text-gray-900">{item.type}</td>
-                <td className="py-2 px-3 text-gray-900">{item.bill}</td>
-                <td className="py-2 px-3 text-gray-900">
-                  <OrderStatusBadge status={item.status} />
-                </td>
-                <td className="py-2 px-3">
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between py-3">
-        <p className="text-sm text-gray-600">Showing 1 to 10 of {data.length} entries</p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">1</Button>
-          <Button variant="ghost" size="sm">2</Button>
-          <Button variant="ghost" size="sm">3</Button>
-          <Button variant="ghost" size="sm">...</Button>
-          <Button variant="ghost" size="sm">10</Button>
-        </div>
+      {/* Search */}
+      <div className="w-full md:w-auto mt-2 md:mt-0">
+        <Input
+          placeholder="Search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full md:w-64 border-[#C4A484] text-gray-900"
+        />
       </div>
     </div>
-  );
+
+    {/* DataTable */}
+    <DataTable<Order>
+      columns={getColumns()}
+      data={filteredOrders}
+      pagination
+      dense
+      responsive
+      selectable={false}
+      className="shadow-md rounded-lg"
+    />
+
+    {loading && <p className="text-gray-500 mt-2">Loading orders...</p>}
+  </div>
+);
+
 }

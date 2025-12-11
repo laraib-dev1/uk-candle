@@ -1,21 +1,20 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth"; // adjust path
+import { useAuth } from "../hooks/useAuth";
 
 interface Props {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<Props> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!user) {
-    // not logged in
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    // wait until localStorage is loaded
+    return <div>Loading...</div>; // ⚡ can replace with a spinner
   }
 
-  if (user.role.toLowerCase() !== "admin") {
-    // logged in but not admin → redirect to login
+  if (!user || user.role.toLowerCase() !== "admin") {
     return <Navigate to="/login" replace />;
   }
 

@@ -44,7 +44,11 @@ let user = null;
           to="/"
           className="text-xl font-serif font-semibold flex items-center gap-2"
         >
-          <span>🏛️</span> VERES
+          <img
+    src="/logo-removebg-preview.png"
+    alt="Logo"
+    className="w-16 h-16 object-contain"
+  /> Grace by Anu
         </Link>
 
         {/* CENTER: Nav links (desktop only) */}

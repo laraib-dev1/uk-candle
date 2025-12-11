@@ -31,7 +31,7 @@ interface Product {
 interface Category {
   _id: string;
   name: string;
-  image?: string; // optional if you have
+  icon?: string; // optional if you have
 }
 
 export default function () {
@@ -103,7 +103,7 @@ const fetchCategories = async () => {
            <CategorySection
   categories={categories.map(cat => ({
     title: cat.name,
-    image: cat.image || "/category.png"
+    image: cat.icon || "/category.png"
   }))}
 />
 

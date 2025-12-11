@@ -19,7 +19,7 @@ type Address = {
 };
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
-  const { cartItems } = useCart();
+  const { cartItems, clearCart } = useCart();
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
@@ -246,8 +246,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         {/* Payment Section */}
         {paymentMethod === "card" && (
           <StripeCardForm
-            amount={total > 0 ? total : 10} // $10 for testing if cart is empty
-            onSuccess={onClose}
+            amount={total > 0 ? total : 10}
+            onSuccess={() => {
+    clearCart();  // ✅ empties the cart
+    onClose();    // closes the modal
+  }}
           />
         )}
       </div>

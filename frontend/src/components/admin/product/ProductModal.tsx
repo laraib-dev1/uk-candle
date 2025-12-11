@@ -218,8 +218,8 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
   img.onload = () => {
     const aspectRatio = img.width / img.height;
 
-    if (Math.abs(aspectRatio - 4 / 3) > 0.02) {
-      setError(prev => ({ ...prev, [currentImageKey]: "Image must be 4:3 aspect ratio" }));
+    if (Math.abs(aspectRatio - 3 / 4) > 0.02) {
+      setError(prev => ({ ...prev, [currentImageKey]: "Image must be 3:4 aspect ratio" }));
       return;
     }
 

@@ -95,11 +95,11 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={onClose}>
+        <div className="flex justify-end  gap-2 mt-4">
+          <Button className="text-black" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleCropDone}>Crop</Button>
+          <Button className="text-black"  onClick={handleCropDone}>Crop</Button>
         </div>
       </DialogContent>
     </Dialog>

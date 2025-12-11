@@ -6,6 +6,7 @@ import Input from "@/pages/admin/components/form/Input";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { loginUser } from "@/api/auth.api";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,12 +14,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth(); 
   const handleLogin = async () => {
   try {
     const data = await loginUser({ email, password });
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+ login({ ...data.user, token: data.token });
 
     // check previous page user came from
     const from = location.state?.from;
