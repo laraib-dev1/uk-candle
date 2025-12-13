@@ -18,3 +18,20 @@ export const createOrder = async (req) => {
   const order = await Order.create(req.body);
   return order;
 };
+// Update order status (admin)
+export const updateOrderStatus = async (req) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const order = await Order.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true }
+  );
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  return order;
+};

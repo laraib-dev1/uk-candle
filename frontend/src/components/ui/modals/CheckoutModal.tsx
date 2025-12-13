@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCart } from "@/components/products/CartContext";
 import StripeCardForm from "./StripeCardForm";
+import { createOrder } from "@/api/order.api";
 
 type CheckoutModalProps = {
   isOpen: boolean;
@@ -18,9 +19,16 @@ type Address = {
   line1: string;
 };
 
+type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
+
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const { cartItems, clearCart } = useCart();
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cartItems.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
 
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -39,6 +47,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
 
   if (!isOpen) return null;
+
+  // Determine which address to use
+  const addressToUse =
+    addressType === "existing" && selectedAddressIndex !== null
+      ? addresses[selectedAddressIndex]
+      : newAddress;
 
   const handleAddressSave = () => {
     const requiredFields = [
@@ -60,7 +74,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     setSelectedAddressIndex(addresses.length);
     setAddressType("existing");
 
-    // Reset fields
     setNewAddress({
       firstName: "",
       lastName: "",
@@ -97,7 +110,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         <div className="mb-6 p-4 border rounded-lg">
           <h3 className="font-semibold mb-2 text-lg">Order Summary</h3>
           {cartItems.length === 0 ? (
-            <p className="text-red-600 font-medium">Your cart is empty. You can still test payment with $10.</p>
+            <p className="text-red-600 font-medium">
+              Your cart is empty. You can still test payment with $10.
+            </p>
           ) : (
             <div className="space-y-2">
               {cartItems.map(item => (
@@ -144,7 +159,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* Existing address */}
           {addressType === "existing" && selectedAddressIndex !== null && (
             <div className="space-y-2 mb-4 p-2 bg-gray-50 rounded">
               <p>{addresses[selectedAddressIndex]?.firstName} {addresses[selectedAddressIndex]?.lastName}</p>
@@ -155,7 +169,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* New address form */}
           {addressType === "new" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -246,12 +259,36 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         {/* Payment Section */}
         {paymentMethod === "card" && (
           <StripeCardForm
-            amount={total > 0 ? total : 10}
-            onSuccess={() => {
-    clearCart();  // ✅ empties the cart
-    onClose();    // closes the modal
+  amount={total > 0 ? total : 10}
+  onSuccess={async () => {
+    try {
+      const orderData = {
+        customerName: `${newAddress.firstName} ${newAddress.lastName}`,
+        address: { ...newAddress },
+        phoneNumber: newAddress.phone,
+        items: cartItems.map(i => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        type: "Online",
+        bill: total > 0 ? total : 10,
+        payment: paymentMethod,
+        status: "Pending",
+      };
+
+      await createOrder(orderData); // API call to backend
+
+      clearCart();
+      onClose();
+      alert("Order successfully placed!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to place order. Please try again.");
+    }
   }}
-          />
+/>
+
         )}
       </div>
     </div>

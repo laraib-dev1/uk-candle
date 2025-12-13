@@ -1,6 +1,6 @@
 import express from "express";
 import { protect, isAdmin } from "../middleware/auth.js";
-import { getOrders, createOrder } from "../controllers/order.controller.js";
+import { getOrders, createOrder, updateOrderStatus } from "../controllers/order.controller.js";
 
 const router = express.Router();
 
@@ -18,6 +18,16 @@ router.get("/", protect, isAdmin, async (req, res) => {
 router.post("/create", protect, async (req, res) => {
   try {
     const order = await createOrder(req);
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Update order status (admin only)
+router.patch("/:id/status", protect, isAdmin, async (req, res) => {
+  try {
+    const order = await updateOrderStatus(req);
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });

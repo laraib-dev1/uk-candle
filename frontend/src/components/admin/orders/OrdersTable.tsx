@@ -2,13 +2,25 @@ import React, { useEffect, useState } from "react";
 import DataTable from "../../../pages/admin/components/table/DataTable";
 import { fetchOrders } from "../../../api/order.api";
 import { Input } from "@/components/ui/input";
+import { OrderModal } from "../product/OrderModal";
+interface Address {
+  firstName: string;
+  lastName: string;
+  province: string;
+  city: string;
+  area?: string;
+  postalCode: string;
+  phone: string;
+  line1: string;
+}
+
 interface Order {
   _id: string;
   id?: string;
   customerName: string;
-  address: string;
+  address: Address;
   phoneNumber: string;
-  items: string;
+  items: { name: string; quantity: number; price: number }[];
   type: string;
   bill: number;
   payment: string;
@@ -16,30 +28,54 @@ interface Order {
   createdAt: string;
 }
 
+
 export default function OrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [search, setSearch] = useState("");
   const [selectedTab, setSelectedTab] = useState<"All" | "cancel" | "complete" | "Returned">("All");
+  const [modalOpen, setModalOpen] = useState(false);
+const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+const openView = (order: Order) => {
+  setSelectedOrder(order);
+  setModalOpen(true);
+};
+
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
+const loadOrders = async () => {
+  setLoading(true);
+  try {
+    const data = await fetchOrders();
+    const mapped = data.map((o: Order) => ({ ...o, id: o._id }));
+    setOrders(mapped);
+    setFilteredOrders(mapped);
+  } catch (err) {
+    console.error("Error fetching orders:", err);
+  }
+  setLoading(false);
+};
+useEffect(() => {
+  loadOrders();
+}, []);
 
   // Fetch orders
-  useEffect(() => {
-    const getOrders = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchOrders();
-        const mapped = data.map((o: Order) => ({ ...o, id: o._id }));
-        setOrders(mapped);
-        setFilteredOrders(mapped);
-      } catch (err) {
-        console.error("Error fetching orders:", err);
-      }
-      setLoading(false);
-    };
-    getOrders();
-  }, []);
+  // useEffect(() => {
+  //   const getOrders = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const data = await fetchOrders();
+  //       const mapped = data.map((o: Order) => ({ ...o, id: o._id }));
+  //       setOrders(mapped);
+  //       setFilteredOrders(mapped);
+  //     } catch (err) {
+  //       console.error("Error fetching orders:", err);
+  //     }
+  //     setLoading(false);
+  //   };
+  //   getOrders();
+  // }, []);
 
   // Track window resize
   useEffect(() => {
@@ -71,32 +107,56 @@ export default function OrdersTable() {
 
   const getColumns = () => {
     const allColumns = [
-      { name: "Customer", selector: (row: Order) => row.customerName, sortable: true },
-      { name: "Address", selector: (row: Order) => row.address, sortable: true },
-      { name: "Phone Number", selector: (row: Order) => row.phoneNumber, sortable: true },
-      { name: "Items", selector: (row: Order) => row.items, sortable: false },
-      { name: "Type", selector: (row: Order) => row.type, sortable: true },
-      { name: "Bill", selector: (row: Order) => `$${row.bill}`, sortable: true },
-      { name: "Payment", selector: (row: Order) => row.payment, sortable: true },
-      { name: "Status", selector: (row: Order) => row.status, sortable: true },
-      { name: "Created At", selector: (row: Order) => new Date(row.createdAt).toLocaleString(), sortable: true },
-    ];
+          { name: "Customer", selector: (row: Order) => row.customerName, sortable: true },
+    {
+  name: "Address",
+  selector: (row: Order) =>
+    row.address
+      ? `${row.address.line1}, ${row.address.area || ""}, ${row.address.city}, ${row.address.province}, ${row.address.postalCode}`
+      : "N/A",
+  sortable: true,
+},
+    { name: "Phone Number", selector: (row: Order) => row.phoneNumber, sortable: true },
+    {
+      name: "Items",
+      selector: (row: Order) => row.items.map(i => `${i.name} x ${i.quantity}`).join(", "),
+      sortable: false,
+    },
+    { name: "Type", selector: (row: Order) => row.type, sortable: true },
+    { name: "Bill", selector: (row: Order) => `$${row.bill}`, sortable: true },
+    { name: "Payment", selector: (row: Order) => row.payment, sortable: true },
+    { name: "Status", selector: (row: Order) => row.status, sortable: true },
+    { name: "Created At", selector: (row: Order) => new Date(row.createdAt).toLocaleString(), sortable: true },
+    {
+  name: "Action",
+  cell: (row: Order) => (
+    <button
+      className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white px-2 py-1 rounded"
+      onClick={() => openView(row)}
+    >
+      View
+    </button>
+  ),
+  sortable: false,
+}
+
+  ];
 
      if (windowWidth < 640) {
     // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
   }
 
   if (windowWidth <786) {
     // medium screens: show a few more columns
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
   }
   if (windowWidth < 800) {
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
   }
   if (windowWidth < 1024) {
     // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
+    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
   }
 
   if (windowWidth <1250) {
@@ -137,7 +197,12 @@ export default function OrdersTable() {
         />
       </div>
     </div>
-
+<OrderModal
+  order={selectedOrder}
+  open={modalOpen}
+  onClose={() => setModalOpen(false)}
+  onUpdate={loadOrders} // refresh after status update
+/>
     {/* DataTable */}
     <DataTable<Order>
       columns={getColumns()}
