@@ -82,18 +82,26 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
         </DialogHeader>
 
         {file && (
-          <div className="relative h-72 w-full">
-            <Cropper
-              image={URL.createObjectURL(file)}
-              crop={crop}
-              zoom={zoom}
-              onCropChange={setCrop}
-              onCropComplete={onCropComplete}
-              onZoomChange={setZoom}
-              aspect={aspect || 1}
-            />
-          </div>
-        )}
+  <div
+    className="relative w-full"
+    style={{
+    
+      height: `${300 / aspect}px`, 
+      maxHeight: "70vh",         
+    }}
+  >
+    <Cropper
+      image={URL.createObjectURL(file)}
+      crop={crop}
+      zoom={zoom}
+      onCropChange={setCrop}
+      onCropComplete={onCropComplete}
+      onZoomChange={setZoom}
+      aspect={aspect || 1}
+    />
+  </div>
+)}
+
 
         <div className="flex justify-end  gap-2 mt-4">
           <Button className="text-black" variant="outline" onClick={onClose}>

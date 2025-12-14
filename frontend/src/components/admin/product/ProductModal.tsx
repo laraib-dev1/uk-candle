@@ -583,7 +583,7 @@ const handleSubmit = () => {
   onClose={() => setCropModalOpen(false)}
   file={selectedFileForCrop}
   onCropDone={handleCropDone}
-   aspect={4 / 3}
+   aspect={3 / 4}
 />
 
 
