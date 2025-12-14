@@ -258,14 +258,24 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
         {/* Payment Section */}
         {paymentMethod === "card" && (
-          <StripeCardForm
+   <StripeCardForm
   amount={total > 0 ? total : 10}
   onSuccess={async () => {
     try {
+      // Use the address the user selected
       const orderData = {
-        customerName: `${newAddress.firstName} ${newAddress.lastName}`,
-        address: { ...newAddress },
-        phoneNumber: newAddress.phone,
+        customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
+        address: {
+          firstName: addressToUse.firstName,
+          lastName: addressToUse.lastName,
+          line1: addressToUse.line1,
+          area: addressToUse.area,
+          city: addressToUse.city,
+          province: addressToUse.province,
+          postalCode: addressToUse.postalCode,
+          phone: addressToUse.phone,
+        },
+        phoneNumber: addressToUse.phone,
         items: cartItems.map(i => ({
           name: i.name,
           quantity: i.quantity,
@@ -288,6 +298,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     }
   }}
 />
+
 
         )}
       </div>

@@ -1,26 +1,30 @@
 // src/controllers/category.controller.js
 import Category from "../models/Category.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
+
 
 // CREATE
 export const addCategory = async (req, res) => {
   try {
-    const { name, icon, products } = req.body;
+    let iconUrl = "/default-category.png";
+
+    if (req.file) {
+      const upload = await uploadToCloudinary(req.file.buffer, "categories");
+      iconUrl = upload.secure_url;
+    }
 
     const category = await Category.create({
-      name,
-      icon: icon || "/default-category.png",
-      products: products || 0,
+      name: req.body.name,
+      icon: iconUrl,
+      products: req.body.products || 0,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Category created successfully",
-      data: category,
-    });
+    res.status(201).json({ success: true, data: category });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // GET ALL
 export const getCategories = async (req, res) => {
@@ -48,23 +52,28 @@ export const getCategory = async (req, res) => {
 // UPDATE
 export const updateCategory = async (req, res) => {
   try {
-    const { name, icon, products } = req.body;
+    const update = {
+      name: req.body.name,
+      products: req.body.products,
+    };
+
+    if (req.file) {
+      const upload = await uploadToCloudinary(req.file.buffer, "categories");
+      update.icon = upload.secure_url;
+    }
 
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      { name, icon, products },
+      update,
       { new: true }
     );
 
-    res.json({
-      success: true,
-      message: "Category updated successfully",
-      data: category,
-    });
+    res.json({ success: true, data: category });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // DELETE
 export const deleteCategory = async (req, res) => {

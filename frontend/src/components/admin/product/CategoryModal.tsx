@@ -15,6 +15,7 @@ interface Category {
   id?: string;
   name: string;
   icon: string;
+  iconFile?: File; 
   products: number;
 }
 
@@ -76,73 +77,37 @@ const [cropModalOpen, setCropModalOpen] = React.useState(false);
 
   // when crop done
   const handleCropDone = (croppedBlob: Blob) => {
-    const file = new File([croppedBlob], "cropped.jpg", { type: "image/jpeg" });
+  const file = new File([croppedBlob], "category.jpg", {
+    type: "image/jpeg",
+  });
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm({ ...form, icon: reader.result as string });
-      setError({ ...error, icon: undefined });
-    };
-    reader.readAsDataURL(file);
-  };
+  setForm(prev => ({
+    ...prev,
+    iconFile: file,                 // real file
+    icon: URL.createObjectURL(file) // preview only
+  }));
 
-  const handleSubmit = () => {
-    const updatedForm = { ...form, icon: form.icon || "/category.png" };
-    const result = categorySchema.safeParse(updatedForm);
-    if (!result.success) {
-      const issues: Record<string, string> = {};
-      result.error.issues.forEach((err) => {
-        const key = err.path[0] as string;
-        if (key) issues[key] = err.message;
-      });
-      setError(issues);
-      return;
-    }
-    onSubmit(updatedForm);
-  };
+  setCropModalOpen(false);
+};
 
-  // Handle image upload with size validation (1MB max)
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
+const handleSubmit = () => {
+  onSubmit(form); // send FILE, not base64
+};
 
-  //   if (file.size > 1024 * 1024) {
-  //     setError({ ...error, icon: "Image must be smaller than 1MB" });
+  // const handleSubmit = () => {
+  //   const updatedForm = { ...form, icon: form.icon || "/category.png" };
+  //   const result = categorySchema.safeParse(updatedForm);
+  //   if (!result.success) {
+  //     const issues: Record<string, string> = {};
+  //     result.error.issues.forEach((err) => {
+  //       const key = err.path[0] as string;
+  //       if (key) issues[key] = err.message;
+  //     });
+  //     setError(issues);
   //     return;
   //   }
-
-  //   const reader = new FileReader();
-  //   reader.onloadend = () => {
-  //     setForm({ ...form, icon: reader.result as string });
-  //     setError({ ...error, icon: undefined });
-  //   };
-  //   reader.readAsDataURL(file);
+  //   onSubmit(updatedForm);
   // };
-
-
-// const handleSubmit = () => {
-//   // Add default image if icon is empty
-//   const updatedForm = {
-//     ...form,
-//     icon: form.icon || "/category.png",
-//   };
-
-//   const result = categorySchema.safeParse(updatedForm);
-
-//   if (!result.success) {
-//     const issues: Record<string, string> = {};
-//     result.error.issues.forEach((err: ZodIssue) => {
-//       const key = err.path[0] as string;
-//       if (key) issues[key] = err.message;
-//     });
-
-//     setError(issues);
-//     return;
-//   }
-
-//   onSubmit(updatedForm);
-// };
-
 
   return (
     <Dialog open={open} onOpenChange={onClose} >
