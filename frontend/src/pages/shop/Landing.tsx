@@ -11,6 +11,7 @@ import Hero2 from "@/components/hero/Hero2";
 import FeatureSection from "@/components/hero/FeatureSection";
 import ClientFeedback from "@/components/hero/ClientFeedback";
 import { getProducts } from "@/api/product.api";
+import { getBanners, type Banner } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
 interface Product {
   _id: string;
@@ -36,32 +37,47 @@ interface Category {
 
 export default function () {
   const [products, setProducts] = useState<Product[]>([]);
-const [loading, setLoading] = useState(false);
- const [categories, setCategories] = useState<Category[]>([]);
-useEffect(() => {
-  fetchProducts();
-  fetchCategories();
-}, []);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [heroBanner, setHeroBanner] = useState<Banner | null>(null);
 
-const fetchProducts = async () => {
-  const res: Product[] = await getProducts();
-  console.log("API Response:", res);
-  try {
-    setLoading(true);
-    const data = await getProducts(); // fetch from backend
-    setProducts(data);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
-const fetchCategories = async () => {
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+    fetchBanners();
+  }, []);
+
+  // Load products for the landing page carousels / grids
+  const fetchProducts = async () => {
     try {
-      const data = await getCategories();  // <-- API call
+      setLoading(true);
+      const data = await getProducts(); // fetch from backend
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load categories for the category section
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategories(); // <-- API call
       setCategories(data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // Load banners and pick the "hero-main" one for this page
+  const fetchBanners = async () => {
+    try {
+      const data = await getBanners();
+      const hero = data.find((b) => b.slot === "hero-main");
+      setHeroBanner(hero || null);
+    } catch (err) {
+      console.error("Failed to load banners for Landing page", err);
     }
   };
   return (
@@ -69,13 +85,23 @@ const fetchCategories = async () => {
 
       <Navbar />
       <main>
-        {/* <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-30"> */}
+        {/* Top hero section. If admin has configured a hero banner, we show it.
+            Otherwise we fall back to the previous static image. */}
+        {heroBanner ? (
           <Hero
-  title="Welcome to our store"
-  subtitle="This hero uses the image as full background"
-  image="hero.png"
-  variant="full-background"
-/>
+            title="Welcome to our store"
+            subtitle="Discover our latest collections."
+            image={heroBanner.imageUrl}
+            variant="full-background"
+          />
+        ) : (
+          <Hero
+            title="Welcome to our store"
+            subtitle="This hero uses the image as full background"
+            image="hero.png"
+            variant="full-background"
+          />
+        )}
 
         {/* </section> */}
         

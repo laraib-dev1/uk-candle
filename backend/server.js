@@ -11,6 +11,7 @@ import productRoutes from "./src/routes/product.routes.js";
 import categoryRoutes from "./src/routes/category.routes.js";
 import paymentRoutes from "./src/routes/payment.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
+import bannerRoutes from "./src/routes/banner.routes.js";
 
 dotenv.config();
 await connectDB();
@@ -44,6 +45,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/banners", bannerRoutes);
 
 // Start
 const PORT = process.env.PORT || 5000;

@@ -16,6 +16,7 @@ import AdminRoute from "./components/AdminRoute";
 const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
 const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
 const AdminSettings = React.lazy(() => import("./pages/admin/pages/SettingsPage"));
+const AdminAssets = React.lazy(() => import("./pages/admin/pages/AssetsPage"));
 
 // const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
 const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="orders" element={<AdminOrders />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="assets" element={<AdminAssets />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
    {/* ---------- 404 PAGE ---------- */}

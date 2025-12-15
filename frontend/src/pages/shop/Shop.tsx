@@ -7,6 +7,7 @@ import ProductGrid from "../../components/products/ProductGrid";
 import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
+import { getBanners, type Banner as BannerType } from "@/api/banner.api";
 
 // API product type
 interface ApiProduct {
@@ -41,6 +42,7 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [limit, setLimit] = useState(8);
+  const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -49,6 +51,7 @@ const Shop = () => {
   
   useEffect(() => {
     fetchProducts();
+    fetchBanners();
   }, [selectedCategory]);
 
   const fetchProducts = async () => {
@@ -88,6 +91,17 @@ console.log("Mapped Products:", mapped);
     }
   };
 
+  // Load banner that appears at the top of the Shop page
+  const fetchBanners = async () => {
+    try {
+      const data = await getBanners();
+      const banner = data.find((b) => b.slot === "shop-main");
+      setShopBanner(banner || null);
+    } catch (err) {
+      console.error("Failed to load banners for Shop page", err);
+    }
+  };
+
   const handleLoadMore = () => setLimit((prev) => prev + 4);
   const displayedProducts = products.slice(0, limit);
 
@@ -97,7 +111,8 @@ console.log("Mapped Products:", mapped);
 
       <main className="flex-1 py-20">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <Banner imageSrc="/hero.png" />
+          {/* Shop banner – if admin configured one, use it, otherwise use default image */}
+          <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
 
           <div className="flex justify-between items-center mt-10 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
