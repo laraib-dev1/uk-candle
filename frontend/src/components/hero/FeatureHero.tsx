@@ -1,8 +1,17 @@
 import React from "react";
 
-const FeatureHero = () => {
+// Simple banner-like hero used on the Landing page.
+// We add an optional `image` prop so you can control the image
+// from the admin Assets → Banners tab.
+type FeatureHeroProps = {
+  image?: string;
+};
+
+const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
+  const bannerImage = image || "/hero.png";
+
   return (
-    <section className="bg-white text-black  py-4">
+    <section className="bg-white text-black py-4">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Text content */}
         <div className="max-w-3xl mx-auto mb-6">
@@ -18,7 +27,7 @@ const FeatureHero = () => {
         {/* Image */}
         <div className="w-full">
           <img
-            src="/hero.png"
+            src={bannerImage}
             alt="Perfume collection"
             className="w-full max-w-full h-100 object-cover rounded-2xl mx-auto"
           />

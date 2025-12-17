@@ -1,5 +1,6 @@
 import React from "react";
-import { FaFacebookF, FaWhatsapp, FaShareAlt } from "react-icons/fa";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaTiktok } from "react-icons/fa6";
 
 interface SocialShareProps {
   productName: string;
@@ -45,10 +46,17 @@ export default function SocialShare({
     }
   };
 
+  // Instagram share (opens Instagram app or web)
+  const instagramShare = `https://www.instagram.com/`;
+  
+  // TikTok share
+  const tiktokShare = `https://www.tiktok.com/`;
+
   return (
-    <div className="mt-6">
-      <span className="font-semibold block mb-2">Share this on social media</span>
-      <div className="flex items-center gap-4 mt-2">
+    <div>
+      <span className="text-sm text-gray-700 mb-3 block">Share this on social media</span>
+      <div className="flex items-center gap-3">
+        {/* Facebook */}
         <a
           href={facebookShare}
           target="_blank"
@@ -59,23 +67,27 @@ export default function SocialShare({
           <FaFacebookF size={iconSize} color={iconColor} />
         </a>
 
+        {/* Instagram */}
         <a
-          href={whatsappShare}
+          href={instagramShare}
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
           style={{ backgroundColor: circleBgColor }}
         >
-          <FaWhatsapp size={iconSize} color={iconColor} />
+          <FaInstagram size={iconSize} color={iconColor} />
         </a>
 
-        <button
-          onClick={handleNativeShare}
+        {/* TikTok */}
+        <a
+          href={tiktokShare}
+          target="_blank"
+          rel="noopener noreferrer"
           className={sharedClass}
           style={{ backgroundColor: circleBgColor }}
         >
-          <FaShareAlt size={iconSize} color={iconColor} />
-        </button>
+          <FaTiktok size={iconSize} color={iconColor} />
+        </a>
       </div>
     </div>
   );

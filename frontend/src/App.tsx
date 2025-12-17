@@ -4,6 +4,9 @@ import Landing from "./pages/shop/Landing";
 import Shop from "./pages/shop/Shop";
 import ProductDetail from "./pages/shop/ProductDetail";
 import CartPage from "./pages/shop/CartPage";
+import PrivacyPolicy from "./pages/shop/PrivacyPolicy";
+import TermsConditions from "./pages/shop/TermsConditions";
+import FAQs from "./pages/shop/FAQs";
 import { CartProvider } from "./components/products/CartContext";
 import AdminCategories from "@/pages/admin/pages/CategoriesPage";
 import { AuthProvider } from "./hooks/useAuth";
@@ -54,6 +57,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/access" element={<Access />} />
         <Route path="/forgot" element={<Forgot />} />
+
+      {/* ---------- CONTENT PAGES (Privacy, Terms, FAQs) ---------- */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/faqs" element={<FAQs />} />
 
                 {/* ---------- PROTECTED ADMIN ROUTES ---------- */}
               <Route

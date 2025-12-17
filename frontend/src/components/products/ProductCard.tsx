@@ -30,14 +30,14 @@ export default function ProductCard({ id, name, price, image, offer }: Props) {
         </div>
 
         <div className="p-4 flex flex-col text-left">
-          <h3 className="text-base font-medium text-gray-900">{name}</h3>
-          <div className="mt-2 flex items-center gap-2">
+          <h3 className="text-sm font-medium text-gray-900 mb-2">{name}</h3>
+          <div className="flex items-center gap-2">
             {offer && (
               <span className="bg-red-100 text-red-600 text-xs font-semibold px-2 py-1 rounded">
-                {offer}% OFF
+                {offer}
               </span>
             )}
-            <span className="text-sm font-semibold">${price}</span>
+            <span className="text-sm font-semibold text-gray-900">{typeof price === 'string' ? price : `Rs: ${price}`}</span>
           </div>
         </div>
       </article>

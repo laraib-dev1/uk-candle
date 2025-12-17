@@ -9,6 +9,7 @@ import ProductCard from "@/components/products/ProductCard";
 import { getProduct, getProducts } from "@/api/product.api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Helmet } from "react-helmet";
+import { Flag, RotateCcw, Headphones, Truck, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -54,7 +55,34 @@ export default function ProductDetail() {
         productData.image6
       ].filter(Boolean);
 
-      setProduct({ ...productData, images });
+      // Extract category name - Backend should return categoryName directly
+      // The backend controller returns categoryName in the response
+      const categoryName = productData.categoryName 
+        || (typeof productData.category === 'object' && productData.category?.name)
+        || productData.category
+        || 'Category';
+
+      console.log("=== PRODUCT DATA DEBUG ===");
+      console.log("Full product response:", productData);
+      console.log("Category fields:", { 
+        categoryName: productData.categoryName, 
+        category: productData.category,
+        categoryId: productData.categoryId,
+        categoryNameType: typeof productData.categoryName,
+        categoryType: typeof productData.category,
+        allKeys: Object.keys(productData).filter(k => k.toLowerCase().includes('categ'))
+      });
+      console.log("Final categoryName:", categoryName);
+
+      // Ensure categoryName is explicitly set in product state
+      const finalProduct = { 
+        ...productData, 
+        images, 
+        categoryName: categoryName 
+      };
+      
+      console.log("Setting product with categoryName:", finalProduct.categoryName);
+      setProduct(finalProduct);
 
     } catch (err) {
       console.error("PRODUCT FETCH ERROR =>", err);
@@ -90,169 +118,260 @@ const mapped = res.data.map((p: any) => ({
 
   // similar products
   const similar = allProducts.filter((p) => p._id !== product._id).slice(0, 4);
-<Helmet>
-  <title>{product.name} | My Shop</title>
-  <meta property="og:title" content={product.name} />
-  <meta property="og:description" content={product.description || ""} />
-  <meta property="og:image" content={product.images?.[0] || "/product.png"} />
-  <meta property="og:url" content={window.location.href} />
-  <meta property="og:type" content="product" />
-</Helmet>
+
+  // Calculate discounted price
+  const discountedPrice = product.discount 
+    ? Math.round(product.price - (product.price * product.discount / 100))
+    : product.price;
+
+  // Extract attributes from metaFeatures (if available)
+  const attributes = product.metaFeatures 
+    ? product.metaFeatures.match(/<li>(.*?)<\/li>/g)?.map(li => li.replace(/<\/?li>/g, '')) || []
+    : ['EAN', 'Color', 'Attribute 3', 'Attribute 4', 'Attribute 5', 'Attribute 6'];
+
   return (
     <>
+      <Helmet>
+        <title>{product.name} | My Shop</title>
+        <meta property="og:title" content={product.name} />
+        <meta property="og:description" content={product.description || ""} />
+        <meta property="og:image" content={product.images?.[0] || "/product.png"} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="product" />
+      </Helmet>
       <Navbar />
-      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="bg-white text-black rounded-2xl shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-            {/* gallery */}
-            <div className="md:col-span-5">
+      <div className="bg-white min-h-screen">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
+          {/* Main Product Section */}
+          <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-4 md:gap-6 mb-12">
+            {/* Left: Product Image Gallery - Fixed width, constrained */}
+            <div className="w-full max-w-[400px]">
               <ProductImageGallery images={product.images || ["/product.png"]} />
             </div>
 
-            {/* details */}
-            <div className="md:col-span-7 flex flex-col h-full">
-              <div className="flex flex-col gap-4 md:grow">
-                <span className="inline-block bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded">
-                  {product.categoryName || "Category"}
-                </span>
+            {/* Right: Product Details - Takes all remaining space */}
+            <div className="flex flex-col gap-6 w-full">
+              {/* Category Badge - Always show, force display */}
+              {(() => {
+                const catName = product.categoryName 
+                  || (typeof product.category === 'object' && product.category?.name) 
+                  || (typeof product.category === 'string' && product.category)
+                  || "Category";
+                console.log("Rendering category:", catName, "from product:", product);
+                return (
+                  <span className="inline-block bg-[#A8734B]/20 text-[#A8734B] text-xs font-semibold px-3 py-1 rounded-full w-fit">
+                    {catName}
+                  </span>
+                );
+              })()}
 
-                <h1 className="text-2xl md:text-3xl font-semibold  bg-white text-black">
-                  {product.name}
-                </h1>
+              {/* Product Title */}
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                {product.name}
+              </h1>
 
-                {/* price */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-baseline gap-3">
-                    {product.discount && (
-                      <span className="text-gray-400 line-through text-sm">
-                        Rs {product.price}
-                      </span>
-                    )}
-                    <span className="text-2xl font-bold text-amber-700">
-                      Rs {product.price - (product.discount || 0)}
+              {/* Price Display */}
+              <div className="flex items-baseline gap-3">
+                {product.discount ? (
+                  <>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {discountedPrice} Rs
                     </span>
-                  </div>
-
-                  {product.discount && (
-                    <span className="ml-2 bg-red-100 text-red-600 text-xs font-semibold px-2 py-1 rounded">
-                      {product.discount}% OFF
+                    <span className="text-lg text-gray-400 line-through">
+                      {product.price}
                     </span>
-                  )}
-                </div>
-
-                {/* description */}
-                <p className="text-sm  bg-white text-black leading-relaxed">
-                  {product.description}
-                </p>
+                  </>
+                ) : (
+                  <span className="text-2xl font-bold text-gray-900">
+                    {product.price} Rs
+                  </span>
+                )}
               </div>
 
-              {/* Add to cart + share */}
-              <div className="mt-6 md:mt-auto md:pt-4">
-                <AddToCartButton
- product={{
-    id: product._id,
-    name: product.name,
-    price: product.price,       // store original price
-    discount: product.discount, // <-- add this
-    image: product.images?.[0],
-  }}
-/>
+              {/* Description */}
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {product.description || "Ecommerce, also known as electronic commerce or internet commerce, refers to the buying and selling of goods or services using the internet, and the transfer of money and data to execute these transactions."}
+              </p>
 
-                <div className="mt-4">
-                  <SocialShare
-  productName={product.name}
-  productUrl={window.location.href}
-  productImage={product.images?.[0]}
-  productDescription={product.description}
-/>
-                </div>
+              {/* Add to Purchase Button */}
+              <div className="mt-4">
+                <AddToCartButton
+                  product={{
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    discount: product.discount,
+                    image: product.images?.[0],
+                  }}
+                />
+              </div>
+
+              {/* Social Share */}
+              <div className="mt-6">
+                <SocialShare
+                  productName={product.name}
+                  productUrl={window.location.href}
+                  productImage={product.images?.[0]}
+                  productDescription={product.description}
+                />
               </div>
             </div>
           </div>
-        </div>
-{/* Description + Videos Section */}
-<div className="mt-10 bg-white rounded-xl shadow p-6">
+          {/* Description + Videos Section with Tabs */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-12">
+            <Tabs defaultValue="description" className="w-full">
+              {/* Tabs Header */}
+              <TabsList className="bg-transparent border-b border-gray-200 p-0 mb-6 h-auto">
+                <TabsTrigger 
+                  value="description" 
+                  className="px-4 py-2 text-sm font-medium text-gray-700 data-[state=active]:text-[#A8734B] data-[state=active]:border-b-2 data-[state=active]:border-[#A8734B] rounded-none"
+                >
+                  Description
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="videos"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 data-[state=active]:text-[#A8734B] data-[state=active]:border-b-2 data-[state=active]:border-[#A8734B] rounded-none"
+                >
+                  Demo Video
+                </TabsTrigger>
+              </TabsList>
 
-  <Tabs defaultValue="description" className="w-full">
-    {/* TABS HEADER */}
-    <TabsList className="text-black grid grid-cols-2 w-full mb-6">
-      <TabsTrigger value="description">Description</TabsTrigger>
-      <TabsTrigger value="videos">Demo Video</TabsTrigger>
-    </TabsList>
+              {/* Description Tab Content */}
+              <TabsContent value="description" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Left: Meta Features (from admin metaFeatures field) */}
+                  <div>
+                    <div
+                      className="prose prose-sm max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ 
+                        __html: product.metaFeatures || "<p>No features available.</p>" 
+                      }}
+                    />
+                  </div>
 
-    {/* TAB — DESCRIPTION */}
-    <TabsContent value="description">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Right: Meta Info (from admin metaInfo field) */}
+                  <div>
+                    <div
+                      className="prose prose-sm max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ 
+                        __html: product.metaInfo || product.description || "<p>Ecommerce, also known as electronic commerce or internet commerce, refers to the buying and selling of goods or services using the internet, and the transfer of money and data to execute these transactions.</p>" 
+                      }}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
 
-        {/* LEFT — META FEATURES */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Features</h3>
-          <div
-            className="prose max-w-none text-gray-700 "
-            dangerouslySetInnerHTML={{ __html: product.metaFeatures || "<p>No features added.</p>" }}
-          />
-        </div>
+              {/* Demo Video Tab Content */}
+              <TabsContent value="videos" className="mt-6">
+                {product.video1 ? (
+                  <div className="mb-6">
+                    <iframe
+                      className="w-full h-64 md:h-96 rounded-lg"
+                      src={product.video1.replace("watch?v=", "embed/")}
+                      allowFullScreen
+                      title="Demo Video 1"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No demo video available.</p>
+                )}
 
-        {/* RIGHT — META INFO */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2 text-amber-700">Meta Info</h3>
-          <div
-            className="prose max-w-none text-gray-700 "
-            dangerouslySetInnerHTML={{ __html: product.metaInfo || "<p>No additional info.</p>" }}
-          />
-        </div>
+                {product.video2 && (
+                  <div>
+                    <iframe
+                      className="w-full h-64 md:h-96 rounded-lg"
+                      src={product.video2.replace("watch?v=", "embed/")}
+                      allowFullScreen
+                      title="Demo Video 2"
+                    />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
 
-      </div>
-    </TabsContent>
+          {/* Service Highlights Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Locally Owned */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
+              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
+                <Flag className="w-6 h-6 text-[#A8734B]" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Locally Owned</h3>
+              <p className="text-xs text-gray-600">
+                We have local business and sell best quality clothes
+              </p>
+            </div>
 
-    {/* TAB — DEMO VIDEO */}
-    <TabsContent value="videos">
+            {/* Easy Return */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
+              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
+                <RotateCcw className="w-6 h-6 text-[#A8734B]" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Easy Return</h3>
+              <p className="text-xs text-gray-600">
+                We provide easy return policy.
+              </p>
+            </div>
 
-      {/* VIDEO 1 */}
-      {product.video1 ? (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2 text-amber-700">Demo Video 1</h3>
-          <iframe
-            className="w-full h-64 md:h-96 rounded-lg"
-            src={product.video1.replace("watch?v=", "embed/")}
-            allowFullScreen
-          />
-        </div>
-      ) : (
-        <p>No demo video available.</p>
-      )}
+            {/* Online Support */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
+              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
+                <Headphones className="w-6 h-6 text-[#A8734B]" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Online Support</h3>
+              <p className="text-xs text-gray-600">
+                We give 24/7 online support
+              </p>
+            </div>
 
-      {/* VIDEO 2 (optional) */}
-      {product.video2 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-2 text-amber-700">Demo Video 2</h3>
-          <iframe
-            className="w-full h-64 md:h-96 rounded-lg"
-            src={product.video2.replace("watch?v=", "embed/")}
-            allowFullScreen
-          />
-        </div>
-      )}
+            {/* Fast Delivery */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
+              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
+                <Truck className="w-6 h-6 text-[#A8734B]" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+              <p className="text-xs text-gray-600">
+                We provide fast delivery to our customers
+              </p>
+            </div>
+          </div>
 
-    </TabsContent>
-  </Tabs>
-
-</div>
-
-        {/* Similar products */}
-        <div className="mt-10">
-          <h3 className="text-xl font-semibold mb-4">Similar More</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
-            {similar.map((p) => (
-              <ProductCard
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price - (p.discount || 0)}
-                image={p.images?.[0] ?? "/product.png"}
-                offer={p.discount ? `${p.discount}% OFF` : undefined}
-              />
-            ))}
+          {/* Similar Products Section */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">Similar More</h3>
+              <div className="flex items-center gap-2">
+                <button 
+                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-[#A8734B] hover:border-[#A8734B] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button 
+                  className="w-8 h-8 rounded-full border border-[#A8734B] flex items-center justify-center text-[#A8734B] hover:bg-[#A8734B] hover:text-white transition"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+              {similar.map((p) => {
+                const discountedPrice = p.discount 
+                  ? Math.round(p.price - (p.price * p.discount / 100))
+                  : p.price;
+                return (
+                  <ProductCard
+                    key={p._id}
+                    id={p._id}
+                    name={p.name}
+                    price={`Rs: ${discountedPrice}`}
+                    image={p.images?.[0] ?? "/product.png"}
+                    offer={p.discount ? `${p.discount}% OFF` : undefined}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

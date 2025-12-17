@@ -30,7 +30,7 @@ const FeatureSection = () => {
     {features.map((feature, i) => (
       <div
         key={i}
-        className="flex flex-col items-center space-y-2 max-w-[160px]"
+        className="flex flex-col items-center space-y-2 max-w-160px"
       >
         <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
           <img

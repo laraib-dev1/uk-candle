@@ -39,7 +39,9 @@ export default function () {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [heroBanner, setHeroBanner] = useState<Banner | null>(null);
+
+  // Store all banners keyed by `slot` so we can use 3 different ones on this page.
+  const [bannersBySlot, setBannersBySlot] = useState<Record<string, Banner>>({});
 
   useEffect(() => {
     fetchProducts();
@@ -70,12 +72,15 @@ export default function () {
     }
   };
 
-  // Load banners and pick the "hero-main" one for this page
+  // Load all banners once and index them by slot
   const fetchBanners = async () => {
     try {
       const data = await getBanners();
-      const hero = data.find((b) => b.slot === "hero-main");
-      setHeroBanner(hero || null);
+      const map: Record<string, Banner> = {};
+      data.forEach((b) => {
+        map[b.slot] = b;
+      });
+      setBannersBySlot(map);
     } catch (err) {
       console.error("Failed to load banners for Landing page", err);
     }
@@ -85,13 +90,12 @@ export default function () {
 
       <Navbar />
       <main>
-        {/* Top hero section. If admin has configured a hero banner, we show it.
-            Otherwise we fall back to the previous static image. */}
-        {heroBanner ? (
+        {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
+        {bannersBySlot["hero-main"] ? (
           <Hero
             title="Welcome to our store"
             subtitle="Discover our latest collections."
-            image={heroBanner.imageUrl}
+            image={bannersBySlot["hero-main"].imageUrl}
             variant="full-background"
           />
         ) : (
@@ -102,10 +106,6 @@ export default function () {
             variant="full-background"
           />
         )}
-
-        {/* </section> */}
-        
-       
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
 <ProductGrid
@@ -135,7 +135,8 @@ export default function () {
 
         </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-           <FeatureHero/>
+           {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set */}
+           <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
 
@@ -166,11 +167,12 @@ export default function () {
           <OfferSection />
         </section>
          <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+           {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner */}
            <Hero2
-           title="Discover new scents"
-           subtitle="A selection of fragrances to brighten your mood."
-           image="/hero.png"
-           imagePosition="right"
+             title="Discover new scents"
+             subtitle="A selection of fragrances to brighten your mood."
+             image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
+             imagePosition="right"
            />
          </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

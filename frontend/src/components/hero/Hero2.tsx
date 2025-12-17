@@ -25,7 +25,7 @@ const Hero2 = ({
   };
 
   return (
-    <section className="py-10">
+    <section className="py-10 bg-gray-200">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {fullWidthText ? (
           <div className="flex flex-col justify-center py-10 text-center">
@@ -41,9 +41,10 @@ const Hero2 = ({
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-center ${
-              imagePosition === "left" ? "md:flex-row-reverse" : ""
-            }`}
+            // className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-center ${
+            //   imagePosition === "left" ? "md:flex-row-reverse" : ""
+            // }`}
+            className={`grid grid-cols-1 md:grid-cols-[1fr_1.6fr] gap-6 items-center`}
           >
             {imagePosition === "left" && image && (
               <div className="w-full h-72 md:h-[380px] overflow-hidden rounded-l-2xl md:rounded-l-2xl md:rounded-r-none">

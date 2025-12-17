@@ -5,28 +5,49 @@ type Props = {
 };
 
 export default function ProductImageGallery({ images }: Props) {
-  const [selected, setSelected] = useState(images[0]);
+  const [selected, setSelected] = useState(images[0] || "/product.png");
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main Image */}
-      <img
-        src={selected}
-        alt="Product"
-        className="w-full h-[400px] object-cover rounded"
-      />
+    <div className="flex flex-col gap-4 w-full">
+      {/* Main Image - 3:4 aspect ratio */}
+      <div className="w-full aspect-3/4 bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+        <img
+          src={selected}
+          alt="Product"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/product.png";
+          }}
+        />
+      </div>
 
-      {/* Thumbnails */}
-      <div className="flex gap-2">
+      {/* Thumbnails - 4 small square boxes below main image */}
+      <div className="grid grid-cols-4 gap-2 w-full">
         {images.slice(0, 4).map((img, i) => (
-          <img
+          <div
             key={i}
-            src={img}
-            alt={`Thumbnail ${i}`}
             onClick={() => setSelected(img)}
-            className={`w-16 h-16 object-cover rounded border cursor-pointer 
-              ${selected === img ? "border-amber-500" : "border-gray-300"}`}
-          />
+            className={`w-full aspect-square bg-gray-100 overflow-hidden rounded-lg border-2 cursor-pointer transition-all
+              ${selected === img ? "border-[#A8734B]" : "border-gray-200"}`}
+          >
+            <img
+              src={img}
+              alt={`Thumbnail ${i + 1}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/product.png";
+              }}
+            />
+          </div>
+        ))}
+        {/* Fill remaining slots if less than 4 images */}
+        {images.length < 4 && Array.from({ length: 4 - images.length }).map((_, i) => (
+          <div
+            key={`placeholder-${i}`}
+            className="w-full aspect-square bg-gray-100 rounded-lg border-2 border-gray-200 flex items-center justify-center"
+          >
+            <span className="text-gray-400 text-xs">No image</span>
+          </div>
         ))}
       </div>
     </div>

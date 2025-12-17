@@ -2,37 +2,40 @@ import React, { useEffect, useState } from "react";
 import ImageCropperModal from "@/components/admin/product/ImageCropperModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getBanners, updateBanner, type Banner, type BannerSlot } from "@/api/banner.api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RichTextEditor } from "@mantine/rte";
+import { getBanners, updateBanner, type BannerSlot } from "@/api/banner.api";
+import { getAllContent, updateContent, type ContentPage, type FAQ } from "@/api/content.api";
 
-// Small helper type describing one banner "slot" on the page
+// -------------------- CONFIG: Banner slots --------------------
+// Each slot connects admin UI → backend → Landing/Shop components.
 interface BannerSlotConfig {
   id: BannerSlot | string;
   label: string;
-  // Human‑friendly description so you remember where it shows
+  // Where this banner is used in the frontend (for your understanding)
   description: string;
   // Recommended aspect ratio for the cropper (width / height)
   aspect: number;
 }
 
-// We will manage 4 banner positions, similar to your screenshot.
+// 3 banners on Landing page + 1 banner on Shop page
 const BANNER_SLOTS: BannerSlotConfig[] = [
   {
     id: "hero-main",
-    label: "Hero Banner",
-    description: "Large banner on the Landing page hero section.",
-    // Very wide hero. You can tweak this later if you like.
+    label: "Landing Hero (Top)",
+    description: "Big hero background at the top of the Landing page.",
     aspect: 16 / 5,
   },
   {
     id: "hero-secondary",
-    label: "Secondary Banner",
-    description: "Second banner on the admin Assets page. Use wherever you want later.",
+    label: "Landing Hero 2",
+    description: "Image used in the middle Hero2 section on the Landing page.",
     aspect: 16 / 6,
   },
   {
     id: "hero-tertiary",
-    label: "Third Banner",
-    description: "Third banner on the admin Assets page. Optional usage.",
+    label: "Landing Feature Hero",
+    description: "Wide image used in the FeatureHero section on the Landing page.",
     aspect: 16 / 6,
   },
   {
@@ -52,7 +55,7 @@ interface BannerState {
   error?: string;
 }
 
-// Admin Assets page – for now we only implement the "Banners" tab.
+// -------------------- MAIN COMPONENT --------------------
 const AssetsPage: React.FC = () => {
   const [banners, setBanners] = useState<Record<string, BannerState>>({});
 
@@ -61,6 +64,11 @@ const AssetsPage: React.FC = () => {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropAspect, setCropAspect] = useState(1);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
+
+  // Content pages state (Privacy, Terms, FAQs)
+  const [privacyContent, setPrivacyContent] = useState({ title: "", subTitle: "", description: "", loading: false });
+  const [termsContent, setTermsContent] = useState({ title: "", subTitle: "", description: "", loading: false });
+  const [faqsContent, setFaqsContent] = useState<{ faqs: FAQ[]; loading: boolean }>({ faqs: [], loading: false });
 
   // -------- 1. Load existing banners from backend on mount --------
   useEffect(() => {
@@ -85,6 +93,48 @@ const AssetsPage: React.FC = () => {
     };
 
     load();
+  }, []);
+
+  // Load content pages on mount
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        const contents = await getAllContent();
+        
+        const privacy = contents.find(c => c.type === "privacy");
+        const terms = contents.find(c => c.type === "terms");
+        const faqs = contents.find(c => c.type === "faqs");
+        
+        if (privacy) {
+          setPrivacyContent({
+            title: privacy.title || "",
+            subTitle: privacy.subTitle || "",
+            description: privacy.description || "",
+            loading: false
+          });
+        }
+        
+        if (terms) {
+          setTermsContent({
+            title: terms.title || "",
+            subTitle: terms.subTitle || "",
+            description: terms.description || "",
+            loading: false
+          });
+        }
+        
+        if (faqs) {
+          setFaqsContent({
+            faqs: faqs.faqs || [],
+            loading: false
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load content pages", err);
+      }
+    };
+    
+    loadContent();
   }, []);
 
   // -------- 2. When user picks a file for a banner slot --------
@@ -176,6 +226,85 @@ const AssetsPage: React.FC = () => {
     }
   };
 
+  // Save Privacy Policy
+  const handleSavePrivacy = async () => {
+    try {
+      setPrivacyContent(prev => ({ ...prev, loading: true }));
+      await updateContent("privacy", {
+        title: privacyContent.title,
+        subTitle: privacyContent.subTitle,
+        description: privacyContent.description
+      });
+      setPrivacyContent(prev => ({ ...prev, loading: false }));
+      alert("Privacy Policy updated successfully!");
+    } catch (err: any) {
+      console.error("Failed to save privacy policy", err);
+      setPrivacyContent(prev => ({ ...prev, loading: false }));
+      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  // Save Terms & Conditions
+  const handleSaveTerms = async () => {
+    try {
+      setTermsContent(prev => ({ ...prev, loading: true }));
+      await updateContent("terms", {
+        title: termsContent.title,
+        subTitle: termsContent.subTitle,
+        description: termsContent.description
+      });
+      setTermsContent(prev => ({ ...prev, loading: false }));
+      alert("Terms & Conditions updated successfully!");
+    } catch (err: any) {
+      console.error("Failed to save terms", err);
+      setTermsContent(prev => ({ ...prev, loading: false }));
+      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  // Save FAQs
+  const handleSaveFAQs = async () => {
+    try {
+      setFaqsContent(prev => ({ ...prev, loading: true }));
+      await updateContent("faqs", {
+        title: "Frequently Asked Questions",
+        subTitle: "",
+        description: "",
+        faqs: faqsContent.faqs
+      });
+      setFaqsContent(prev => ({ ...prev, loading: false }));
+      alert("FAQs updated successfully!");
+    } catch (err: any) {
+      console.error("Failed to save FAQs", err);
+      setFaqsContent(prev => ({ ...prev, loading: false }));
+      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  // Add new FAQ
+  const handleAddFAQ = () => {
+    setFaqsContent(prev => ({
+      ...prev,
+      faqs: [...prev.faqs, { question: "", answer: "" }]
+    }));
+  };
+
+  // Update FAQ
+  const handleUpdateFAQ = (index: number, field: "question" | "answer", value: string) => {
+    setFaqsContent(prev => ({
+      ...prev,
+      faqs: prev.faqs.map((faq, i) => i === index ? { ...faq, [field]: value } : faq)
+    }));
+  };
+
+  // Remove FAQ
+  const handleRemoveFAQ = (index: number) => {
+    setFaqsContent(prev => ({
+      ...prev,
+      faqs: prev.faqs.filter((_, i) => i !== index)
+    }));
+  };
+
   return (
     <div className="space-y-6">
       {/* Page title */}
@@ -183,26 +312,25 @@ const AssetsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Assets Panel</h1>
           <p className="text-sm text-gray-500">
-            Manage banners that appear on your Landing and Shop pages.
+            Manage banners, legal pages, and FAQs shown on your storefront.
           </p>
         </div>
       </div>
 
-      {/* Tabs container – for now we only have a single tab named 'Banners'.
-          Later you can add more tabs here (e.g. 'Company Info', 'FAQ', etc.). */}
-      <div className="bg-white rounded-xl shadow-sm border">
-        <div className="border-b px-6 py-3 flex gap-4">
-          <button className="text-sm font-medium text-[#A8734B] border-b-2 border-[#A8734B] pb-1">
-            Banners
-          </button>
-          {/* Example of future tabs:
-          <button className="text-sm text-gray-500 hover:text-gray-700">
-            Company
-          </button>
-          */}
+      {/* Tabs wrapper – "banners" is active by default */}
+      <Tabs defaultValue="banners" className="bg-white rounded-xl shadow-sm border">
+        <div className="border-b px-6 py-3 flex items-center justify-between">
+          {/* Tab buttons */}
+          <TabsList className="bg-transparent p-0 gap-1 text-black">
+            <TabsTrigger value="banners">Banners</TabsTrigger>
+            <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
+            <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
+            <TabsTrigger value="faqs">FAQs</TabsTrigger>
+          </TabsList>
         </div>
 
-        <div className="p-6 space-y-6">
+        {/* -------- TAB: BANNERS (current UI) -------- */}
+        <TabsContent value="banners" className="p-6 space-y-6">
           {BANNER_SLOTS.map((slot) => {
             const state = banners[slot.id] || {
               imageUrl: "",
@@ -228,6 +356,7 @@ const AssetsPage: React.FC = () => {
                   </div>
                   <Button
                     variant="outline"
+                    className="text-black"
                     size="sm"
                     onClick={() =>
                       document
@@ -308,8 +437,174 @@ const AssetsPage: React.FC = () => {
               </section>
             );
           })}
-        </div>
-      </div>
+        </TabsContent>
+
+        {/* -------- TAB: PRIVACY POLICY -------- */}
+        <TabsContent value="privacy" className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Privacy Policy</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" className="text-black" onClick={() => setPrivacyContent({ title: "", subTitle: "", description: "", loading: false })}>
+                Discard
+              </Button>
+              <Button 
+                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                onClick={handleSavePrivacy}
+                disabled={privacyContent.loading}
+              >
+                {privacyContent.loading ? "Updating..." : "Update"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg p-6 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+              <Input
+                placeholder="placeholder"
+                className="text-black"
+                value={privacyContent.title}
+                onChange={(e) => setPrivacyContent(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+              <Input
+                placeholder="placeholder"
+                className="text-black"
+                value={privacyContent.subTitle}
+                onChange={(e) => setPrivacyContent(prev => ({ ...prev, subTitle: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+              <RichTextEditor
+                value={privacyContent.description}
+                onChange={(value) => setPrivacyContent(prev => ({ ...prev, description: value }))}
+                className="w-full bg-white text-gray-900 min-h-[300px]"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* -------- TAB: TERMS & CONDITIONS -------- */}
+        <TabsContent value="terms" className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Terms &amp; Conditions</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" className="text-black" onClick={() => setTermsContent({ title: "", subTitle: "", description: "", loading: false })}>
+                Discard
+              </Button>
+              <Button 
+                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                onClick={handleSaveTerms}
+                
+                disabled={termsContent.loading}
+              >
+                {termsContent.loading ? "Updating..." : "Update"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg p-6 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+              <Input
+                placeholder="placeholder"
+                className="text-black"
+                value={termsContent.title}
+                onChange={(e) => setTermsContent(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+              <Input
+                placeholder="placeholder"
+                className="text-black"
+                value={termsContent.subTitle}
+                onChange={(e) => setTermsContent(prev => ({ ...prev, subTitle: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+              <RichTextEditor
+                value={termsContent.description}
+                onChange={(value) => setTermsContent(prev => ({ ...prev, description: value }))}
+                className="w-full bg-white text-gray-900 min-h-[300px]"
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* -------- TAB: FAQs -------- */}
+        <TabsContent value="faqs" className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Frequently Asked Questions</h2>
+            <div className="flex gap-2">
+              <Button variant="outline"
+              className="text-black" onClick={() => setFaqsContent({ faqs: [], loading: false })}>
+                Discard
+              </Button>
+              <Button 
+                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                onClick={handleSaveFAQs}
+                disabled={faqsContent.loading}
+              >
+                {faqsContent.loading ? "Updating..." : "Update"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-white border rounded-lg p-6 space-y-4">
+            {faqsContent.faqs.map((faq, index) => (
+              <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">FAQ #{index + 1}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleRemoveFAQ(index)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Question</label>
+                  <Input
+                    placeholder="Question Here Lorem ipsum dolor sit amet."
+                    className="text-black"
+                    value={faq.question}
+                    onChange={(e) => handleUpdateFAQ(index, "question", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Answer</label>
+                  <RichTextEditor
+                    value={faq.answer}
+                    onChange={(value) => handleUpdateFAQ(index, "answer", value)}
+                    className="w-full bg-white text-gray-900 min-h-[150px]"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <Button variant="outline"  onClick={handleAddFAQ} className="w-full text-black">
+              + Add FAQ
+            </Button>
+
+            {faqsContent.faqs.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No FAQs added yet. Click "+ Add FAQ" to create one.
+              </p>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Shared cropper modal – it uses the aspect ratio from the slot config */}
       <ImageCropperModal
@@ -324,5 +619,6 @@ const AssetsPage: React.FC = () => {
 };
 
 export default AssetsPage;
+
 
 
