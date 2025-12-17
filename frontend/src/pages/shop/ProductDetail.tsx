@@ -10,7 +10,10 @@ import { getProduct, getProducts } from "@/api/product.api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Helmet } from "react-helmet";
 import { Flag, RotateCcw, Headphones, Truck, ChevronLeft, ChevronRight } from "lucide-react";
-
+interface Category {
+  _id?: string;
+  name: string;
+}
 interface Product {
   _id: string;
   name: string;
@@ -18,7 +21,7 @@ interface Product {
   discount?: number;
   description?: string;
   images?: string[];
-  category?: string;
+  category?: string | Category;
   categoryName?: string;
   metaFeatures?: string;  // HTML content
   metaInfo?: string;      // HTML content
@@ -154,7 +157,9 @@ const mapped = res.data.map((p: any) => ({
               {/* Category Badge - Always show, force display */}
               {(() => {
                 const catName = product.categoryName 
-                  || (typeof product.category === 'object' && product.category?.name) 
+                  || (typeof product.category === 'object' && product.category !== null
+  ? product.category.name
+  : undefined) 
                   || (typeof product.category === 'string' && product.category)
                   || "Category";
                 console.log("Rendering category:", catName, "from product:", product);
