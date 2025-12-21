@@ -26,7 +26,6 @@ export default function SocialShare({
   const whatsappShare = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
 
   const iconColor = "white";
-  const circleBgColor = "#b88b5f";
   const iconSize = 20;
 
   const sharedClass =
@@ -62,7 +61,13 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+          }}
         >
           <FaFacebookF size={iconSize} color={iconColor} />
         </a>
@@ -73,7 +78,13 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+          }}
         >
           <FaInstagram size={iconSize} color={iconColor} />
         </a>
@@ -84,7 +95,13 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+          }}
         >
           <FaTiktok size={iconSize} color={iconColor} />
         </a>

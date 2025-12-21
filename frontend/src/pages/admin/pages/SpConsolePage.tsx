@@ -7,16 +7,16 @@ export default function SpConsolePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-[#A8734B] mb-6">Sp Console</h1>
+      <h1 className="text-3xl font-bold theme-heading mb-6">Sp Console</h1>
 
       {/* Main Card */}
       <div className="bg-[#FDF8F4] border border-[#E8D4C4] rounded-2xl p-8 shadow-sm">
         {/* Header Icon & Title */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 bg-[#F5E6D8] rounded-full flex items-center justify-center mb-4">
-            <Code2 className="w-8 h-8 text-[#A8734B]" />
+            <Code2 className="w-8 h-8 theme-text-primary" />
           </div>
-          <h2 className="text-xl font-bold text-[#A8734B]">Developer Verification</h2>
+          <h2 className="text-xl font-bold theme-heading">Developer Verification</h2>
           <p className="text-gray-600 text-sm mt-1">
             We are enhancing the UI, Ux, Cx, Dx, Px. Do best serve best.
           </p>
@@ -26,7 +26,7 @@ export default function SpConsolePage() {
         <div className="flex justify-center mb-8">
           <button
             onClick={() => setShowModal(true)}
-            className="bg-[#A8734B] hover:bg-[#8B5E3C] text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+            className="text-white px-6 py-2.5 rounded-lg font-medium transition-colors theme-button"
           >
             Continue to Sp Console
           </button>

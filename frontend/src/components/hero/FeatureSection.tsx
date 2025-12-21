@@ -2,22 +2,22 @@ import React from "react";
 
 const features = [
   {
-    img: "/product.png",
+    img: "/feature 01.png",
     title: "100% Organic",
     subtitle: "Natural ingredients",
   },
   {
-    img: "/product.png",
+    img: "/feature 02.png",
     title: "Safe For The Body",
     subtitle: "All Skin Types",
   },
   {
-    img: "/product.png",
+    img: "/feature 03.png",
     title: "Free Delivery",
     subtitle: "Orders Over $100",
   },
   {
-    img: "/product.png",
+    img: "/feature 04.png",
     title: "Easy Returns",
     subtitle: "Return Up To 14 Days",
   },

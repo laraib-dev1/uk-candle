@@ -310,7 +310,7 @@ const AssetsPage: React.FC = () => {
       {/* Page title */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Assets Panel</h1>
+          <h1 className="theme-heading">Assets Panel</h1>
           <p className="text-sm text-gray-500">
             Manage banners, legal pages, and FAQs shown on your storefront.
           </p>
@@ -421,7 +421,7 @@ const AssetsPage: React.FC = () => {
 
                   <div className="flex justify-end items-end">
                     <Button
-                      className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white"
+                      className="theme-button"
                       onClick={() => handleSaveBanner(slot.id)}
                       disabled={state.loading}
                     >
@@ -448,7 +448,7 @@ const AssetsPage: React.FC = () => {
                 Discard
               </Button>
               <Button 
-                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                className="theme-button" 
                 onClick={handleSavePrivacy}
                 disabled={privacyContent.loading}
               >
@@ -498,7 +498,7 @@ const AssetsPage: React.FC = () => {
                 Discard
               </Button>
               <Button 
-                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                className="theme-button" 
                 onClick={handleSaveTerms}
                 
                 disabled={termsContent.loading}
@@ -550,7 +550,7 @@ const AssetsPage: React.FC = () => {
                 Discard
               </Button>
               <Button 
-                className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" 
+                className="theme-button" 
                 onClick={handleSaveFAQs}
                 disabled={faqsContent.loading}
               >

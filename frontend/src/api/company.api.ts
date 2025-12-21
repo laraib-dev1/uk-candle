@@ -54,3 +54,6 @@ export const updateCompany = async (data: any) => {
 
 
 
+
+
+

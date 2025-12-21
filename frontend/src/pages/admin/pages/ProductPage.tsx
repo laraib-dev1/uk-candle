@@ -185,10 +185,10 @@ const getColumns = () => {
   return (
     <div className="bg-white shadow rounded-lg p-4 md:p-6 overflow-visible">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-3 md:gap-0">
-        <h2 className="text-2xl font-semibold text-[#8B5E3C]">Products</h2>
+        <h2 className="text-2xl font-semibold theme-heading">Products</h2>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <Input placeholder="Search" value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-64 border-[#C4A484] text-gray-900" />
-          <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white w-full sm:w-auto" onClick={openAddModal}>
+          <Input placeholder="Search" value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-64 text-black" />
+          <Button className="text-white w-full sm:w-auto theme-button" onClick={openAddModal}>
             + Add New
           </Button>
         </div>

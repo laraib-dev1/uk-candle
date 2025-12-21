@@ -104,7 +104,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
           ×
         </button>
 
-        <h2 className="text-xl font-semibold mb-4">Checkout</h2>
+        <h2 className="text-xl font-semibold mb-4 theme-heading">Checkout</h2>
 
         {/* 1️⃣ Order Summary */}
         <div className="mb-6 p-4 border rounded-lg">
@@ -230,7 +230,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 className="border rounded-lg p-2"
               />
               <button
-                className="mt-2 w-full bg-gray-200 p-2 rounded"
+                className="mt-2 w-full p-2 rounded text-white theme-button"
                 onClick={handleAddressSave}
               >
                 Save Address

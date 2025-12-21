@@ -6,14 +6,17 @@ import {
   updateWebPage,
   deleteWebPage,
 } from "@/api/webpage.api";
+import IconPicker from "@/components/developer/IconPicker";
 
 interface WebPage {
   _id: string;
   title: string;
   slug: string;
+  icon: string;
   enabled: boolean;
   subInfo: string;
   order: number;
+  location: "nav" | "footer" | "both";
 }
 
 export default function WebPagesPage() {
@@ -23,8 +26,10 @@ export default function WebPagesPage() {
   const [newPage, setNewPage] = useState({
     title: "",
     slug: "",
+    icon: "",
     subInfo: "",
     enabled: true,
+    location: "footer" as "nav" | "footer" | "both",
   });
 
   useEffect(() => {
@@ -60,7 +65,7 @@ export default function WebPagesPage() {
       await createWebPage(newPage);
       await loadPages();
       setShowAddModal(false);
-      setNewPage({ title: "", slug: "", subInfo: "", enabled: true });
+      setNewPage({ title: "", slug: "", icon: "", subInfo: "", enabled: true, location: "footer" });
     } catch (error: any) {
       alert(error.response?.data?.message || "Failed to create page");
     } finally {
@@ -81,10 +86,10 @@ export default function WebPagesPage() {
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Web Pages</h1>
+        <h1 className="text-3xl font-bold theme-heading">Web Pages</h1>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#A8734B] hover:bg-[#8B5E3C] text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors theme-button"
         >
           <Plus size={18} />
           Add Page
@@ -94,8 +99,8 @@ export default function WebPagesPage() {
       {/* Pages List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-          <FileText className="w-5 h-5 text-[#A8734B]" />
-          <h2 className="font-semibold text-gray-900">All Pages</h2>
+          <FileText className="w-5 h-5 theme-text-primary" />
+          <h2 className="font-semibold theme-heading">All Pages</h2>
         </div>
 
         <div className="divide-y divide-gray-100">
@@ -107,6 +112,9 @@ export default function WebPagesPage() {
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900">{page.title}</h3>
                 <p className="text-sm text-gray-500">{page.subInfo || "sub info here"}</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Location: {page.location || "footer"}
+                </p>
               </div>
 
               <div className="flex items-center gap-4">
@@ -114,8 +122,9 @@ export default function WebPagesPage() {
                 <button
                   onClick={() => togglePage(page._id, page.enabled)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    page.enabled ? "bg-[#A8734B]" : "bg-gray-300"
+                    page.enabled ? "" : "bg-gray-300"
                   }`}
+                  style={page.enabled ? { backgroundColor: "var(--theme-primary)" } : {}}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -159,7 +168,18 @@ export default function WebPagesPage() {
                   type="text"
                   value={newPage.title}
                   onChange={(e) => setNewPage({ ...newPage, title: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  style={{
+                    "--tw-ring-color": "var(--theme-primary)",
+                  } as React.CSSProperties & { "--tw-ring-color": string }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   placeholder="Page Title"
                 />
               </div>
@@ -172,7 +192,18 @@ export default function WebPagesPage() {
                   type="text"
                   value={newPage.slug}
                   onChange={(e) => setNewPage({ ...newPage, slug: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  style={{
+                    "--tw-ring-color": "var(--theme-primary)",
+                  } as React.CSSProperties & { "--tw-ring-color": string }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   placeholder="/page-slug"
                 />
               </div>
@@ -185,9 +216,51 @@ export default function WebPagesPage() {
                   type="text"
                   value={newPage.subInfo}
                   onChange={(e) => setNewPage({ ...newPage, subInfo: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  style={{
+                    "--tw-ring-color": "var(--theme-primary)",
+                  } as React.CSSProperties & { "--tw-ring-color": string }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   placeholder="Sub info here"
                 />
+              </div>
+
+              <IconPicker
+                value={newPage.icon}
+                onChange={(iconName) => setNewPage({ ...newPage, icon: iconName })}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location
+                </label>
+                <select
+                  value={newPage.location}
+                  onChange={(e) => setNewPage({ ...newPage, location: e.target.value as "nav" | "footer" | "both" })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  style={{
+                    "--tw-ring-color": "var(--theme-primary)",
+                  } as React.CSSProperties & { "--tw-ring-color": string }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                >
+                  <option value="footer">Footer</option>
+                  <option value="nav">Navbar</option>
+                  <option value="both">Both</option>
+                </select>
               </div>
 
               <div className="flex items-center gap-2">
@@ -195,7 +268,8 @@ export default function WebPagesPage() {
                   type="checkbox"
                   checked={newPage.enabled}
                   onChange={(e) => setNewPage({ ...newPage, enabled: e.target.checked })}
-                  className="w-4 h-4 text-[#A8734B] border-gray-300 rounded focus:ring-[#A8734B]"
+                  className="w-4 h-4 border-gray-300 rounded"
+                  style={{ accentColor: "var(--theme-primary)" }}
                 />
                 <label className="text-sm text-gray-700">Enabled</label>
               </div>
@@ -210,7 +284,7 @@ export default function WebPagesPage() {
                 <button
                   onClick={handleAddPage}
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 bg-[#A8734B] hover:bg-[#8B5E3C] text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
                 >
                   {isLoading ? "Adding..." : "Add Page"}
                 </button>

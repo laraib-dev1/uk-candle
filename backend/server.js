@@ -13,6 +13,10 @@ import paymentRoutes from "./src/routes/payment.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
 import bannerRoutes from "./src/routes/banner.routes.js";
 import contentRoutes from "./src/routes/content.routes.js";
+import companyRoutes from "./src/routes/company.routes.js";
+import footerRoutes from "./src/routes/footer.routes.js";
+import admintabRoutes from "./src/routes/admintab.routes.js";
+import webpageRoutes from "./src/routes/webpage.routes.js";
 
 dotenv.config();
 
@@ -47,6 +51,10 @@ const startServer = async () => {
     app.use("/api/orders", orderRoutes);
     app.use("/api/banners", bannerRoutes);
     app.use("/api/content", contentRoutes);
+    app.use("/api/company", companyRoutes);
+    app.use("/api/footer", footerRoutes);
+    app.use("/api/admintabs", admintabRoutes);
+    app.use("/api/webpages", webpageRoutes);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

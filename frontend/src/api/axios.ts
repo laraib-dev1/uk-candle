@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const urls = import.meta.env.VITE_API_URLS.split(",").map((url: string) => url.trim());
+const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
 
 const isLocalhost =
   window.location.hostname === "localhost" ||

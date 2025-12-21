@@ -75,7 +75,7 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
       </div>
 
       <button
-        className="w-full mt-4 bg-amber-700 text-white py-3 rounded-lg"
+        className="w-full mt-4 text-white py-3 rounded-lg theme-button"
         onClick={handleSubmit}
         disabled={loading}
       >

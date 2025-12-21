@@ -65,7 +65,10 @@ const rightContent = (
         </div>
       )}
 
-      <div className="flex justify-between text-amber-700 font-bold text-lg">
+      <div 
+        className="flex justify-between font-bold text-lg"
+        style={{ color: "var(--theme-primary)" }}
+      >
         <span>Total</span>
         <span>${total.toFixed(2)}</span>
       </div>
@@ -73,7 +76,7 @@ const rightContent = (
 
     <button
       onClick={() => setOpenCheckout(true)}
-      className="mt-6 w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-all flex items-center justify-center gap-2"
+      className="mt-6 w-full text-white py-3 rounded-lg transition-all flex items-center justify-center gap-2 theme-button"
     >
       Go to Checkout →
     </button>

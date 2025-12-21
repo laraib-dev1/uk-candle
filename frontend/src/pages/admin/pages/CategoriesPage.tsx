@@ -90,7 +90,7 @@ const confirmDelete = async () => {
 
       {/* -------- Header Row -------- */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-[#8B5E3C]">Categories</h2>
+        <h2 className="text-2xl font-semibold theme-heading">Categories</h2>
 
         <div className="flex items-center gap-3">
           {/* Search */}
@@ -99,12 +99,12 @@ const confirmDelete = async () => {
               placeholder="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-64 border-[#C4A484] text-gray-900"
+              className="w-64 text-black"
             />
           </div>
 
           {/* Add Button */}
-          <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white"
+          <Button className="text-white theme-button"
           onClick={openAdd}
           >
             + Add New

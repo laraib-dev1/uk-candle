@@ -1,9 +1,8 @@
 import express from "express";
-import multer from "multer";
 import { getCompany, updateCompany } from "../controllers/company.controller.js";
+import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", getCompany);
 router.put("/", upload.fields([
@@ -12,6 +11,9 @@ router.put("/", upload.fields([
 ]), updateCompany);
 
 export default router;
+
+
+
 
 
 

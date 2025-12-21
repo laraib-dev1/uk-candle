@@ -340,7 +340,7 @@ const handleSubmit = () => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="theme-heading">
             {mode === "add" && "Add Product"}
             {mode === "edit" && "Edit Product"}
             {mode === "view" && "View Product"}
@@ -371,7 +371,15 @@ const handleSubmit = () => {
   value={typeof form.category === "string" ? form.category : form.category._id}
   onChange={(e) => setForm({ ...form, category: e.target.value })}
   disabled={isView}
-  className="border rounded p-2 w-full"
+  className="border rounded p-2 w-full text-black"
+  onFocus={(e) => {
+    e.currentTarget.style.borderColor = "var(--theme-primary)";
+    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+  }}
+  onBlur={(e) => {
+    e.currentTarget.style.borderColor = "";
+    e.currentTarget.style.boxShadow = "";
+  }}
 >
   
   {categories.map((cat) => (
@@ -402,7 +410,15 @@ const handleSubmit = () => {
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
                 disabled={isView}
-                className="border rounded p-2 w-full"
+                className="border rounded p-2 w-full text-black"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               >
                 {currencies.map((c) => (
                   <option key={c} value={c}>
@@ -678,7 +694,7 @@ const handleSubmit = () => {
 
         {!isView && (
           <DialogFooter>
-            <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" onClick={handleSubmit}>
+            <Button className="text-white theme-button" onClick={handleSubmit}>
               {mode === "add" ? "Add" : "Update"}
             </Button>
           </DialogFooter>

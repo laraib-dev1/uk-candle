@@ -1,7 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
+
+interface WebPage {
+  _id: string;
+  title: string;
+  slug: string;
+  icon: string;
+  enabled: boolean;
+  subInfo: string;
+  order: number;
+  location: "nav" | "footer" | "both";
+}
 
 export default function Footer() {
+  const [webPages, setWebPages] = useState<WebPage[]>([]);
+
+  useEffect(() => {
+    const loadWebPages = async () => {
+      try {
+        const pages = await getEnabledWebPagesByLocation("footer");
+        setWebPages(pages);
+      } catch (error) {
+        console.error("Failed to load web pages:", error);
+      }
+    };
+    loadWebPages();
+  }, []);
+
   return (
     <footer className="bg-gray-900 text-gray-300 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -12,21 +38,20 @@ export default function Footer() {
             <p className="text-xs text-gray-500">© {new Date().getFullYear()} VERES. All Rights Reserved.</p>
           </div>
 
-          {/* Column 1 */}
-          <div className="flex flex-col space-y-2 text-sm">
-            <a href="#" className="text-gray-300 hover:underline">Contact Us</a>
-            <a href="#" className="text-gray-300 hover:underline">Shop Categories</a>
-            <a href="#" className="text-gray-300 hover:underline">Store Location</a>
-            <Link to="/faqs" className="text-gray-300 hover:underline">FAQs</Link>
-          </div>
-
-          {/* Column 2 */}
-          <div className="flex flex-col space-y-2 text-sm">
-            <Link to="/terms-conditions" className="text-gray-300 hover:underline">Terms & Conditions</Link>
-            <a href="#" className="text-gray-300 hover:underline">Delivery</a>
-            <Link to="/privacy-policy" className="text-gray-300 hover:underline">Privacy Policy</Link>
-            <a href="#" className="text-gray-300 hover:underline">Services</a>
-          </div>
+          {/* Web Pages from backend */}
+          {webPages.length > 0 && (
+            <div className="flex flex-col space-y-2 text-sm">
+              {webPages.map((page) => (
+                <Link
+                  key={page._id}
+                  to={page.slug}
+                  className="text-gray-300 hover:underline"
+                >
+                  {page.title}
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Column 3 */}
           <div className="flex flex-col space-y-2 text-sm">

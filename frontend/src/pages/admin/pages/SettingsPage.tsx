@@ -145,7 +145,7 @@ const changePassword = async () => {
 
   return (
     <div className="w-full text-black">
-      <h1 className="text-2xl font-bold mb-6 text-[#A8734B]">Settings</h1>
+      <h1 className="theme-heading mb-6">Settings</h1>
 
       {/* PROFILE BOX */}
     
@@ -170,9 +170,13 @@ const changePassword = async () => {
             onClick={() => setTab(x as any)}
             className={`pb-2 capitalize ${
               tab === x
-                ? "border-b-2 border-[#A8734B] text-[#A8734B]"
+                ? "border-b-2 theme-border-primary theme-text-primary"
                 : "text-gray-500"
             }`}
+            style={tab === x ? {
+              borderBottomColor: "var(--theme-primary)",
+              color: "var(--theme-primary)"
+            } : {}}
           >
             {x}
           </button>
@@ -228,7 +232,7 @@ const changePassword = async () => {
       />
     </div>
 
-    <Button onClick={saveProfileWithAvatar} className="bg-[#A8734B] text-white">
+    <Button onClick={saveProfileWithAvatar} className="theme-button">
   {savingProfile ? "Saving..." : "Save Changes"}
 </Button>
 
@@ -273,7 +277,7 @@ const changePassword = async () => {
             </div>
           </div>
 
-          <Button onClick={changePassword} className="bg-[#A8734B] text-white">
+          <Button onClick={changePassword} className="theme-button">
   {changingPassword ? "Updating..." : "Update Password"}
 </Button>
 {passwordMsg && <p className="text-green-600 mt-2">{passwordMsg}</p>}

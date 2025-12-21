@@ -32,7 +32,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50 text-black">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4">Order Details</h2>
+        <h2 className="text-xl font-bold mb-4 theme-heading">Order Details</h2>
 
         <p><strong>Customer:</strong> {order.customerName}</p>
         <p><strong>Phone:</strong> {order.phoneNumber}</p>
@@ -48,7 +48,19 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
 
         <div className="mt-4">
           <label className="block mb-1">Status:</label>
-          <select value={status} onChange={e => setStatus(e.target.value)} className="border rounded p-2 w-full">
+          <select 
+            value={status} 
+            onChange={e => setStatus(e.target.value)} 
+            className="border rounded p-2 w-full text-black"
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
+              e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "";
+              e.currentTarget.style.boxShadow = "";
+            }}
+          >
             <option value="Pending">Pending</option>
             <option value="Complete">Complete</option>
             <option value="Cancel">Cancel</option>
@@ -57,8 +69,8 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
         </div>
 
         <div className="flex justify-end mt-4 gap-2">
-          <button className="px-4 py-2 bg-gray-200 rounded" onClick={onClose}>Close</button>
-          <button className="px-4 py-2 bg-[#C69C6D] hover:bg-[#b88b5f] text-white rounded" onClick={handleSave}>Save</button>
+          <button className="px-4 py-2 bg-gray-200 rounded text-black" onClick={onClose}>Close</button>
+          <button className="px-4 py-2 text-white rounded theme-button" onClick={handleSave}>Save</button>
         </div>
       </div>
     </div>

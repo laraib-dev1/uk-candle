@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../ui/buttons/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
 import { Menu, ShoppingCart, LogOut } from "lucide-react";
+import { getCompany } from "@/api/company.api";
+import * as LucideIcons from "lucide-react";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -13,6 +15,20 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { totalItems } = useCart();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [company, setCompany] = useState<{ logo: string; company: string }>({ logo: "", company: "" });
+
+  useEffect(() => {
+    const loadCompany = async () => {
+      try {
+        const data = await getCompany();
+        setCompany({ logo: data.logo || "/logo-removebg-preview.png", company: data.company || "Grace by Anu" });
+      } catch (error) {
+        console.error("Failed to load company:", error);
+        setCompany({ logo: "/logo-removebg-preview.png", company: "Grace by Anu" });
+      }
+    };
+    loadCompany();
+  }, []);
 
 //   const storedUser = localStorage.getItem("user");
 // const user = storedUser ? JSON.parse(storedUser) : null;
@@ -27,10 +43,10 @@ let user = null;
     user = null; // fallback if parsing fails
   }
  const linkClasses = (path: string) => {
-  const base = "text-sm hover:text-gray-900 transition-colors";
+  const base = "text-sm transition-colors";
   const color = pathname === path 
-    ? "text-gray-900  font-medium underline underline-offset-4" 
-    : "text-gray-600";
+    ? "font-medium underline underline-offset-4" 
+    : "";
 
   return `${base} ${color}`;
 };
@@ -43,18 +59,41 @@ let user = null;
         <Link
           to="/"
           className="text-xl font-serif font-semibold flex items-center gap-2"
+          style={{ color: "var(--theme-primary)" }}
         >
-          <img
-    src="/logo-removebg-preview.png"
-    alt="Logo"
-    className="w-16 h-16 object-contain"
-  /> Grace by Anu
+          {company.logo && (
+            <img
+              src={company.logo.startsWith("http") ? company.logo : (company.logo ? `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${company.logo.startsWith("/") ? "" : "/"}${company.logo}` : "/logo-removebg-preview.png")}
+              alt="Logo"
+              className="w-16 h-16 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/logo-removebg-preview.png";
+              }}
+            />
+          )}
+          {company.company}
         </Link>
 
         {/* CENTER: Nav links (desktop only) */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className= {linkClasses("/")}>Home</Link>
-          <Link to="/shop" className={linkClasses("/shop")}>Shop</Link>
+          <Link 
+            to="/" 
+            className={linkClasses("/")}
+            style={{ 
+              color: pathname === "/" ? "var(--theme-primary)" : "var(--theme-dark)",
+            }}
+          >
+            Home
+          </Link>
+          <Link 
+            to="/shop" 
+            className={linkClasses("/shop")}
+            style={{ 
+              color: pathname === "/shop" ? "var(--theme-primary)" : "var(--theme-dark)",
+            }}
+          >
+            Shop
+          </Link>
         </nav>
 
         {/* RIGHT: Cart + Sign In + Mobile Menu */}
@@ -85,7 +124,19 @@ let user = null;
           <div className="hidden md:block">
   {!user ? (
     <Button
-      className="border text-gray-700 bg-white hover:bg-gray-100"
+      className="border text-white"
+      style={{
+        backgroundColor: "var(--theme-primary)",
+        borderColor: "var(--theme-primary)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+        e.currentTarget.style.borderColor = "var(--theme-dark)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+        e.currentTarget.style.borderColor = "var(--theme-primary)";
+      }}
       onClick={() => navigate("/login")}
     >
       Sign In
@@ -157,20 +208,6 @@ let user = null;
                   >
                     Shop
                   </Link>
-                  {/* <Link
-                    to="/pages"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Pages
-                  </Link> */}
-                  {/* <Link
-                    to="/blog"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Blog
-                  </Link> */}
                 </nav>
 
                 {/* <Button className="mt-auto border border-gray-300 text-gray-700 bg-white dark:bg-gray-900 dark:text-white hover:bg-gray-100">

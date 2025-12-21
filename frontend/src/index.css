@@ -38,6 +38,15 @@ body {
 :root {
   --background: 255 255 255; /* white */
   --foreground: 0 0 0; /* black */
+  /* Brand theme variables - will be set by ThemeContext */
+  --theme-primary: #A8734B;
+  --theme-primary-rgb: 168, 115, 75;
+  --theme-dark: #8B5E3C;
+  --theme-dark-rgb: 139, 94, 60;
+  --theme-light: #D4B8A8;
+  --theme-light-rgb: 212, 184, 168;
+  --theme-accent: #E8D4C4;
+  --theme-accent-rgb: 232, 212, 196;
 }
 
 .dark {
@@ -63,5 +72,217 @@ body {
 @layer utilities {
   .rdt_TableCell {
     overflow: visible !important;
+  }
+  
+  /* Theme utility classes */
+  .theme-bg-primary {
+    background-color: var(--theme-primary) !important;
+  }
+  
+  .theme-bg-dark {
+    background-color: var(--theme-dark) !important;
+  }
+  
+  .theme-bg-light {
+    background-color: var(--theme-light) !important;
+  }
+  
+  .theme-bg-accent {
+    background-color: var(--theme-accent) !important;
+  }
+  
+  .theme-text-primary {
+    color: var(--theme-primary) !important;
+  }
+  
+  .theme-text-dark {
+    color: var(--theme-dark) !important;
+  }
+  
+  .theme-border-primary {
+    border-color: var(--theme-primary) !important;
+  }
+  
+  .theme-button {
+    background-color: var(--theme-primary) !important;
+    color: white !important;
+    border-color: var(--theme-primary) !important;
+  }
+  
+  .theme-button:hover {
+    background-color: var(--theme-dark) !important;
+    border-color: var(--theme-dark) !important;
+  }
+  
+  .theme-heading {
+    color: var(--theme-primary) !important;
+  }
+  
+  /* Active tab styling - no theme background */
+  [data-state="active"] {
+    background-color: transparent !important;
+    color: var(--theme-primary) !important;
+    font-weight: 600;
+  }
+  
+  /* Hide broken images in meta info */
+  .meta-info-content img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .meta-info-content img[src=""],
+  .meta-info-content img:not([src]) {
+    display: none !important;
+  }
+  
+  /* Style formatted content from rich text editor */
+  .meta-info-content {
+    line-height: 1.6;
+  }
+  
+  .meta-info-content p {
+    margin-bottom: 1rem;
+    color: black !important;
+  }
+  
+  .meta-info-content ul,
+  .meta-info-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+  
+  .meta-info-content li {
+    margin-bottom: 0.5rem;
+    color: black !important;
+    list-style-type: disc;
+  }
+  
+  .meta-info-content ol li {
+    list-style-type: decimal;
+  }
+  
+  .meta-info-content a {
+    color: var(--theme-primary) !important;
+    text-decoration: underline;
+  }
+  
+  .meta-info-content a:hover {
+    color: var(--theme-dark) !important;
+  }
+  
+  .meta-info-content strong,
+  .meta-info-content b {
+    font-weight: 600;
+    color: black !important;
+  }
+  
+  .meta-info-content em,
+  .meta-info-content i {
+    font-style: italic;
+    color: black !important;
+  }
+  
+  .meta-info-content h1,
+  .meta-info-content h2,
+  .meta-info-content h3,
+  .meta-info-content h4,
+  .meta-info-content h5,
+  .meta-info-content h6 {
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: black !important;
+  }
+  
+  .meta-info-content blockquote {
+    border-left: 4px solid var(--theme-primary);
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 1rem;
+    color: black !important;
+    font-style: italic;
+  }
+  
+  /* Remove backgrounds from meta info and meta features - AGGRESSIVE OVERRIDE */
+  .meta-info-content,
+  .meta-info-content *,
+  .meta-features-container,
+  .meta-features-container *,
+  .meta-features-list,
+  .meta-features-list * {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: black !important;
+  }
+  
+  .meta-info-content p,
+  .meta-info-content div,
+  .meta-info-content span,
+  .meta-info-content ul,
+  .meta-info-content li,
+  .meta-info-content h1,
+  .meta-info-content h2,
+  .meta-info-content h3,
+  .meta-info-content h4,
+  .meta-info-content h5,
+  .meta-info-content h6,
+  .meta-info-content table,
+  .meta-info-content td,
+  .meta-info-content th,
+  .meta-info-content blockquote,
+  .meta-info-content code,
+  .meta-info-content pre,
+  .meta-features-container p,
+  .meta-features-container div,
+  .meta-features-container span,
+  .meta-features-container ul,
+  .meta-features-container li,
+  .meta-features-list li {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    color: black !important;
+  }
+  
+  /* Override prose class backgrounds */
+  .meta-info-content.prose,
+  .meta-info-content.prose *,
+  .meta-info-content.prose p,
+  .meta-info-content.prose div,
+  .meta-info-content.prose ul,
+  .meta-info-content.prose li {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+  
+  /* Remove theme background from tabs content */
+  [data-radix-tabs-content] {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+  
+  /* Input focus borders use theme color in admin and developer panels */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--theme-primary) !important;
+    box-shadow: 0 0 0 2px var(--theme-primary) !important;
+    outline: none !important;
+  }
+  
+  /* Ensure all input text is black */
+  input,
+  textarea,
+  select {
+    color: black !important;
+  }
+  
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af !important;
   }
 }

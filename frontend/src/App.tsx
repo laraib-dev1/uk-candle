@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import {  BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/shop/Landing";
 import Shop from "./pages/shop/Shop";
 import ProductDetail from "./pages/shop/ProductDetail";
@@ -24,6 +24,12 @@ const AdminAssets = React.lazy(() => import("./pages/admin/pages/AssetsPage"));
 // const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
 const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
 const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
+const SpConsolePage = React.lazy(() => import("./pages/admin/pages/SpConsolePage"));
+const DeveloperLayout = React.lazy(() => import("./pages/developer/layout/DeveloperLayout"));
+const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabsPage"));
+const CompanyPage = React.lazy(() => import("./pages/developer/pages/CompanyPage"));
+const WebPagesPage = React.lazy(() => import("./pages/developer/pages/WebPagesPage"));
+const FooterPage = React.lazy(() => import("./pages/developer/pages/FooterPage"));
 
 
 export default function App() {
@@ -85,6 +91,26 @@ export default function App() {
             <Route path="categories" element={<AdminCategories />} />
             <Route path="assets" element={<AdminAssets />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="sp-console" element={<SpConsolePage />} />
+          </Route>
+
+          {/* ---------- PROTECTED DEVELOPER ROUTES ---------- */}
+          <Route
+            path="/developer/*"
+            element={
+              <AdminRoute>
+                <Suspense fallback={<div>Loading developer...</div>}>
+                  <DeveloperLayout />
+                </Suspense>
+              </AdminRoute>
+            }
+          >
+            <Route index element={<Navigate to="admin-tabs" replace />} />
+            <Route path="admin-tabs" element={<AdminTabsPage />} />
+            <Route path="company" element={<CompanyPage />} />
+            <Route path="web-pages" element={<WebPagesPage />} />
+            <Route path="footer" element={<FooterPage />} />
+            <Route path="sp-console" element={<SpConsolePage />} />
           </Route>
    {/* ---------- 404 PAGE ---------- */}
           <Route path="*" element={<div>Not found</div>} />

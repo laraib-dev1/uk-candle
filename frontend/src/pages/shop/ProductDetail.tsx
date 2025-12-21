@@ -1,19 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Helmet } from "react-helmet";
+import {
+  Flag,
+  RotateCcw,
+  Headphones,
+  Truck,
+} from "lucide-react";
+
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
 import AddToCartButton from "@/components/ui/buttons/AddToCartButton";
 import SocialShare from "@/components/products/SocialShare";
 import ProductCard from "@/components/products/ProductCard";
-import { getProduct, getProducts } from "@/api/product.api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Helmet } from "react-helmet";
-import { Flag, RotateCcw, Headphones, Truck, ChevronLeft, ChevronRight } from "lucide-react";
-interface Category {
-  _id?: string;
-  name: string;
-}
+import { getProduct, getProducts } from "@/api/product.api";
+
+/* =======================
+   Types
+======================= */
 interface Product {
   _id: string;
   name: string;
@@ -21,92 +27,79 @@ interface Product {
   discount?: number;
   description?: string;
   images?: string[];
-  category?: string | Category;
+  category?: any;
   categoryName?: string;
-  metaFeatures?: string;  // HTML content
-  metaInfo?: string;      // HTML content
-  video1?: string;        // YouTube URL
-  video2?: string;        // YouTube URL (optional)
+  metaFeatures?: string;
+  metaInfo?: string;
+  video1?: string;
+  video2?: string;
   stock?: number;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
+/* =======================
+   Component
+======================= */
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /* =======================
+     Fetch Single Product
+  ======================= */
+  useEffect(() => {
+    if (!id) return;
 
-  // Fetch single product
-   useEffect(() => {
-  if (!id) return;
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-      const res = await getProduct(id);  
-      console.log("GET PRODUCT RESPONSE:", res);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const data = await getProduct(id);
 
-      const productData = res;  // ← FIXED
+        const images = [
+          data.image1,
+          data.image2,
+          data.image3,
+          data.image4,
+          data.image5,
+          data.image6,
+        ].filter(Boolean);
 
-      const images = [
-        productData.image1,
-        productData.image2,
-        productData.image3,
-        productData.image4,
-        productData.image5,
-        productData.image6
-      ].filter(Boolean);
+        setProduct({
+          ...data,
+          images,
+          categoryName:
+            data.categoryName ||
+            data.category?.name ||
+            "Category",
+          metaFeatures: data.metaFeatures || "",
+          metaInfo: data.metaInfo || "",
+        });
+      } catch (err) {
+        console.error("PRODUCT FETCH ERROR:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Extract category name - Backend should return categoryName directly
-      // The backend controller returns categoryName in the response
-      const categoryName = productData.categoryName 
-        || (typeof productData.category === 'object' && productData.category?.name)
-        || productData.category
-        || 'Category';
+    fetchProduct();
+  }, [id]);
 
-      console.log("=== PRODUCT DATA DEBUG ===");
-      console.log("Full product response:", productData);
-      console.log("Category fields:", { 
-        categoryName: productData.categoryName, 
-        category: productData.category,
-        categoryId: productData.categoryId,
-        categoryNameType: typeof productData.categoryName,
-        categoryType: typeof productData.category,
-        allKeys: Object.keys(productData).filter(k => k.toLowerCase().includes('categ'))
-      });
-      console.log("Final categoryName:", categoryName);
-
-      // Ensure categoryName is explicitly set in product state
-      const finalProduct = { 
-        ...productData, 
-        images, 
-        categoryName: categoryName 
-      };
-      
-      console.log("Setting product with categoryName:", finalProduct.categoryName);
-      setProduct(finalProduct);
-
-    } catch (err) {
-      console.error("PRODUCT FETCH ERROR =>", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchProduct();
-}, [id]);
-
-
-  // Fetch all products for similar products
-useEffect(() => {
+  /* =======================
+     Fetch All Products
+  ======================= */
+  useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await getProducts(); // returns { success, data }
-const mapped = res.data.map((p: any) => ({
+        const res = await getProducts();
+        const mapped = res.data.map((p: any) => ({
           ...p,
-          id: p._id,
-          categoryId: p.category?._id,
+          images: [
+            p.image1,
+            p.image2,
+            p.image3,
+          ].filter(Boolean),
           categoryName: p.category?.name,
         }));
         setAllProducts(mapped);
@@ -114,272 +107,275 @@ const mapped = res.data.map((p: any) => ({
         console.error(err);
       }
     };
+
     fetchAll();
   }, []);
 
-  if (!product) return <div>Loading...</div>;
+  /* =======================
+     Handle Broken Images and Remove Backgrounds in Meta Info
+  ======================= */
+  useEffect(() => {
+    if (product) {
+      // Wait for DOM to update, then handle broken images and backgrounds
+      setTimeout(() => {
+        const metaInfoDiv = document.querySelector('.meta-info-content');
+        const metaFeaturesContainer = document.querySelector('.meta-features-container');
+        
+        // Remove backgrounds from all elements in meta info
+        if (metaInfoDiv) {
+          const allElements = metaInfoDiv.querySelectorAll('*');
+          allElements.forEach((el) => {
+            (el as HTMLElement).style.backgroundColor = 'transparent';
+            (el as HTMLElement).style.background = 'transparent';
+            (el as HTMLElement).style.backgroundImage = 'none';
+          });
+          
+          // Also handle broken images
+          const images = metaInfoDiv.querySelectorAll('img');
+          images.forEach((img) => {
+            img.onerror = () => {
+              img.style.display = 'none';
+            };
+            // Check if image is already broken
+            if (!img.complete || img.naturalHeight === 0) {
+              img.style.display = 'none';
+            }
+          });
+        }
+        
+        // Remove backgrounds and set text color to black in meta features container
+        if (metaFeaturesContainer) {
+          const allElements = metaFeaturesContainer.querySelectorAll('*');
+          allElements.forEach((el) => {
+            (el as HTMLElement).style.backgroundColor = 'transparent';
+            (el as HTMLElement).style.background = 'transparent';
+            (el as HTMLElement).style.backgroundImage = 'none';
+            (el as HTMLElement).style.color = 'black';
+          });
+        }
+      }, 100);
+    }
+  }, [product]);
 
-  // similar products
-  const similar = allProducts.filter((p) => p._id !== product._id).slice(0, 4);
+  if (loading || !product) {
+    return <div className="p-10 text-center">Loading...</div>;
+  }
 
-  // Calculate discounted price
-  const discountedPrice = product.discount 
-    ? Math.round(product.price - (product.price * product.discount / 100))
+  /* =======================
+     Derived Data
+  ======================= */
+  const discountedPrice = product.discount
+    ? Math.round(product.price - (product.price * product.discount) / 100)
     : product.price;
 
-  // Extract attributes from metaFeatures (if available)
-  const attributes = product.metaFeatures 
-    ? product.metaFeatures.match(/<li>(.*?)<\/li>/g)?.map(li => li.replace(/<\/?li>/g, '')) || []
-    : ['EAN', 'Color', 'Attribute 3', 'Attribute 4', 'Attribute 5', 'Attribute 6'];
+  const similarProducts = allProducts
+    .filter((p) => p._id !== product._id)
+    .slice(0, 4);
 
+  // No need to parse - display as HTML like metaInfo
+
+  // Clean HTML content to remove broken images and backgrounds
+  const cleanHtmlContent = (html: string) => {
+    if (!html) return "";
+    // Remove img tags with empty src, invalid src, or placeholder text
+    let cleaned = html
+      .replace(/<img[^>]*src\s*=\s*["']?[^"'>]*["']?[^>]*>/gi, (match) => {
+        // Check if image src contains placeholder indicators
+        if (match.includes('wqwwwq') || match.includes('placeholder') || !match.match(/src\s*=\s*["']([^"']+)["']/)) {
+          return '';
+        }
+        return match;
+      })
+      .replace(/<img[^>]*>/gi, (match) => {
+        // Remove images without proper src
+        if (!match.match(/src\s*=\s*["']([^"']+)["']/)) {
+          return '';
+        }
+        return match;
+      });
+    
+    // Remove background styles from all elements
+    cleaned = cleaned.replace(/style\s*=\s*["'][^"']*background[^"']*["']/gi, (match) => {
+      // Remove background-related styles
+      const styleContent = match.match(/style\s*=\s*["']([^"']+)["']/)?.[1] || '';
+      const cleanedStyle = styleContent
+        .split(';')
+        .filter(prop => !prop.trim().toLowerCase().includes('background'))
+        .join(';');
+      return cleanedStyle ? `style="${cleanedStyle}"` : '';
+    });
+    
+    // Remove background-color specifically
+    cleaned = cleaned.replace(/background-color\s*:\s*[^;]+;?/gi, '');
+    cleaned = cleaned.replace(/background\s*:\s*[^;]+;?/gi, '');
+    
+    return cleaned;
+  };
+
+  /* =======================
+     JSX
+  ======================= */
   return (
     <>
       <Helmet>
         <title>{product.name} | My Shop</title>
         <meta property="og:title" content={product.name} />
         <meta property="og:description" content={product.description || ""} />
-        <meta property="og:image" content={product.images?.[0] || "/product.png"} />
+        <meta
+          property="og:image"
+          content={product.images?.[0] || "/product.png"}
+        />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:type" content="product" />
       </Helmet>
+
       <Navbar />
-      <div className="bg-white min-h-screen">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
-          {/* Main Product Section */}
-          <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-4 md:gap-6 mb-12">
-            {/* Left: Product Image Gallery - Fixed width, constrained */}
-            <div className="w-full max-w-[400px]">
-              <ProductImageGallery images={product.images || ["/product.png"]} />
-            </div>
 
-            {/* Right: Product Details - Takes all remaining space */}
-            <div className="flex flex-col gap-6 w-full">
-              {/* Category Badge - Always show, force display */}
-              {(() => {
-                const catName = product.categoryName 
-                  || (typeof product.category === 'object' && product.category !== null
-  ? product.category.name
-  : undefined) 
-                  || (typeof product.category === 'string' && product.category)
-                  || "Category";
-                console.log("Rendering category:", catName, "from product:", product);
-                return (
-                  <span className="inline-block bg-[#A8734B]/20 text-[#A8734B] text-xs font-semibold px-3 py-1 rounded-full w-fit">
-                    {catName}
-                  </span>
-                );
-              })()}
+      <div className="bg-white text-black min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          {/* Product Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <ProductImageGallery images={product.images || ["/product.png"]} />
 
-              {/* Product Title */}
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                {product.name}
-              </h1>
+            <div className="flex flex-col gap-6">
+              <span 
+                className="text-xs px-3 py-1 rounded-full w-fit"
+                style={{
+                  backgroundColor: "var(--theme-light)",
+                  color: "var(--theme-primary)",
+                }}
+              >
+                {product.categoryName}
+              </span>
 
-              {/* Price Display */}
-              <div className="flex items-baseline gap-3">
-                {product.discount ? (
-                  <>
-                    <span className="text-2xl font-bold text-gray-900">
-                      {discountedPrice} Rs
-                    </span>
-                    <span className="text-lg text-gray-400 line-through">
-                      {product.price}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-2xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold">{product.name}</h1>
+
+              <div className="flex gap-3 items-center">
+                <span className="text-2xl font-bold">
+                  {discountedPrice} Rs
+                </span>
+                {product.discount && (
+                  <span className="line-through text-gray-400">
                     {product.price} Rs
                   </span>
                 )}
               </div>
 
-              {/* Description */}
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {product.description || "Ecommerce, also known as electronic commerce or internet commerce, refers to the buying and selling of goods or services using the internet, and the transfer of money and data to execute these transactions."}
+              <p className="text-gray-600">
+                {product.description}
               </p>
 
-              {/* Add to Purchase Button */}
-              <div className="mt-4">
-                <AddToCartButton
-                  product={{
-                    id: product._id,
-                    name: product.name,
-                    price: product.price,
-                    discount: product.discount,
-                    image: product.images?.[0],
-                  }}
-                />
-              </div>
+              <AddToCartButton
+                product={{
+                  id: product._id,
+                  name: product.name,
+                  price: product.price,
+                  discount: product.discount,
+                  image: product.images?.[0],
+                }}
+              />
 
-              {/* Social Share */}
-              <div className="mt-6">
-                <SocialShare
-                  productName={product.name}
-                  productUrl={window.location.href}
-                  productImage={product.images?.[0]}
-                  productDescription={product.description}
-                />
-              </div>
+              <SocialShare
+                productName={product.name}
+                productUrl={window.location.href}
+                productImage={product.images?.[0]}
+                productDescription={product.description}
+              />
             </div>
           </div>
-          {/* Description + Videos Section with Tabs */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-12">
-            <Tabs defaultValue="description" className="w-full">
-              {/* Tabs Header */}
-              <TabsList className="bg-transparent border-b border-gray-200 p-0 mb-6 h-auto">
-                <TabsTrigger 
-                  value="description" 
-                  className="px-4 py-2 text-sm font-medium text-gray-700 data-[state=active]:text-[#A8734B] data-[state=active]:border-b-2 data-[state=active]:border-[#A8734B] rounded-none"
-                >
-                  Description
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="videos"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 data-[state=active]:text-[#A8734B] data-[state=active]:border-b-2 data-[state=active]:border-[#A8734B] rounded-none"
-                >
-                  Demo Video
-                </TabsTrigger>
-              </TabsList>
 
-              {/* Description Tab Content */}
-              <TabsContent value="description" className="mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Left: Meta Features (from admin metaFeatures field) */}
-                  <div>
+          {/* Tabs */}
+          <Tabs defaultValue="description">
+            <TabsList className="text-black">
+              <TabsTrigger value="description">Description</TabsTrigger>
+              <TabsTrigger value="videos">Demo Video</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="description" className="bg-transparent">
+              <div className="grid md:grid-cols-2 gap-6 bg-transparent">
+                <div className="bg-transparent meta-features-container">
+                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
+                  {product.metaFeatures ? (
                     <div
-                      className="prose prose-sm max-w-none text-gray-700"
-                      dangerouslySetInnerHTML={{ 
-                        __html: product.metaFeatures || "<p>No features available.</p>" 
+                      className="max-w-none meta-info-content text-black"
+                      dangerouslySetInnerHTML={{
+                        __html: cleanHtmlContent(product.metaFeatures),
                       }}
                     />
-                  </div>
-
-                  {/* Right: Meta Info (from admin metaInfo field) */}
-                  <div>
-                    <div
-                      className="prose prose-sm max-w-none text-gray-700"
-                      dangerouslySetInnerHTML={{ 
-                        __html: product.metaInfo || product.description || "<p>Ecommerce, also known as electronic commerce or internet commerce, refers to the buying and selling of goods or services using the internet, and the transfer of money and data to execute these transactions.</p>" 
-                      }}
-                    />
-                  </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm bg-transparent">No features listed</p>
+                  )}
                 </div>
-              </TabsContent>
 
-              {/* Demo Video Tab Content */}
-              <TabsContent value="videos" className="mt-6">
-                {product.video1 ? (
-                  <div className="mb-6">
-                    <iframe
-                      className="w-full h-64 md:h-96 rounded-lg"
-                      src={product.video1.replace("watch?v=", "embed/")}
-                      allowFullScreen
-                      title="Demo Video 1"
+                <div className="bg-transparent meta-features-container">
+                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
+                  {product.metaInfo ? (
+                    <div
+                      className="max-w-none meta-info-content text-black"
+                      dangerouslySetInnerHTML={{
+                        __html: cleanHtmlContent(product.metaInfo),
+                      }}
                     />
-                  </div>
-                ) : (
-                  <p className="text-gray-500">No demo video available.</p>
-                )}
+                  ) : (
+                    <p className="text-gray-500 text-sm bg-transparent">No additional information available</p>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
 
-                {product.video2 && (
-                  <div>
-                    <iframe
-                      className="w-full h-64 md:h-96 rounded-lg"
-                      src={product.video2.replace("watch?v=", "embed/")}
-                      allowFullScreen
-                      title="Demo Video 2"
-                    />
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+            <TabsContent value="videos" className="bg-transparent">
+              {product.video1 ? (
+                <iframe
+                  className="w-full h-80"
+                  src={product.video1.replace(
+                    "watch?v=",
+                    "embed/"
+                  )}
+                  allowFullScreen
+                />
+              ) : (
+                <p>No video available</p>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Services */}
+          <div className="grid md:grid-cols-4 gap-6 my-12">
+            {[Flag, RotateCcw, Headphones, Truck].map(
+              (Icon, i) => (
+                <div
+                  key={i}
+                  className=" p-6 text-center"
+                >
+                  <Icon className="mx-auto mb-2 theme-text-primary" />
+                  <p className="font-semibold">
+                    {["Locally Owned", "Easy Return", "24/7 Support", "Fast Delivery"][i]}
+                  </p>
+                </div>
+              )
+            )}
           </div>
 
-          {/* Service Highlights Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {/* Locally Owned */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
-              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
-                <Flag className="w-6 h-6 text-[#A8734B]" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Locally Owned</h3>
-              <p className="text-xs text-gray-600">
-                We have local business and sell best quality clothes
-              </p>
-            </div>
+          {/* Similar Products */}
+          <h3 className="text-xl font-semibold mb-4">
+            Similar Products
+          </h3>
 
-            {/* Easy Return */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
-              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
-                <RotateCcw className="w-6 h-6 text-[#A8734B]" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Easy Return</h3>
-              <p className="text-xs text-gray-600">
-                We provide easy return policy.
-              </p>
-            </div>
-
-            {/* Online Support */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
-              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
-                <Headphones className="w-6 h-6 text-[#A8734B]" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Online Support</h3>
-              <p className="text-xs text-gray-600">
-                We give 24/7 online support
-              </p>
-            </div>
-
-            {/* Fast Delivery */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col items-center text-center">
-              <div className="bg-[#A8734B]/10 rounded-full p-4 mb-4">
-                <Truck className="w-6 h-6 text-[#A8734B]" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Fast Delivery</h3>
-              <p className="text-xs text-gray-600">
-                We provide fast delivery to our customers
-              </p>
-            </div>
-          </div>
-
-          {/* Similar Products Section */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">Similar More</h3>
-              <div className="flex items-center gap-2">
-                <button 
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-400 hover:text-[#A8734B] hover:border-[#A8734B] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button 
-                  className="w-8 h-8 rounded-full border border-[#A8734B] flex items-center justify-center text-[#A8734B] hover:bg-[#A8734B] hover:text-white transition"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-              {similar.map((p) => {
-                const discountedPrice = p.discount 
-                  ? Math.round(p.price - (p.price * p.discount / 100))
-                  : p.price;
-                return (
-                  <ProductCard
-                    key={p._id}
-                    id={p._id}
-                    name={p.name}
-                    price={`Rs: ${discountedPrice}`}
-                    image={p.images?.[0] ?? "/product.png"}
-                    offer={p.discount ? `${p.discount}% OFF` : undefined}
-                  />
-                );
-              })}
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {similarProducts.map((p) => (
+              <ProductCard
+                key={p._id}
+                id={p._id}
+                name={p.name}
+                price={p.price}
+                image={p.images?.[0] || "/product.png"}
+                offer={p.discount ? `${p.discount}% OFF` : undefined}
+              />
+            ))}
           </div>
         </div>
       </div>
+
       <Footer />
     </>
   );

@@ -10,7 +10,7 @@ import {
 
 // DEVELOPER KEY - Change this to set your developer access code
 // This is a 4-digit code that must be entered to access the developer console
-const DEVELOPER_KEY = "1234";
+const DEVELOPER_KEY = "1122";
 
 interface DeveloperKeyModalProps {
   open: boolean;
@@ -113,9 +113,9 @@ export default function DeveloperKeyModal({ open, onClose }: DeveloperKeyModalPr
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[#FDF8F4] border-[#E8D4C4]">
+      <DialogContent className="sm:max-w-md bg-white border-gray-200">
         <DialogHeader className="text-center">
-          <DialogTitle className="text-xl font-bold text-[#A8734B] text-center">
+          <DialogTitle className="theme-heading text-center">
             Sp Console
           </DialogTitle>
           <DialogDescription className="text-gray-600 text-center">
@@ -142,10 +142,27 @@ export default function DeveloperKeyModal({ open, onClose }: DeveloperKeyModalPr
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className={`w-14 h-14 text-center text-2xl font-bold border-2 rounded-lg 
-                    focus:outline-none focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B]
-                    ${error ? "border-red-400 bg-red-50" : "border-[#E8D4C4] bg-white"}
-                    transition-colors`}
+                  className={`w-14 h-14 text-center text-2xl font-bold border-2 rounded-lg text-black
+                    focus:outline-none transition-colors
+                    ${error ? "border-red-400 bg-red-50" : "bg-white"}`}
+                  style={{
+                    borderColor: error ? undefined : "var(--theme-primary)",
+                    ...(error ? {} : {
+                      boxShadow: "none",
+                    }),
+                  }}
+                  onFocus={(e) => {
+                    if (!error) {
+                      e.target.style.borderColor = "var(--theme-primary)";
+                      e.target.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!error) {
+                      e.target.style.borderColor = "var(--theme-primary)";
+                      e.target.style.boxShadow = "none";
+                    }
+                  }}
                   placeholder="X"
                 />
               ))}
@@ -161,8 +178,11 @@ export default function DeveloperKeyModal({ open, onClose }: DeveloperKeyModalPr
           <button
             onClick={handleContinue}
             disabled={isLoading}
-            className="w-full bg-[#A8734B] hover:bg-[#8B5E3C] disabled:bg-[#C9A88A] 
-              text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            className="theme-button w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+            style={{
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
           >
             {isLoading ? (
               <>

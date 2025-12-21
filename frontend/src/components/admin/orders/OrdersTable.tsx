@@ -131,7 +131,7 @@ useEffect(() => {
   name: "Action",
   cell: (row: Order) => (
     <button
-      className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white px-2 py-1 rounded"
+      className="theme-button px-2 py-1 rounded"
       onClick={() => openView(row)}
     >
       View
@@ -173,13 +173,14 @@ useEffect(() => {
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
-        <h2 className="text-2xl font-semibold text-[#8B5E3C] mr-4">Orders</h2>
+        <h2 className="text-2xl font-semibold theme-heading mr-4">Orders</h2>
         {["All", "cancel", "complete", "Returned"].map(tab => (
           <button
             key={tab}
             className={`px-4 py-1 rounded-full border ${
-              selectedTab === tab ? "bg-[#8B5E3C] text-white" : "bg-white text-gray-700 border-gray-300"
+              selectedTab === tab ? "text-white" : "bg-white text-gray-700 border-gray-300"
             }`}
+            style={selectedTab === tab ? { backgroundColor: "var(--theme-primary)" } : {}}
             onClick={() => setSelectedTab(tab as any)}
           >
             {tab}
@@ -193,7 +194,7 @@ useEffect(() => {
           placeholder="Search"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full md:w-64 border-[#C4A484] text-gray-900"
+          className="w-full md:w-64 text-black"
         />
       </div>
     </div>

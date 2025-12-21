@@ -110,11 +110,11 @@ export default function FooterPage() {
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Footer</h1>
+        <h1 className="text-3xl font-bold theme-heading">Footer</h1>
         <button
           onClick={handleSave}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-[#A8734B] hover:bg-[#8B5E3C] text-white rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
         >
           <Save size={18} />
           {isLoading ? "Saving..." : "Save Changes"}
@@ -150,7 +150,15 @@ export default function FooterPage() {
                     type="text"
                     value={link.label}
                     onChange={(e) => updateLink(sectionIndex, linkIndex, "label", e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded outline-none"
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = "var(--theme-primary)";
+                      e.currentTarget.style.boxShadow = "0 0 0 1px var(--theme-primary)";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = "";
+                      e.currentTarget.style.boxShadow = "";
+                    }}
                     placeholder="Link label"
                   />
                   <button
@@ -166,7 +174,14 @@ export default function FooterPage() {
               )}
               <button
                 onClick={() => addLinkToSection(sectionIndex)}
-                className="flex items-center gap-1 text-sm text-[#A8734B] hover:text-[#8B5E3C] font-medium mt-2"
+                className="flex items-center gap-1 text-sm font-medium mt-2"
+                style={{ color: "var(--theme-primary)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--theme-dark)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--theme-primary)";
+                }}
               >
                 <Plus size={16} />
                 Add Link
@@ -178,7 +193,14 @@ export default function FooterPage() {
         {/* Add Section Button */}
         <button
           onClick={addSection}
-          className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#A8734B] transition-colors"
+          className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-colors"
+          style={{ borderColor: "border-gray-300" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "";
+          }}
         >
           <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500">Add Section</p>
@@ -188,13 +210,14 @@ export default function FooterPage() {
       {/* Footer Preview */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Footer Preview</h2>
+          <h2 className="font-semibold theme-heading">Footer Preview</h2>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={footer.showPreview}
               onChange={(e) => setFooter({ ...footer, showPreview: e.target.checked })}
-              className="w-4 h-4 text-[#A8734B] border-gray-300 rounded focus:ring-[#A8734B]"
+              className="w-4 h-4 border-gray-300 rounded"
+              style={{ accentColor: "var(--theme-primary)" }}
             />
             <span className="text-sm text-gray-700">Show Footer Preview</span>
           </label>
@@ -210,7 +233,14 @@ export default function FooterPage() {
                       <li key={linkIndex}>
                         <a
                           href={link.url}
-                          className="text-sm text-gray-600 hover:text-[#A8734B] transition-colors"
+                          className="text-sm text-gray-600 transition-colors"
+                          style={{ color: "inherit" }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "var(--theme-primary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "";
+                          }}
                         >
                           {link.label}
                         </a>

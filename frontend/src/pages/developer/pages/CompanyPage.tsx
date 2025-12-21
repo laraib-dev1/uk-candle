@@ -41,6 +41,37 @@ export default function CompanyPage() {
     loadCompanyData();
   }, []);
 
+  // Update favicon and title when company data changes
+  useEffect(() => {
+    let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.getElementsByTagName("head")[0].appendChild(link);
+    }
+    
+    if (companyData.favicon && companyData.favicon.trim() !== "") {
+      // If favicon is a Cloudinary URL (starts with http/https), use it directly
+      // Otherwise, prepend API URL
+      const faviconUrl = companyData.favicon.startsWith("http") 
+        ? companyData.favicon 
+        : `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${companyData.favicon.startsWith("/") ? "" : "/"}${companyData.favicon}`;
+      
+      link.href = faviconUrl;
+      link.onerror = () => {
+        // Fallback to default logo if favicon fails to load
+        link.href = "/logo-removebg-preview.png";
+      };
+    } else {
+      // Use default logo as favicon if no favicon is set
+      link.href = "/logo-removebg-preview.png";
+    }
+    
+    if (companyData.company) {
+      document.title = companyData.company || "Grace by Anu";
+    }
+  }, [companyData.favicon, companyData.company]);
+
   const loadCompanyData = async () => {
     try {
       const data = await getCompany();
@@ -159,6 +190,28 @@ export default function CompanyPage() {
       if (updated.brandTheme) {
         updateTheme(updated.brandTheme);
       }
+      // Update favicon and title immediately after update
+      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.getElementsByTagName("head")[0].appendChild(link);
+      }
+      
+      if (updated.favicon && updated.favicon.trim() !== "") {
+        const faviconUrl = updated.favicon.startsWith("http") 
+          ? updated.favicon 
+          : `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${updated.favicon.startsWith("/") ? "" : "/"}${updated.favicon}`;
+        link.href = faviconUrl;
+        link.onerror = () => {
+          link.href = "/logo-removebg-preview.png";
+        };
+      } else {
+        link.href = "/logo-removebg-preview.png";
+      }
+      if (updated.company) {
+        document.title = updated.company || "Grace by Anu";
+      }
       alert("Company settings updated successfully!");
     } catch (error) {
       console.error("Failed to update company:", error);
@@ -177,7 +230,7 @@ export default function CompanyPage() {
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Company</h1>
+        <h1 className="text-3xl font-bold theme-heading">Company</h1>
         <div className="flex gap-2">
           <button
             onClick={handleDiscard}
@@ -191,13 +244,13 @@ export default function CompanyPage() {
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
             style={{
-              backgroundColor: companyData.brandTheme?.primary || "#A8734B",
+              backgroundColor: "var(--theme-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = companyData.brandTheme?.dark || "#8B5E3C";
+              e.currentTarget.style.backgroundColor = "var(--theme-dark)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = companyData.brandTheme?.primary || "#A8734B";
+              e.currentTarget.style.backgroundColor = "var(--theme-primary)";
             }}
           >
             <Edit size={18} />
@@ -209,8 +262,8 @@ export default function CompanyPage() {
       {/* Company Info Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-          <Building2 className="w-5 h-5 text-[#A8734B]" />
-          <h2 className="font-semibold text-gray-900">Company Info</h2>
+          <Building2 className="w-5 h-5 theme-text-primary" />
+          <h2 className="font-semibold theme-heading">Company Info</h2>
         </div>
 
         <div className="p-6 space-y-6">

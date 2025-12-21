@@ -7,21 +7,12 @@ import {
   FileText,
   PanelBottom,
   ArrowLeft,
+  Cog,
 } from "lucide-react";
-import { getMe } from "@/api/auth.api";
-
-interface UserType {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string;
-}
 
 export default function DeveloperLayout() {
   const loc = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState<UserType | null>(null);
 
   // Check developer authentication
   useEffect(() => {
@@ -30,29 +21,6 @@ export default function DeveloperLayout() {
       navigate("/admin/sp-console");
       return;
     }
-  }, [navigate]);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return navigate("/login");
-
-      try {
-        const data = await getMe(token);
-        const fullUser = {
-          ...data.user,
-          avatar: data.user.avatar
-            ? `${import.meta.env.VITE_API_URL}${data.user.avatar}`
-            : undefined,
-        };
-        setUser(fullUser);
-      } catch (err) {
-        console.log(err);
-        navigate("/login");
-      }
-    };
-
-    loadUser();
   }, [navigate]);
 
   const menu = [
@@ -71,25 +39,20 @@ export default function DeveloperLayout() {
   return (
     <div className="flex min-h-screen bg-white">
       {/* ============ SIDEBAR ============ */}
-      <aside className="w-64 bg-gradient-to-b from-[#6B5344] to-[#4A3728] text-white flex flex-col py-6 shadow-lg">
+      <aside 
+        className="w-64 text-white flex flex-col py-6 shadow-lg"
+        style={{ 
+          background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
+        }}
+      >
         {/* Developer Badge */}
-        <div className="px-5 pb-4">
-          <span className="text-orange-400 font-bold text-sm tracking-wider">
+        <div className="px-5 pb-6 border-b border-white/20">
+          <span 
+            className="font-bold text-sm tracking-wider"
+            style={{ color: "var(--theme-accent)" }}
+          >
             Developer
           </span>
-        </div>
-
-        {/* Profile Box */}
-        <div className="flex items-center gap-3 px-5 pb-6 border-b border-white/20">
-          <img
-            src={user?.avatar || "/avatar.png"}
-            alt={user?.name || "User"}
-            className="w-12 h-12 rounded-full object-cover border-2 border-orange-400"
-          />
-          <div>
-            <h4 className="font-semibold leading-5">{user?.name || "Full Name"}</h4>
-            <p className="text-sm opacity-80">{user?.email || "user@gmail.com"}</p>
-          </div>
         </div>
 
         {/* MENU */}
@@ -103,11 +66,10 @@ export default function DeveloperLayout() {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition
-                ${
-                  active
-                    ? "bg-[#8B7355] text-white font-semibold shadow-md"
-                    : "hover:bg-white/10"
-                }`}
+                ${active ? "text-white font-semibold shadow-md" : "hover:bg-white/10"}`}
+                style={{
+                  backgroundColor: active ? "var(--theme-dark)" : "transparent",
+                }}
               >
                 <Icon size={18} />
                 {item.label}

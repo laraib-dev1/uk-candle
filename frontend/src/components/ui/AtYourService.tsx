@@ -2,27 +2,27 @@ import React from "react";
 
 const services = [
   {
-    img: "/product.png",
+    img: "/icon 01.png",
     text: "Free shipping from $50 and free return on all orders in Canada",
   },
   {
-    img: "/product.png",
+    img: "/icon 02.png",
     text: "Free gift box & gift notes",
   },
   {
-    img: "/product.png",
+    img: "/icon 03.png",
     text: "Fragrance test when you buy",
   },
   {
-    img: "/product.png",
+    img: "/icon 04.png",
     text: "Two free samples with all orders",
   },
   {
-    img: "/product.png",
+    img: "/icon 05.png",
     text: "Free returns",
   },
   {
-    img: "/product.png",
+    img: "/icon 06.png",
     text: "Welcome gift",
   },
 ];

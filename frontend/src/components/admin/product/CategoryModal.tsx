@@ -113,7 +113,7 @@ const handleSubmit = () => {
     <Dialog open={open} onOpenChange={onClose} >
       <DialogContent className=" bg-white text-black">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="theme-heading">
             {mode === "add" && "Add Category"}
             {mode === "edit" && "Edit Category"}
             {mode === "view" && "View Category"}
@@ -183,7 +183,7 @@ const handleSubmit = () => {
         />
         {!isView && (
           <DialogFooter>
-            <Button className="bg-[#A8734B] text-white" onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>
+            <Button className="text-white theme-button" onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>
           </DialogFooter>
         )}
       </DialogContent>
