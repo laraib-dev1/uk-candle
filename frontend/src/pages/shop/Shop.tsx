@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import ProductGrid from "../../components/products/ProductGrid";
+import { ProductGridSkeleton } from "../../components/products/ProductGridSkeleton";
 import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
@@ -121,7 +122,11 @@ console.log("Mapped Products:", mapped);
             <DynamicButton label="All" variant="filled" shape="pill" />
           </div>
 
-          <ProductGrid items={displayedProducts} />
+          {loading ? (
+            <ProductGridSkeleton count={8} />
+          ) : (
+            <ProductGrid items={displayedProducts} />
+          )}
 
           {limit < products.length && (
             <div className="flex justify-center mt-10">

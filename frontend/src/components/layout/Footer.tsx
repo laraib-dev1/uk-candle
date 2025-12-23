@@ -45,52 +45,57 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-          {/* Logo */}
-          <div className="flex flex-col space-y-4">
-            <span className="text-white font-serif text-xl font-semibold">VERES</span>
-            <p className="text-xs text-gray-500">© {new Date().getFullYear()} VERES. All Rights Reserved.</p>
+        <div className="flex flex-col md:flex-row justify-between gap-8">
+          {/* Left side: Logo and Footer Sections */}
+          <div className="flex flex-col md:flex-row gap-8 flex-1">
+            {/* Logo */}
+            <div className="flex flex-col space-y-4">
+              <span className="text-white font-serif text-xl font-semibold">Grace By Anu</span>
+              <p className="text-xs text-gray-500">© {new Date().getFullYear()}  All Rights Reserved.</p>
+            </div>
+
+            {/* Dynamic Footer Sections (max 3 columns) */}
+            {hasColumns &&
+              activeSections.map((section, idx) => (
+                <div key={idx} className="flex flex-col space-y-2 text-sm">
+                  <h3 className="text-white font-semibold mb-2">{section.title}</h3>
+                  {section.links.map((link, li) => (
+                    <a
+                      key={li}
+                      href={link.url}
+                      className="text-gray-300 hover:underline"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              ))}
           </div>
 
-          {/* Dynamic Footer Sections (max 3 columns) */}
-          {hasColumns &&
-            activeSections.map((section, idx) => (
-              <div key={idx} className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">{section.title}</h3>
-                {section.links.map((link, li) => (
-                  <a
-                    key={li}
-                    href={link.url}
-                    className="text-gray-300 hover:underline"
-                  >
-                    {link.label}
-                  </a>
+          {/* Right side: Social posts gallery */}
+          {galleryImages.length > 0 && (
+            <div className="flex-shrink-0">
+              <div className="grid grid-cols-4 gap-2">
+                {galleryImages.map((src, index) => (
+                  <img
+                    key={index}
+                    src={src}
+                    alt={`Social post ${index + 1}`}
+                    className="w-12 h-12 object-cover rounded"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                    loading="lazy"
+                  />
                 ))}
               </div>
-            ))}
-
-          {/* Social posts gallery */}
-          {galleryImages.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
-              {galleryImages.map((src, index) => (
-                <img
-                  key={index}
-                  src={src}
-                  alt={`Social post ${index + 1}`}
-                  className="w-12 h-12 object-cover rounded"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                  loading="lazy"
-                />
-              ))}
             </div>
           )}
         </div>
 
         {/* Bottom bar */}
         <div className="mt-8 border-t border-gray-700 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-          <span>© {new Date().getFullYear()} VERES. All rights reserved.</span>
+          <span>© {new Date().getFullYear()}  All rights reserved.</span>
           <div className="flex gap-4 mt-2 md:mt-0">
             <span>Visa</span>
             <span>Mastercard</span>

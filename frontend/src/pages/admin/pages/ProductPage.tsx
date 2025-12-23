@@ -1,6 +1,7 @@
 // frontend/src/pages/admin/pages/ProductPage.tsx
 import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../components/table/EnhancedDataTable";
+import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductModal from "../../../components/admin/product/ProductModal";
@@ -52,6 +53,7 @@ export default function ProductPage() {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [filtered, setFiltered] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selected, setSelected] = useState<Product | null>(null);
@@ -94,6 +96,7 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const cats = await getCategories();
         setCategories(cats);
@@ -104,6 +107,8 @@ const mapped = productsArray.map((p: ProductAPI) => mapProduct(p, cats));
         setFiltered(mapped);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -253,17 +258,23 @@ const getColumns = () => {
       </div>
 
     <div className="w-full overflow-x-auto bg-white rounded-lg border border-gray-200">
-      <EnhancedDataTable<Product>
-        columns={getColumns()}
-        data={filtered}
-        onView={openViewModal}
-        onEdit={openEditModal}
-        onDelete={(row) => {
-          setDeleteId(row.id || null);
-          setDeleteOpen(true);
-        }}
-        pagination
-      />
+      {loading ? (
+        <div className="p-4">
+          <DataTableSkeleton rows={8} />
+        </div>
+      ) : (
+        <EnhancedDataTable<Product>
+          columns={getColumns()}
+          data={filtered}
+          onView={openViewModal}
+          onEdit={openEditModal}
+          onDelete={(row) => {
+            setDeleteId(row.id || null);
+            setDeleteOpen(true);
+          }}
+          pagination
+        />
+      )}
     </div>
 
 

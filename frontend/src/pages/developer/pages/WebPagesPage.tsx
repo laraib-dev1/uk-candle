@@ -8,6 +8,7 @@ import {
 } from "@/api/webpage.api";
 import IconPicker from "@/components/developer/IconPicker";
 import { useToast } from "@/components/ui/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WebPage {
   _id: string;
@@ -23,6 +24,7 @@ interface WebPage {
 export default function WebPagesPage() {
   const { success, error } = useToast();
   const [pages, setPages] = useState<WebPage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
@@ -42,11 +44,14 @@ export default function WebPagesPage() {
   }, []);
 
   const loadPages = async () => {
+    setLoading(true);
     try {
       const data = await getWebPages();
       setPages(data);
     } catch (error) {
       console.error("Failed to load pages:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,7 +137,22 @@ export default function WebPagesPage() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {pages.map((page) => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="flex items-center justify-between px-6 py-4">
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-6 w-11 rounded-full" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
+              </div>
+            ))
+          ) : (
+            pages.map((page) => (
             <div
               key={page._id}
               className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
@@ -179,7 +199,8 @@ export default function WebPagesPage() {
                 </button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

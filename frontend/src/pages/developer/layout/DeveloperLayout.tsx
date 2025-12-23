@@ -8,11 +8,19 @@ import {
   PanelBottom,
   ArrowLeft,
   Cog,
+  Menu,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 export default function DeveloperLayout() {
   const loc = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Check developer authentication
   useEffect(() => {
@@ -36,62 +44,98 @@ export default function DeveloperLayout() {
     navigate("/admin/dashboard");
   };
 
+  // Sidebar content component (reusable for both desktop and mobile)
+  const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
+    <>
+      {/* Developer Badge */}
+      <div className="px-5 pb-6 border-b border-white/20">
+        <span 
+          className="font-bold text-sm tracking-wider"
+          style={{ color: "var(--theme-accent)" }}
+        >
+          Developer
+        </span>
+      </div>
+
+      {/* MENU */}
+      <nav className="flex flex-col gap-2 mt-6 px-2">
+        {menu.map((item) => {
+          const Icon = item.icon;
+          const active = loc.pathname === item.path;
+
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={onLinkClick}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition
+              ${active ? "text-white font-semibold shadow-md" : "hover:bg-white/10"}`}
+              style={{
+                backgroundColor: active ? "var(--theme-dark)" : "transparent",
+              }}
+            >
+              <Icon size={18} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* BACK TO ADMIN BUTTON (bottom) */}
+      <div className="mt-auto px-2">
+        <button
+          onClick={() => {
+            handleBackToAdmin();
+            if (onLinkClick) onLinkClick();
+          }}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 w-full text-white/80 hover:text-white transition-colors"
+        >
+          <ArrowLeft size={18} />
+          Back to Admin
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex min-h-screen bg-white">
-      {/* ============ SIDEBAR ============ */}
+      {/* ============ MOBILE DRAWER ============ */}
+      <div className="lg:hidden fixed top-4 left-4 z-[100]">
+        <Button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="h-10 w-10 p-0 bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-300 shadow-lg rounded-lg flex items-center justify-center"
+        >
+          <Menu className="w-6 h-6" />
+        </Button>
+      </div>
+      
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent
+          side="left"
+          className="w-64 p-0 text-white border-0 [&>button]:text-white [&>button]:hover:text-white [&>button]:hover:bg-white/10"
+          style={{ 
+            background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
+          }}
+        >
+          <div className="flex flex-col h-full py-6">
+            <SidebarContent onLinkClick={() => setSidebarOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ============ DESKTOP SIDEBAR ============ */}
       <aside 
-        className="w-64 text-white flex flex-col py-6 shadow-lg"
+        className="hidden lg:flex w-64 text-white flex-col py-6 shadow-lg"
         style={{ 
           background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
         }}
       >
-        {/* Developer Badge */}
-        <div className="px-5 pb-6 border-b border-white/20">
-          <span 
-            className="font-bold text-sm tracking-wider"
-            style={{ color: "var(--theme-accent)" }}
-          >
-            Developer
-          </span>
-        </div>
-
-        {/* MENU */}
-        <nav className="flex flex-col gap-2 mt-6 px-2">
-          {menu.map((item) => {
-            const Icon = item.icon;
-            const active = loc.pathname === item.path;
-
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition
-                ${active ? "text-white font-semibold shadow-md" : "hover:bg-white/10"}`}
-                style={{
-                  backgroundColor: active ? "var(--theme-dark)" : "transparent",
-                }}
-              >
-                <Icon size={18} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* BACK TO ADMIN BUTTON (bottom) */}
-        <div className="mt-auto px-2">
-          <button
-            onClick={handleBackToAdmin}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-white/10 w-full text-white/80 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={18} />
-            Back to Admin
-          </button>
-        </div>
+        <SidebarContent />
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 p-8 bg-gray-50">
+      <main className="flex-1 w-full lg:w-auto pt-16 lg:pt-8 p-4 lg:p-8 bg-gray-50">
         <React.Suspense fallback={<div>Loading developer page...</div>}>
           <Outlet />
         </React.Suspense>

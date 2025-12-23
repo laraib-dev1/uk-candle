@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/layout/Navbar";
 import Hero from "../../components/hero/Hero";
 import ProductGrid from "../../components/products/ProductGrid";
+import { ProductGridSkeleton } from "../../components/products/ProductGridSkeleton";
 import Footer from "../../components/layout/Footer";
 import CategorySection from "../../components/Categories/Categorysection";
 import FeatureHero from "@/components/hero/FeatureHero";
@@ -108,20 +109,24 @@ export default function () {
         )}
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
-<ProductGrid
-  items={products
-    .slice(0, 5)
-    .map((p) => ({
-      id: p._id,
-      name: p.name,
-      price: p.price,
-      image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
-        (img) => img && img.trim() !== ""
-      ) || "/product.png",
-      offer: p.discount ? `${p.discount}% OFF` : undefined,
-    }))
-  }
-/>
+          {loading ? (
+            <ProductGridSkeleton count={5} />
+          ) : (
+            <ProductGrid
+              items={products
+                .slice(0, 5)
+                .map((p) => ({
+                  id: p._id,
+                  name: p.name,
+                  price: p.price,
+                  image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
+                    (img) => img && img.trim() !== ""
+                  ) || "/product.png",
+                  offer: p.discount ? `${p.discount}% OFF` : undefined,
+                }))
+              }
+            />
+          )}
 
 
         </section>
@@ -141,25 +146,29 @@ export default function () {
 
 
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-<ProductGrid
-  items={products
-    .slice(0, 5) // <-- only take the first 5 products
-    .map((p) => ({
-      id: p._id,
-      name: p.name,
-      price: p.price,
-      image: [
-        p.image1,
-        p.image2,
-        p.image3,
-        p.image4,
-        p.image5,
-        p.image6
-      ].filter(Boolean)[0] || "/product.png",
-      offer: p.discount ? `${p.discount}% OFF` : undefined
-    }))
-  }
-/>
+          {loading ? (
+            <ProductGridSkeleton count={5} />
+          ) : (
+            <ProductGrid
+              items={products
+                .slice(0, 5) // <-- only take the first 5 products
+                .map((p) => ({
+                  id: p._id,
+                  name: p.name,
+                  price: p.price,
+                  image: [
+                    p.image1,
+                    p.image2,
+                    p.image3,
+                    p.image4,
+                    p.image5,
+                    p.image6
+                  ].filter(Boolean)[0] || "/product.png",
+                  offer: p.discount ? `${p.discount}% OFF` : undefined
+                }))
+              }
+            />
+          )}
 
 
         </section>

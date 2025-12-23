@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
+import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { fetchOrders } from "../../../api/order.api";
 import { Input } from "@/components/ui/input";
 import { OrderModal } from "../product/OrderModal";
@@ -32,7 +33,7 @@ interface Order {
 export default function OrdersTable() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState("");
   const [selectedTab, setSelectedTab] = useState<"All" | "cancel" | "complete" | "Returned">("All");
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,8 +54,9 @@ const loadOrders = async () => {
     setFilteredOrders(mapped);
   } catch (err) {
     console.error("Error fetching orders:", err);
+  } finally {
+    setLoading(false);
   }
-  setLoading(false);
 };
 useEffect(() => {
   loadOrders();
@@ -228,15 +230,19 @@ useEffect(() => {
 />
     {/* DataTable */}
     <div className="bg-white shadow-md rounded-lg border border-gray-200">
-      <EnhancedDataTable<Order>
-        columns={getColumns()}
-        data={filteredOrders}
-        onView={openView}
-        pagination
-      />
+      {loading ? (
+        <div className="p-4">
+          <DataTableSkeleton rows={8} />
+        </div>
+      ) : (
+        <EnhancedDataTable<Order>
+          columns={getColumns()}
+          data={filteredOrders}
+          onView={openView}
+          pagination
+        />
+      )}
     </div>
-
-    {loading && <p className="text-gray-500 mt-2">Loading orders...</p>}
   </div>
 );
 

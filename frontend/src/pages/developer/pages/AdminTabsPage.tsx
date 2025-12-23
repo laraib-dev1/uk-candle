@@ -8,6 +8,7 @@ import {
 } from "@/api/admintab.api";
 import IconPicker from "@/components/developer/IconPicker";
 import { useToast } from "@/components/ui/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AdminTab {
   _id: string;
@@ -22,6 +23,7 @@ interface AdminTab {
 export default function AdminTabsPage() {
   const { success, error } = useToast();
   const [tabs, setTabs] = useState<AdminTab[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
@@ -40,11 +42,14 @@ export default function AdminTabsPage() {
   }, []);
 
   const loadTabs = async () => {
+    setLoading(true);
     try {
       const data = await getAdminTabs();
       setTabs(data);
     } catch (error) {
       console.error("Failed to load tabs:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,7 +135,21 @@ export default function AdminTabsPage() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {tabs.map((tab) => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, idx) => (
+              <div key={idx} className="flex items-center justify-between px-6 py-4">
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-6 w-11 rounded-full" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
+              </div>
+            ))
+          ) : (
+            tabs.map((tab) => (
             <div
               key={tab._id}
               className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
@@ -174,7 +193,8 @@ export default function AdminTabsPage() {
                 </button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

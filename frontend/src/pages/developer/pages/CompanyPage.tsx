@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Building2, Edit, RotateCcw, Upload, Image as ImageIcon } from "lucide-react";
+import { Building2, Edit, RotateCcw, Upload, Image as ImageIcon, Plus, X } from "lucide-react";
 import { getCompany, updateCompany } from "@/api/company.api";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/ui/toast";
+
+const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", order: i }));
 
 export default function CompanyPage() {
   const { updateTheme } = useTheme();
@@ -24,7 +26,7 @@ export default function CompanyPage() {
       linkedin: "",
       other: "",
     },
-    socialPosts: Array(6).fill(null).map((_, i) => ({ image: "", order: i })),
+    socialPosts: INITIAL_SOCIAL_POSTS,
     brandTheme: {
       primary: "#8C5934",
       accent: "",
@@ -41,6 +43,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     loadCompanyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update favicon and title when company data changes
@@ -55,9 +58,10 @@ export default function CompanyPage() {
     if (companyData.favicon && companyData.favicon.trim() !== "") {
       // If favicon is a Cloudinary URL (starts with http/https), use it directly
       // Otherwise, prepend API URL
+      const apiUrl = typeof import.meta.env.VITE_API_URL === 'string' ? import.meta.env.VITE_API_URL : '';
       const faviconUrl = companyData.favicon.startsWith("http") 
         ? companyData.favicon 
-        : `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${companyData.favicon.startsWith("/") ? "" : "/"}${companyData.favicon}`;
+        : `${apiUrl.replace(/\/$/, "")}${companyData.favicon.startsWith("/") ? "" : "/"}${companyData.favicon}`;
       
       link.href = faviconUrl;
       link.onerror = () => {
@@ -79,6 +83,10 @@ export default function CompanyPage() {
       const data = await getCompany();
       setCompanyData(data);
       setOriginalData(data);
+      // Initialize refs array to match the number of social posts
+      if (data.socialPosts) {
+        socialPostInputRefs.current = Array(data.socialPosts.length).fill(null);
+      }
       if (data.brandTheme) {
         updateTheme(data.brandTheme);
       }
@@ -151,6 +159,22 @@ export default function CompanyPage() {
     }
   };
 
+  const addSocialPost = () => {
+    const newPosts = [...companyData.socialPosts, { image: "", order: companyData.socialPosts.length }];
+    handleChange("socialPosts", newPosts);
+    // Update refs array
+    socialPostInputRefs.current = [...socialPostInputRefs.current, null];
+  };
+
+  const removeSocialPost = (index: number) => {
+    const newPosts = companyData.socialPosts.filter((_, i) => i !== index);
+    // Reorder remaining posts
+    const reorderedPosts = newPosts.map((post, i) => ({ ...post, order: i }));
+    handleChange("socialPosts", reorderedPosts);
+    // Update refs array
+    socialPostInputRefs.current = socialPostInputRefs.current.filter((_, i) => i !== index);
+  };
+
   const handlePrimaryColorChange = (color: string) => {
     const blendColor = (color1: string, color2: string, ratio: number) => {
       const hex1 = color1.replace('#', '');
@@ -208,9 +232,10 @@ export default function CompanyPage() {
       }
       
       if (updated.favicon && updated.favicon.trim() !== "") {
+        const apiUrl = typeof import.meta.env.VITE_API_URL === 'string' ? import.meta.env.VITE_API_URL : '';
         const faviconUrl = updated.favicon.startsWith("http") 
           ? updated.favicon 
-          : `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${updated.favicon.startsWith("/") ? "" : "/"}${updated.favicon}`;
+          : `${apiUrl.replace(/\/$/, "")}${updated.favicon.startsWith("/") ? "" : "/"}${updated.favicon}`;
         link.href = faviconUrl;
         link.onerror = () => {
           link.href = "/logo-removebg-preview.png";
@@ -243,7 +268,7 @@ export default function CompanyPage() {
         <div className="flex gap-2">
           <button
             onClick={handleDiscard}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex text-black items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <RotateCcw size={18} />
             Discard
@@ -422,16 +447,23 @@ export default function CompanyPage() {
 
       {/* Social Posts Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
           <h2 className="font-semibold text-gray-900">Social Posts</h2>
+          <button
+            onClick={addSocialPost}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-white rounded-lg transition-colors theme-button"
+          >
+            <Plus size={16} />
+            Add Post
+          </button>
         </div>
-        <div className="p-6 grid grid-cols-6 gap-4">
+        <div className="p-6 grid grid-cols-4 md:grid-cols-8 gap-4">
           {companyData.socialPosts.map((post, index) => (
-            <div key={index}>
+            <div key={index} className="relative group">
               <input
-ref={(el) => {
-  socialPostInputRefs.current[index] = el;
-}}
+                ref={(el) => {
+                  socialPostInputRefs.current[index] = el;
+                }}
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleSocialPostUpload(index, e)}
@@ -439,18 +471,32 @@ ref={(el) => {
               />
               <button
                 onClick={() => socialPostInputRefs.current[index]?.click()}
-                className="w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center"
+                className="w-full text-black aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center relative overflow-hidden"
               >
                 {post.image ? (
-                  <img
-                    src={post.image}
-                    alt={`Post ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
+                  <>
+                    <img
+                      src={post.image}
+                      alt={`Post ${index + 1}`}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <Edit className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </>
                 ) : (
                   <ImageIcon className="w-8 h-8 text-gray-400" />
                 )}
               </button>
+              {companyData.socialPosts.length > 1 && (
+                <button
+                  onClick={() => removeSocialPost(index)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                  title="Remove post"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           ))}
         </div>

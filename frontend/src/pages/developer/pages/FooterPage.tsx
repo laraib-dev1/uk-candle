@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { PanelBottom, Save, Plus, Trash2, GripVertical, X } from "lucide-react";
 import { getFooter, updateFooter } from "@/api/footer.api";
 import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
@@ -42,6 +42,7 @@ export default function FooterPage() {
   useEffect(() => {
     loadFooter();
     loadPages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadFooter = async () => {
@@ -223,20 +224,22 @@ export default function FooterPage() {
     }
   };
 
-  const usedPageIds = new Set<string>(
-    footer.sections.flatMap((section) =>
-      section.links
-        .map((link) => {
-          const linkPath = normalizeSlug(link.url);
-          const match = pages.find((p) => {
-            const pagePath = normalizeSlug(p.slug.startsWith("/") ? p.slug : `/${p.slug}`);
-            return pagePath === linkPath;
-          });
-          return match?._id || "";
-        })
-        .filter(Boolean)
-    )
-  );
+  const usedPageIds = useMemo(() => {
+    return new Set<string>(
+      footer.sections.flatMap((section) =>
+        section.links
+          .map((link) => {
+            const linkPath = normalizeSlug(link.url);
+            const match = pages.find((p) => {
+              const pagePath = normalizeSlug(p.slug.startsWith("/") ? p.slug : `/${p.slug}`);
+              return pagePath === linkPath;
+            });
+            return match?._id || "";
+          })
+          .filter(Boolean)
+      )
+    );
+  }, [footer.sections, pages]);
 
   useEffect(() => {
     if (showAddModal) {

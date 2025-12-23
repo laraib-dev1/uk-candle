@@ -1,6 +1,7 @@
 // frontend/src/pages/admin/pages/CategoriesPage.tsx
 import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../components/table/EnhancedDataTable";
+import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CategoryModal from "@/components/admin/product/CategoryModal";
@@ -17,6 +18,7 @@ interface CategoryFromAPI {
 export default function CategoriesPage() {
   const { success, error } = useToast();
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 const [modalOpen, setModalOpen] = React.useState(false);
 const [modalMode, setModalMode] = React.useState<"add" | "edit" | "view">("add");
 const [selected, setSelected] = React.useState<Category | null>(null);
@@ -35,6 +37,7 @@ const [windowWidth, setWindowWidth] = useState(window.innerWidth);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 const fetchCategories = async () => {
+  setLoading(true);
   try {
     const data = await getCategories();
     setCategories(
@@ -47,6 +50,8 @@ const fetchCategories = async () => {
     );
   } catch (err) {
     console.error(err);
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -178,14 +183,20 @@ const getColumns = () => {
 
       {/* -------- Table -------- */}
       <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
-        <EnhancedDataTable<Category>
-          columns={getColumns()}
-          data={filtered}
-          onView={openView}
-          onEdit={openEdit}
-          onDelete={handleDeleteClick}
-          pagination
-        />
+        {loading ? (
+          <div className="p-4">
+            <DataTableSkeleton rows={8} />
+          </div>
+        ) : (
+          <EnhancedDataTable<Category>
+            columns={getColumns()}
+            data={filtered}
+            onView={openView}
+            onEdit={openEdit}
+            onDelete={handleDeleteClick}
+            pagination
+          />
+        )}
       </div>
 <CategoryModal
   open={modalOpen}
