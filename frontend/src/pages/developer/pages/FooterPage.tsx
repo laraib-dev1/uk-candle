@@ -115,7 +115,7 @@ export default function FooterPage() {
       console.log("Saving footer with showPreview:", footer.showPreview, "type:", typeof footer.showPreview);
       
       // Explicitly include showPreview - convert to boolean explicitly
-      const showPreviewValue = footer.showPreview === true || footer.showPreview === "true" || footer.showPreview === 1;
+      const showPreviewValue = footer.showPreview === true || (typeof footer.showPreview === "string" && footer.showPreview === "true") || (typeof footer.showPreview === "number" && footer.showPreview === 1);
       
       const saveData = {
         sections: footer.sections,

@@ -21,7 +21,7 @@ interface TOCItem {
 
 interface TableOfContentsProps {
   htmlContent: string;
-  contentRef?: React.RefObject<HTMLDivElement>;
+  contentRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, contentRef }) => {

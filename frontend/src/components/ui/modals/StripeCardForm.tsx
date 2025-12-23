@@ -30,7 +30,7 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
     });
 
     if (result.error) {
-      error(result.error.message);
+      error(result.error.message || "Payment failed");
     } else if (result.paymentIntent.status === "succeeded") {
       success("Payment Successful!");
       onSuccess();

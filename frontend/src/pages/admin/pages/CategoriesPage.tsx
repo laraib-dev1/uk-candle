@@ -102,18 +102,18 @@ const getColumns = () => {
   const allColumns = [
     {
       name: "ID",
-      cell: (_row, index) => <span className="text-gray-600">{index + 1}</span>,
+      cell: (_row: CategoryFromAPI, index: number) => <span className="text-gray-600">{index + 1}</span>,
       minWidth: "60px",
     },
     {
       name: "Category",
-      heading: (row) => row.name,
-      subInfo: (row) => `${row.products || 0} products`,
+      heading: (row: CategoryFromAPI) => row.name,
+      subInfo: (row: CategoryFromAPI) => `${row.products || 0} products`,
       minWidth: "200px",
     },
     {
       name: "Icon",
-      cell: (row) => (
+      cell: (row: CategoryFromAPI) => (
         <img 
           src={row.icon || "/default-category.png"} 
           alt={row.name} 
