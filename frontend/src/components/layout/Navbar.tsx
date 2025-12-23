@@ -15,6 +15,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { totalItems } = useCart();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [navLoading, setNavLoading] = useState(false);
   const [company, setCompany] = useState<{ logo: string; company: string }>({ logo: "", company: "" });
 
   useEffect(() => {
@@ -137,7 +138,17 @@ let user = null;
         e.currentTarget.style.backgroundColor = "var(--theme-primary)";
         e.currentTarget.style.borderColor = "var(--theme-primary)";
       }}
-      onClick={() => navigate("/login")}
+      onClick={async () => {
+        if (navLoading) return;
+        setNavLoading(true);
+        try {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          navigate("/login");
+        } finally {
+          setNavLoading(false);
+        }
+      }}
+      loading={navLoading}
     >
       Sign In
     </Button>
@@ -216,10 +227,18 @@ let user = null;
                 {!user ? (
   <Button
     className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-    onClick={() => {
-      setOpen(false);
-      navigate("/login");
+    onClick={async () => {
+      if (navLoading) return;
+      setNavLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setOpen(false);
+        navigate("/login");
+      } finally {
+        setNavLoading(false);
+      }
     }}
+    loading={navLoading}
   >
     Sign In
   </Button>

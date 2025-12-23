@@ -48,53 +48,52 @@ export default function Login() {
   return (
     <AuthLayout>
       {location.state?.message && (
-  <p className="text-green-600">{location.state.message}</p>
-)}
-      <h2 className="text-white text-2xl font-semibold mb-6">Welcome Back!</h2>
+        <p className="text-green-600 mb-2">{location.state.message}</p>
+      )}
 
-      <div className="text-black/80 flex flex-col gap-4">
+      <div className="flex flex-col gap-4 text-gray-800">
+        <div>
+          <h2 className="text-2xl font-semibold text-[var(--theme-primary,#A8734B)] mb-2">
+            Welcome Back!
+          </h2>
+          <p className="text-sm text-gray-600">
+            Log in to continue your journey.
+          </p>
+        </div>
+
         <Input
           label="Email"
           placeholder="Enter email"
           value={email}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-          // onChange={(e) => setEmail(e.target.value)}
+          className="text-gray-800"
         />
-        {/* <Input
-          label="Password"
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        /> */}
 
-         <PasswordInput
+        <PasswordInput
           label="Password"
           placeholder="Enter password"
           value={password}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-
-          // onChange={(e) => setPassword(e.target.value)}
         />
 
-        {error && <p className="text-red-400">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <div className="flex justify-end text-sm text-white/70">
+        <div className="flex justify-end text-sm text-[var(--theme-primary,#A8734B)]">
           <Link to="/forgot" className="underline">
             Forgot Password?
           </Link>
         </div>
 
         <Button
-          className="bg-orange-400 hover:bg-orange-500 text-white rounded-md mt-3"
+          className="mt-2 w-full bg-[color:var(--theme-primary,#4f05fa)] hover:bg-[color:var(--theme-primary-dark,#28037d)] text-white rounded-lg py-3 border border-transparent transition-colors"
           onClick={handleLogin}
         >
           Login
         </Button>
 
-        <p className="text-white/80 text-sm mt-2">
+        <p className="text-sm text-gray-700 mt-1">
           Don’t have an account?{" "}
-          <Link to="/access" className="underline">
+          <Link to="/access" className="text-[var(--theme-primary,#A8734B)] underline">
             Sign up
           </Link>
         </p>

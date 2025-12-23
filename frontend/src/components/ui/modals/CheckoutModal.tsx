@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useCart } from "@/components/products/CartContext";
 import StripeCardForm from "./StripeCardForm";
 import { createOrder } from "@/api/order.api";
+import { useToast } from "@/components/ui/toast";
 
 type CheckoutModalProps = {
   isOpen: boolean;
@@ -28,6 +29,7 @@ type CartItem = {
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const { cartItems, clearCart } = useCart();
+  const { success, error } = useToast();
   const total = cartItems.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
 
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
@@ -44,7 +46,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     line1: "",
   });
 
+  const [addressErrors, setAddressErrors] = useState<Partial<Record<keyof Address, string>>>({});
   const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+  const [savingAddress, setSavingAddress] = useState(false);
 
   if (!isOpen) return null;
 
@@ -54,36 +58,67 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
       ? addresses[selectedAddressIndex]
       : newAddress;
 
-  const handleAddressSave = () => {
-    const requiredFields = [
-      newAddress.firstName,
-      newAddress.lastName,
-      newAddress.phone,
-      newAddress.line1,
-      newAddress.city,
-      newAddress.province,
-      newAddress.postalCode,
-    ];
+  const validateAddress = (): boolean => {
+    const errors: Partial<Record<keyof Address, string>> = {};
+    
+    if (!newAddress.firstName.trim()) {
+      errors.firstName = "First name is required";
+    }
+    if (!newAddress.lastName.trim()) {
+      errors.lastName = "Last name is required";
+    }
+    if (!newAddress.phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (!/^\d{10,15}$/.test(newAddress.phone)) {
+      errors.phone = "Phone number must be 10-15 digits";
+    }
+    if (!newAddress.line1.trim()) {
+      errors.line1 = "Address line 1 is required";
+    }
+    if (!newAddress.city.trim()) {
+      errors.city = "City is required";
+    }
+    if (!newAddress.province.trim()) {
+      errors.province = "Province is required";
+    }
+    if (!newAddress.postalCode.trim()) {
+      errors.postalCode = "Postal code is required";
+    }
 
-    if (requiredFields.some(field => !field.trim())) {
-      alert("Please fill all required fields.");
+    setAddressErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleAddressSave = async () => {
+    if (savingAddress) return;
+    
+    if (!validateAddress()) {
+      error("Please fill all required fields correctly.");
       return;
     }
 
-    setAddresses(prev => [...prev, newAddress]);
-    setSelectedAddressIndex(addresses.length);
-    setAddressType("existing");
+    setSavingAddress(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setAddresses(prev => [...prev, newAddress]);
+      setSelectedAddressIndex(addresses.length);
+      setAddressType("existing");
+      setAddressErrors({});
 
-    setNewAddress({
-      firstName: "",
-      lastName: "",
-      province: "",
-      city: "",
-      area: "",
-      postalCode: "",
-      phone: "",
-      line1: "",
-    });
+      setNewAddress({
+        firstName: "",
+        lastName: "",
+        province: "",
+        city: "",
+        area: "",
+        postalCode: "",
+        phone: "",
+        line1: "",
+      });
+      success("Address saved successfully!");
+    } finally {
+      setSavingAddress(false);
+    }
   };
 
   const handlePhoneChange = (value: string) => {
@@ -172,67 +207,111 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
           {addressType === "new" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="First Name *"
-                  value={newAddress.firstName}
-                  onChange={e => setNewAddress(prev => ({ ...prev, firstName: e.target.value }))}
-                  className="border rounded-lg p-2"
-                />
-                <input
-                  type="text"
-                  placeholder="Last Name *"
-                  value={newAddress.lastName}
-                  onChange={e => setNewAddress(prev => ({ ...prev, lastName: e.target.value }))}
-                  className="border rounded-lg p-2"
-                />
+                <div>
+                  <input
+                    type="text"
+                    placeholder="First Name *"
+                    value={newAddress.firstName}
+                    onChange={e => {
+                      setNewAddress(prev => ({ ...prev, firstName: e.target.value }));
+                      if (addressErrors.firstName) setAddressErrors(prev => ({ ...prev, firstName: undefined }));
+                    }}
+                    className={`border rounded-lg p-2 w-full ${addressErrors.firstName ? "border-red-500" : ""}`}
+                  />
+                  {addressErrors.firstName && <p className="text-red-500 text-xs mt-1">{addressErrors.firstName}</p>}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Last Name *"
+                    value={newAddress.lastName}
+                    onChange={e => {
+                      setNewAddress(prev => ({ ...prev, lastName: e.target.value }));
+                      if (addressErrors.lastName) setAddressErrors(prev => ({ ...prev, lastName: undefined }));
+                    }}
+                    className={`border rounded-lg p-2 w-full ${addressErrors.lastName ? "border-red-500" : ""}`}
+                  />
+                  {addressErrors.lastName && <p className="text-red-500 text-xs mt-1">{addressErrors.lastName}</p>}
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Phone Number *"
-                value={newAddress.phone}
-                onChange={e => handlePhoneChange(e.target.value)}
-                className="border rounded-lg p-2"
-              />
-              <input
-                type="text"
-                placeholder="Address Line 1 *"
-                value={newAddress.line1}
-                onChange={e => setNewAddress(prev => ({ ...prev, line1: e.target.value }))}
-                className="border rounded-lg p-2"
-              />
+              <div>
+                <input
+                  type="text"
+                  placeholder="Phone Number *"
+                  value={newAddress.phone}
+                  onChange={e => {
+                    handlePhoneChange(e.target.value);
+                    if (addressErrors.phone) setAddressErrors(prev => ({ ...prev, phone: undefined }));
+                  }}
+                  className={`border rounded-lg p-2 w-full ${addressErrors.phone ? "border-red-500" : ""}`}
+                />
+                {addressErrors.phone && <p className="text-red-500 text-xs mt-1">{addressErrors.phone}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Address Line 1 *"
+                  value={newAddress.line1}
+                  onChange={e => {
+                    setNewAddress(prev => ({ ...prev, line1: e.target.value }));
+                    if (addressErrors.line1) setAddressErrors(prev => ({ ...prev, line1: undefined }));
+                  }}
+                  className={`border rounded-lg p-2 w-full ${addressErrors.line1 ? "border-red-500" : ""}`}
+                />
+                {addressErrors.line1 && <p className="text-red-500 text-xs mt-1">{addressErrors.line1}</p>}
+              </div>
               <input
                 type="text"
                 placeholder="Area"
                 value={newAddress.area}
                 onChange={e => setNewAddress(prev => ({ ...prev, area: e.target.value }))}
-                className="border rounded-lg p-2"
+                className="border rounded-lg p-2 w-full"
               />
-              <input
-                type="text"
-                placeholder="City"
-                value={newAddress.city}
-                onChange={e => setNewAddress(prev => ({ ...prev, city: e.target.value }))}
-                className="border rounded-lg p-2"
-              />
-              <input
-                type="text"
-                placeholder="Province"
-                value={newAddress.province}
-                onChange={e => setNewAddress(prev => ({ ...prev, province: e.target.value }))}
-                className="border rounded-lg p-2"
-              />
-              <input
-                type="text"
-                placeholder="Postal Code"
-                value={newAddress.postalCode}
-                onChange={e => setNewAddress(prev => ({ ...prev, postalCode: e.target.value }))}
-                className="border rounded-lg p-2"
-              />
+              <div>
+                <input
+                  type="text"
+                  placeholder="City *"
+                  value={newAddress.city}
+                  onChange={e => {
+                    setNewAddress(prev => ({ ...prev, city: e.target.value }));
+                    if (addressErrors.city) setAddressErrors(prev => ({ ...prev, city: undefined }));
+                  }}
+                  className={`border rounded-lg p-2 w-full ${addressErrors.city ? "border-red-500" : ""}`}
+                />
+                {addressErrors.city && <p className="text-red-500 text-xs mt-1">{addressErrors.city}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Province *"
+                  value={newAddress.province}
+                  onChange={e => {
+                    setNewAddress(prev => ({ ...prev, province: e.target.value }));
+                    if (addressErrors.province) setAddressErrors(prev => ({ ...prev, province: undefined }));
+                  }}
+                  className={`border rounded-lg p-2 w-full ${addressErrors.province ? "border-red-500" : ""}`}
+                />
+                {addressErrors.province && <p className="text-red-500 text-xs mt-1">{addressErrors.province}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Postal Code *"
+                  value={newAddress.postalCode}
+                  onChange={e => {
+                    setNewAddress(prev => ({ ...prev, postalCode: e.target.value }));
+                    if (addressErrors.postalCode) setAddressErrors(prev => ({ ...prev, postalCode: undefined }));
+                  }}
+                  className={`border rounded-lg p-2 w-full ${addressErrors.postalCode ? "border-red-500" : ""}`}
+                />
+                {addressErrors.postalCode && <p className="text-red-500 text-xs mt-1">{addressErrors.postalCode}</p>}
+              </div>
               <button
-                className="mt-2 w-full p-2 rounded text-white theme-button"
+                className="mt-2 w-full p-2 rounded text-white theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 onClick={handleAddressSave}
+                disabled={savingAddress}
               >
+                {savingAddress && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
                 Save Address
               </button>
             </div>
@@ -290,11 +369,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
       await createOrder(orderData); // API call to backend
 
       clearCart();
+      success("Order successfully placed!");
       onClose();
-      alert("Order successfully placed!");
     } catch (err) {
       console.error(err);
-      alert("Failed to place order. Please try again.");
+      error("Failed to place order. Please try again.");
     }
   }}
 />

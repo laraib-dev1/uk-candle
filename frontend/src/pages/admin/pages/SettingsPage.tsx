@@ -89,7 +89,18 @@ useEffect(() => {
 
     try {
       const data = await getMe(token);
-      setUser(data.user);
+      // prepend backend URL if avatar exists and doesn't already start with http
+      const avatarUrl = data.user.avatar 
+        ? (data.user.avatar.startsWith('http') 
+            ? data.user.avatar 
+            : `${import.meta.env.VITE_API_URL}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
+        : undefined;
+      
+      const fullUser = {
+        ...data.user,
+        avatar: avatarUrl
+      };
+      setUser(fullUser);
       setEditName(data.user.name);
       setEditEmail(data.user.email);
     } catch (err) {
@@ -98,7 +109,7 @@ useEffect(() => {
   };
 
   loadUser();
-}, []);
+}, [navigate]);
 
 
 const updateProfile = async () => {
@@ -151,9 +162,16 @@ const changePassword = async () => {
     
 <div className="flex items-center gap-4 mb-6">
    <img
+    key={user?.avatar || "default"}
     src={user?.avatar || "/product.png"} // fetched avatar ya default
     className="w-20 h-20 rounded-full object-cover border-2 border-[#A8734B]"
     alt="avatar"
+    onError={(e) => {
+      const target = e.target as HTMLImageElement;
+      if (target.src !== "/product.png" && !target.src.includes("product.png")) {
+        target.src = "/product.png";
+      }
+    }}
   />
   <div>
     <h2 className="text-xl font-semibold">{user?.name}</h2>
@@ -232,9 +250,9 @@ const changePassword = async () => {
       />
     </div>
 
-    <Button onClick={saveProfileWithAvatar} className="theme-button">
-  {savingProfile ? "Saving..." : "Save Changes"}
-</Button>
+    <Button onClick={saveProfileWithAvatar} className="theme-button" loading={savingProfile}>
+      Save Changes
+    </Button>
 
     {profileMsg && <p className="text-green-600 mt-2">{profileMsg}</p>}
   </div>
@@ -277,9 +295,9 @@ const changePassword = async () => {
             </div>
           </div>
 
-          <Button onClick={changePassword} className="theme-button">
-  {changingPassword ? "Updating..." : "Update Password"}
-</Button>
+          <Button onClick={changePassword} className="theme-button" loading={changingPassword}>
+            Update Password
+          </Button>
 {passwordMsg && <p className="text-green-600 mt-2">{passwordMsg}</p>}
 
         </div>

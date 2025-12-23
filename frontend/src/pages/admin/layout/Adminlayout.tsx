@@ -13,10 +13,17 @@ import {
   Settings,
   LogOut,
   Cog,
+  Menu,
 } from "lucide-react";
 import { getMe } from "@/api/auth.api"; // make sure path is correct
 import { getEnabledAdminTabs } from "@/api/admintab.api";
 import * as LucideIcons from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 interface UserType {
   id: string;
@@ -45,10 +52,16 @@ export default function AdminLayout() {
 
       try {
         const data = await getMe(token);
-        // prepend backend URL if avatar exists
+        // prepend backend URL if avatar exists and doesn't already start with http
+        const avatarUrl = data.user.avatar 
+          ? (data.user.avatar.startsWith('http') 
+              ? data.user.avatar 
+              : `${import.meta.env.VITE_API_URL}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
+          : undefined;
+        
         const fullUser = {
           ...data.user,
-          avatar: data.user.avatar ? `${import.meta.env.VITE_API_URL}${data.user.avatar}` : undefined
+          avatar: avatarUrl
         };
         setUser(fullUser);
       } catch (err) {
@@ -58,7 +71,7 @@ export default function AdminLayout() {
     };
 
     loadUser();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const loadMenu = async () => {
@@ -109,12 +122,18 @@ export default function AdminLayout() {
         {/* Profile Box */}
         <div className="flex items-center gap-3 px-5 pb-6 border-b border-white/20">
           <img
+            key={user?.avatar || "default"}
             src={user?.avatar || "/avatar.png"}
             alt={user?.name || "User"}
             className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "/avatar.png";
+              if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
+                target.src = "/avatar.png";
+              }
+            }}
+            onLoad={() => {
+              // Image loaded successfully
             }}
           />
           <div>
@@ -174,10 +193,4 @@ export default function AdminLayout() {
 
       {/* ============ MAIN CONTENT ============ */}
       <main className="flex-1 p-8">
-         <React.Suspense fallback={<div>Loading admin page...</div>}>
-      <Outlet />
-    </React.Suspense>
-      </main>
-    </div>
-  );
-}
+         <

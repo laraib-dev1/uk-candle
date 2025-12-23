@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import DataTable from "../../../pages/admin/components/table/DataTable";
+import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { fetchOrders } from "../../../api/order.api";
 import { Input } from "@/components/ui/input";
 import { OrderModal } from "../product/OrderModal";
@@ -107,64 +107,86 @@ useEffect(() => {
 
   const getColumns = () => {
     const allColumns = [
-          { name: "Customer", selector: (row: Order) => row.customerName, sortable: true },
-    {
-  name: "Address",
-  selector: (row: Order) =>
-    row.address
-      ? `${row.address.line1}, ${row.address.area || ""}, ${row.address.city}, ${row.address.province}, ${row.address.postalCode}`
-      : "N/A",
-  sortable: true,
-},
-    { name: "Phone Number", selector: (row: Order) => row.phoneNumber, sortable: true },
-    {
-      name: "Items",
-      selector: (row: Order) => row.items.map(i => `${i.name} x ${i.quantity}`).join(", "),
-      sortable: false,
-    },
-    { name: "Type", selector: (row: Order) => row.type, sortable: true },
-    { name: "Bill", selector: (row: Order) => `$${row.bill}`, sortable: true },
-    { name: "Payment", selector: (row: Order) => row.payment, sortable: true },
-    { name: "Status", selector: (row: Order) => row.status, sortable: true },
-    { name: "Created At", selector: (row: Order) => new Date(row.createdAt).toLocaleString(), sortable: true },
-    {
-  name: "Action",
-  cell: (row: Order) => (
-    <button
-      className="theme-button px-2 py-1 rounded"
-      onClick={() => openView(row)}
-    >
-      View
-    </button>
-  ),
-  sortable: false,
-}
+      {
+        name: "Order",
+        heading: (row: Order) => `Order #${row._id?.substring(0, 8) || "N/A"}`,
+        subInfo: (row: Order) => new Date(row.createdAt).toLocaleDateString(),
+        minWidth: "180px",
+      },
+      {
+        name: "Customer",
+        heading: (row: Order) => row.customerName,
+        subInfo: (row: Order) => row.phoneNumber,
+        minWidth: "200px",
+      },
+      {
+        name: "Address",
+        selector: (row: Order) =>
+          row.address
+            ? `${row.address.line1}, ${row.address.city}, ${row.address.province}`
+            : "N/A",
+        minWidth: "250px",
+      },
+      {
+        name: "Items",
+        selector: (row: Order) => `${row.items.length} item(s)`,
+        minWidth: "120px",
+      },
+      {
+        name: "Amount",
+        heading: (row: Order) => `$${row.bill}`,
+        subInfo: (row: Order) => row.payment,
+        minWidth: "150px",
+      },
+      {
+        name: "Status",
+        cell: (row: Order) => {
+          const statusColors: Record<string, string> = {
+            complete: "bg-green-100 text-green-800",
+            cancel: "bg-red-100 text-red-800",
+            returned: "bg-yellow-100 text-yellow-800",
+            pending: "bg-blue-100 text-blue-800",
+          };
+          return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              statusColors[row.status.toLowerCase()] || "bg-gray-100 text-gray-800"
+            }`}>
+              {row.status}
+            </span>
+          );
+        },
+        minWidth: "120px",
+      },
+    ];
 
-  ];
+    // Breakpoints: 600px, 800px, 900px, 1000px, 1200px, 2040px
+    if (windowWidth < 600) {
+      // Very small screens: Order, Customer, Amount, Status, Actions
+      return allColumns.filter((_, idx) => [0, 1, 4, 5].includes(idx));
+    }
 
-     if (windowWidth < 640) {
-    // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
+    if (windowWidth < 800) {
+      // Small screens: Order, Customer, Amount, Status, Actions
+      return allColumns.filter((_, idx) => [0, 1, 4, 5].includes(idx));
+    }
 
-  if (windowWidth <786) {
-    // medium screens: show a few more columns
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
-  if (windowWidth < 800) {
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
-  if (windowWidth < 1024) {
-    // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
+    if (windowWidth < 900) {
+      // Medium-small screens: Order, Customer, Items, Amount, Status, Actions
+      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+    }
 
-  if (windowWidth <1250) {
-    // medium screens: show a few more columns
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
-  }
-  // large screens: show all
-  return allColumns;
+    if (windowWidth < 1000) {
+      // Medium screens: Order, Customer, Items, Amount, Status, Actions
+      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+    }
+
+    if (windowWidth < 1200) {
+      // Large-medium screens: Order, Customer, Address, Items, Amount, Status, Actions
+      return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+    }
+
+    // Extra large screens (1200px+): All columns
+    return allColumns;
   };
 
  return (
@@ -205,15 +227,14 @@ useEffect(() => {
   onUpdate={loadOrders} // refresh after status update
 />
     {/* DataTable */}
-    <DataTable<Order>
-      columns={getColumns()}
-      data={filteredOrders}
-      pagination
-      dense
-      responsive
-      selectable={false}
-      className="shadow-md rounded-lg"
-    />
+    <div className="bg-white shadow-md rounded-lg border border-gray-200">
+      <EnhancedDataTable<Order>
+        columns={getColumns()}
+        data={filteredOrders}
+        onView={openView}
+        pagination
+      />
+    </div>
 
     {loading && <p className="text-gray-500 mt-2">Loading orders...</p>}
   </div>

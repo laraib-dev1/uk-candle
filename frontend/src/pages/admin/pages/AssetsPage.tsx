@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RichTextEditor } from "@mantine/rte";
 import { getBanners, updateBanner, type BannerSlot } from "@/api/banner.api";
 import { getAllContent, updateContent, type ContentPage, type FAQ } from "@/api/content.api";
+import { useToast } from "@/components/ui/toast";
 
 // -------------------- CONFIG: Banner slots --------------------
 // Each slot connects admin UI → backend → Landing/Shop components.
@@ -57,6 +58,7 @@ interface BannerState {
 
 // -------------------- MAIN COMPONENT --------------------
 const AssetsPage: React.FC = () => {
+  const { success, error } = useToast();
   const [banners, setBanners] = useState<Record<string, BannerState>>({});
 
   // Cropper state (re‑used for all banners)
@@ -69,6 +71,7 @@ const AssetsPage: React.FC = () => {
   const [privacyContent, setPrivacyContent] = useState({ title: "", subTitle: "", description: "", loading: false });
   const [termsContent, setTermsContent] = useState({ title: "", subTitle: "", description: "", loading: false });
   const [faqsContent, setFaqsContent] = useState<{ faqs: FAQ[]; loading: boolean }>({ faqs: [], loading: false });
+  const [addingFAQ, setAddingFAQ] = useState(false);
 
   // -------- 1. Load existing banners from backend on mount --------
   useEffect(() => {
@@ -236,11 +239,11 @@ const AssetsPage: React.FC = () => {
         description: privacyContent.description
       });
       setPrivacyContent(prev => ({ ...prev, loading: false }));
-      alert("Privacy Policy updated successfully!");
+      success("Privacy Policy updated successfully!");
     } catch (err: any) {
       console.error("Failed to save privacy policy", err);
       setPrivacyContent(prev => ({ ...prev, loading: false }));
-      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+      error("Failed to save: " + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -254,11 +257,11 @@ const AssetsPage: React.FC = () => {
         description: termsContent.description
       });
       setTermsContent(prev => ({ ...prev, loading: false }));
-      alert("Terms & Conditions updated successfully!");
+      success("Terms & Conditions updated successfully!");
     } catch (err: any) {
       console.error("Failed to save terms", err);
       setTermsContent(prev => ({ ...prev, loading: false }));
-      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+      error("Failed to save: " + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -273,20 +276,27 @@ const AssetsPage: React.FC = () => {
         faqs: faqsContent.faqs
       });
       setFaqsContent(prev => ({ ...prev, loading: false }));
-      alert("FAQs updated successfully!");
+      success("FAQs updated successfully!");
     } catch (err: any) {
       console.error("Failed to save FAQs", err);
       setFaqsContent(prev => ({ ...prev, loading: false }));
-      alert("Failed to save: " + (err?.response?.data?.message || err.message));
+      error("Failed to save: " + (err?.response?.data?.message || err.message));
     }
   };
 
   // Add new FAQ
-  const handleAddFAQ = () => {
-    setFaqsContent(prev => ({
-      ...prev,
-      faqs: [...prev.faqs, { question: "", answer: "" }]
-    }));
+  const handleAddFAQ = async () => {
+    if (addingFAQ) return;
+    setAddingFAQ(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setFaqsContent(prev => ({
+        ...prev,
+        faqs: [...prev.faqs, { question: "", answer: "" }]
+      }));
+    } finally {
+      setAddingFAQ(false);
+    }
   };
 
   // Update FAQ
@@ -423,9 +433,9 @@ const AssetsPage: React.FC = () => {
                     <Button
                       className="theme-button"
                       onClick={() => handleSaveBanner(slot.id)}
-                      disabled={state.loading}
+                      loading={state.loading}
                     >
-                      {state.loading ? "Saving..." : "Save Banner"}
+                      Save Banner
                     </Button>
                   </div>
                 </div>
@@ -450,9 +460,9 @@ const AssetsPage: React.FC = () => {
               <Button 
                 className="theme-button" 
                 onClick={handleSavePrivacy}
-                disabled={privacyContent.loading}
+                loading={privacyContent.loading}
               >
-                {privacyContent.loading ? "Updating..." : "Update"}
+                Update
               </Button>
             </div>
           </div>
@@ -500,10 +510,9 @@ const AssetsPage: React.FC = () => {
               <Button 
                 className="theme-button" 
                 onClick={handleSaveTerms}
-                
-                disabled={termsContent.loading}
+                loading={termsContent.loading}
               >
-                {termsContent.loading ? "Updating..." : "Update"}
+                Update
               </Button>
             </div>
           </div>
@@ -552,9 +561,9 @@ const AssetsPage: React.FC = () => {
               <Button 
                 className="theme-button" 
                 onClick={handleSaveFAQs}
-                disabled={faqsContent.loading}
+                loading={faqsContent.loading}
               >
-                {faqsContent.loading ? "Updating..." : "Update"}
+                Update
               </Button>
             </div>
           </div>
@@ -593,7 +602,7 @@ const AssetsPage: React.FC = () => {
               </div>
             ))}
 
-            <Button variant="outline"  onClick={handleAddFAQ} className="w-full text-black">
+            <Button variant="outline" onClick={handleAddFAQ} className="w-full text-black" loading={addingFAQ}>
               + Add FAQ
             </Button>
 

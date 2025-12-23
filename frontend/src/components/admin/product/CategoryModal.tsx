@@ -54,6 +54,7 @@ export default function CategoryModal({
   const [error, setError] = React.useState<{ name?: string; icon?: string; products?: string }>({});
 const [cropModalOpen, setCropModalOpen] = React.useState(false);
   const [selectedFileForCrop, setSelectedFileForCrop] = React.useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
     setForm({
@@ -90,24 +91,29 @@ const [cropModalOpen, setCropModalOpen] = React.useState(false);
   setCropModalOpen(false);
 };
 
-const handleSubmit = () => {
-  onSubmit(form); // send FILE, not base64
+const handleSubmit = async () => {
+  if (isSubmitting) return;
+  
+  // Validate form
+  const updatedForm = { ...form, icon: form.icon || "/category.png" };
+  const result = categorySchema.safeParse(updatedForm);
+  if (!result.success) {
+    const issues: Record<string, string> = {};
+    result.error.issues.forEach((err) => {
+      const key = err.path[0] as string;
+      if (key) issues[key] = err.message;
+    });
+    setError(issues);
+    return;
+  }
+  
+  setIsSubmitting(true);
+  try {
+    await Promise.resolve(onSubmit(updatedForm));
+  } finally {
+    setIsSubmitting(false);
+  }
 };
-
-  // const handleSubmit = () => {
-  //   const updatedForm = { ...form, icon: form.icon || "/category.png" };
-  //   const result = categorySchema.safeParse(updatedForm);
-  //   if (!result.success) {
-  //     const issues: Record<string, string> = {};
-  //     result.error.issues.forEach((err) => {
-  //       const key = err.path[0] as string;
-  //       if (key) issues[key] = err.message;
-  //     });
-  //     setError(issues);
-  //     return;
-  //   }
-  //   onSubmit(updatedForm);
-  // };
 
   return (
     <Dialog open={open} onOpenChange={onClose} >
@@ -150,7 +156,7 @@ const handleSubmit = () => {
 
           {/* Icon */}
           <div>
-            <label className="text-sm font-medium">Icon (1:1)</label>
+            <label className="text-sm font-medium">Icon (1:1) *</label>
             {isView ? (
               form.icon && (
                 <img
@@ -183,7 +189,9 @@ const handleSubmit = () => {
         />
         {!isView && (
           <DialogFooter>
-            <Button className="text-white theme-button" onClick={handleSubmit}>{mode === "add" ? "Add" : "Update"}</Button>
+            <Button className="text-white theme-button" onClick={handleSubmit} loading={isSubmitting}>
+              {mode === "add" ? "Add" : "Update"}
+            </Button>
           </DialogFooter>
         )}
       </DialogContent>

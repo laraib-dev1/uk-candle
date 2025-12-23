@@ -41,7 +41,7 @@ export default function SocialShare({
         })
         .catch((err) => console.error("Share failed:", err));
     } else {
-      alert("Your browser does not support sharing.");
+      // Browser doesn't support sharing - this is handled by the UI (button won't show)
     }
   };
 

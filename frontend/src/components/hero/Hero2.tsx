@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../ui/buttons/Button";
 import { useNavigate } from "react-router-dom";
 
@@ -19,9 +19,17 @@ const Hero2 = ({
 }: Props) => {
   const navigate = useNavigate(); // <-- useNavigate hook
   const heroImage = image || "/hero.png";
+  const [loading, setLoading] = useState(false);
 
-  const handleShopMore = () => {
-    navigate("/shop"); // navigate to shop page
+  const handleShopMore = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      navigate("/shop");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,7 +44,7 @@ const Hero2 = ({
               {subtitle || "Explore our latest collections and exclusive deals."}
             </p>
             <div className="mt-6 flex justify-center">
-              <Button onClick={handleShopMore}>Shop More</Button>
+              <Button onClick={handleShopMore} loading={loading}>Shop More</Button>
             </div>
           </div>
         ) : (
@@ -64,7 +72,7 @@ const Hero2 = ({
                 {subtitle || "Explore our latest collections and exclusive deals."}
               </p>
               <div className="mt-6">
-                <Button onClick={handleShopMore}>Shop More</Button>
+                <Button onClick={handleShopMore} loading={loading}>Shop More</Button>
               </div>
             </div>
 

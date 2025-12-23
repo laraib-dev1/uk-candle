@@ -7,10 +7,12 @@ import {
 } from "@stripe/react-stripe-js";
 import React, { useState } from "react";
 import { createPaymentIntent } from "@/api/payment.api";
+import { useToast } from "@/components/ui/toast";
 
 const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () => void }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const { success, error } = useToast();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -28,9 +30,9 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
     });
 
     if (result.error) {
-      alert(result.error.message);
+      error(result.error.message);
     } else if (result.paymentIntent.status === "succeeded") {
-      alert("Payment Successful!");
+      success("Payment Successful!");
       onSuccess();
     }
 
@@ -75,11 +77,12 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
       </div>
 
       <button
-        className="w-full mt-4 text-white py-3 rounded-lg theme-button"
+        className="w-full mt-4 text-white py-3 rounded-lg theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         onClick={handleSubmit}
         disabled={loading}
       >
-        {loading ? "Processing..." : "Pay Now"}
+        {loading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+        Pay Now
       </button>
     </div>
   );

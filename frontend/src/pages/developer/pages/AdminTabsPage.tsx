@@ -7,6 +7,7 @@ import {
   deleteAdminTab,
 } from "@/api/admintab.api";
 import IconPicker from "@/components/developer/IconPicker";
+import { useToast } from "@/components/ui/toast";
 
 interface AdminTab {
   _id: string;
@@ -19,9 +20,12 @@ interface AdminTab {
 }
 
 export default function AdminTabsPage() {
+  const { success, error } = useToast();
   const [tabs, setTabs] = useState<AdminTab[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
+  const [deleteLoading, setDeleteLoading] = useState<Record<string, boolean>>({});
   const [newTab, setNewTab] = useState({
     label: "",
     path: "",
@@ -29,6 +33,7 @@ export default function AdminTabsPage() {
     subInfo: "",
     enabled: true,
   });
+  const [tabErrors, setTabErrors] = useState<{ label?: string; path?: string }>({});
 
   useEffect(() => {
     loadTabs();
@@ -44,28 +49,46 @@ export default function AdminTabsPage() {
   };
 
   const toggleTab = async (id: string, enabled: boolean) => {
+    if (toggleLoading[id]) return;
+    setToggleLoading(prev => ({ ...prev, [id]: true }));
     try {
       await updateAdminTab(id, { enabled: !enabled });
       await loadTabs();
     } catch (error) {
       console.error("Failed to toggle tab:", error);
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const handleAddTab = async () => {
-    if (!newTab.label || !newTab.path) {
-      alert("Please fill in label and path");
+    const errors: { label?: string; path?: string } = {};
+    
+    if (!newTab.label.trim()) {
+      errors.label = "Label is required";
+    }
+    if (!newTab.path.trim()) {
+      errors.path = "Path is required";
+    } else if (!/^\/[a-z0-9/-]+$/.test(newTab.path)) {
+      errors.path = "Path must start with / and contain only lowercase letters, numbers, and hyphens";
+    }
+    
+    setTabErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      error("Please fill in all required fields correctly.");
       return;
     }
 
     setIsLoading(true);
     try {
       await createAdminTab(newTab);
+      success("Tab created successfully!");
       await loadTabs();
       setShowAddModal(false);
       setNewTab({ label: "", path: "", icon: "", subInfo: "", enabled: true });
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to create tab");
+      setTabErrors({});
+    } catch (err: any) {
+      error(err.response?.data?.message || "Failed to create tab");
     } finally {
       setIsLoading(false);
     }
@@ -73,11 +96,15 @@ export default function AdminTabsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this tab?")) return;
+    if (deleteLoading[id]) return;
+    setDeleteLoading(prev => ({ ...prev, [id]: true }));
     try {
       await deleteAdminTab(id);
       await loadTabs();
     } catch (error) {
       console.error("Failed to delete tab:", error);
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -85,13 +112,14 @@ export default function AdminTabsPage() {
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold theme-heading">Admin Tabs</h1>
-        <button
+        {/* Add Button - Commented Out */}
+        {/* <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors theme-button"
         >
           <Plus size={18} />
           Add Page
-        </button>
+        </button> */}
       </div>
 
       {/* Tabs List */}
@@ -116,23 +144,33 @@ export default function AdminTabsPage() {
                 {/* Toggle Switch */}
                 <button
                   onClick={() => toggleTab(tab._id, tab.enabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  disabled={toggleLoading[tab._id]}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     tab.enabled ? "" : "bg-gray-300"
                   }`}
                   style={tab.enabled ? { backgroundColor: "var(--theme-primary)" } : {}}
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      tab.enabled ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
+                  {toggleLoading[tab._id] ? (
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        tab.enabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  )}
                 </button>
 
                 <button
                   onClick={() => handleDelete(tab._id)}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  disabled={deleteLoading[tab._id]}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <X size={18} />
+                  {deleteLoading[tab._id] ? (
+                    <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <X size={18} />
+                  )}
                 </button>
               </div>
             </div>
@@ -140,8 +178,8 @@ export default function AdminTabsPage() {
         </div>
       </div>
 
-      {/* Add Tab Modal */}
-      {showAddModal && (
+      {/* Add Tab Modal - Commented Out */}
+      {/* {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
@@ -157,13 +195,16 @@ export default function AdminTabsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Label
+                  Label *
                 </label>
                 <input
                   type="text"
                   value={newTab.label}
-                  onChange={(e) => setNewTab({ ...newTab, label: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  onChange={(e) => {
+                    setNewTab({ ...newTab, label: e.target.value });
+                    if (tabErrors.label) setTabErrors(prev => ({ ...prev, label: undefined }));
+                  }}
+                  className={`w-full px-4 py-2.5 border rounded-lg outline-none ${tabErrors.label ? "border-red-500" : "border-gray-300"}`}
                   style={{
                     "--tw-ring-color": "var(--theme-primary)",
                   } as React.CSSProperties & { "--tw-ring-color": string }}
@@ -172,22 +213,26 @@ export default function AdminTabsPage() {
                     e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.borderColor = tabErrors.label ? "" : "";
                     e.currentTarget.style.boxShadow = "";
                   }}
                   placeholder="Tab Label"
                 />
+                {tabErrors.label && <p className="text-red-500 text-xs mt-1">{tabErrors.label}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Path
+                  Path *
                 </label>
                 <input
                   type="text"
                   value={newTab.path}
-                  onChange={(e) => setNewTab({ ...newTab, path: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  onChange={(e) => {
+                    setNewTab({ ...newTab, path: e.target.value });
+                    if (tabErrors.path) setTabErrors(prev => ({ ...prev, path: undefined }));
+                  }}
+                  className={`w-full px-4 py-2.5 border rounded-lg outline-none ${tabErrors.path ? "border-red-500" : "border-gray-300"}`}
                   style={{
                     "--tw-ring-color": "var(--theme-primary)",
                   } as React.CSSProperties & { "--tw-ring-color": string }}
@@ -196,11 +241,12 @@ export default function AdminTabsPage() {
                     e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.borderColor = tabErrors.path ? "" : "";
                     e.currentTarget.style.boxShadow = "";
                   }}
                   placeholder="/admin/path"
                 />
+                {tabErrors.path && <p className="text-red-500 text-xs mt-1">{tabErrors.path}</p>}
               </div>
 
               <div>
@@ -253,15 +299,16 @@ export default function AdminTabsPage() {
                 <button
                   onClick={handleAddTab}
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
+                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button flex items-center justify-center gap-2"
                 >
-                  {isLoading ? "Adding..." : "Add Tab"}
+                  {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                  Add Tab
                 </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

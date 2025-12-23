@@ -1,14 +1,13 @@
 // frontend/src/pages/admin/pages/CategoriesPage.tsx
 import React, { useEffect, useState } from "react";
-import DataTable from "../components/table/DataTable";
-import { ProductActions } from "../../../components/admin/product/ProductActions";
-import { TableColumn } from "react-data-table-component";
+import EnhancedDataTable from "../components/table/EnhancedDataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CategoryModal from "@/components/admin/product/CategoryModal";
 import { getCategories, addCategory, updateCategory, deleteCategory } from "@/api/category.api";
 import DeleteModal from "@/components/admin/product/DeleteModal";
 import { Category } from "../../../types/Category";
+import { useToast } from "@/components/ui/toast";
 interface CategoryFromAPI {
   _id: string;
   name: string;
@@ -16,6 +15,7 @@ interface CategoryFromAPI {
   products: number;
 }
 export default function CategoriesPage() {
+  const { success, error } = useToast();
   const [search, setSearch] = useState("");
 const [modalOpen, setModalOpen] = React.useState(false);
 const [modalMode, setModalMode] = React.useState<"add" | "edit" | "view">("add");
@@ -23,9 +23,16 @@ const [selected, setSelected] = React.useState<Category | null>(null);
  const [categories, setCategories] = useState<Category[]>([]);
  const [deleteOpen, setDeleteOpen] = useState(false);
 const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
  useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 const fetchCategories = async () => {
   try {
@@ -71,18 +78,75 @@ const handleDeleteClick = (category: Category) => {
 
 const confirmDelete = async () => {
   if (!deleteTarget || !deleteTarget.id) {
-    alert("Category ID is missing!");
+    error("Category ID is missing!");
     return;
   }
 
   try {
     await deleteCategory(deleteTarget.id);
+    success("Category deleted successfully!");
     setDeleteOpen(false);
     setDeleteTarget(null);
     fetchCategories();
   } catch (err: any) {
-    alert(err.response?.data?.message || "Failed to delete category");
+    error(err.response?.data?.message || "Failed to delete category");
   }
+};
+
+const getColumns = () => {
+  const allColumns = [
+    {
+      name: "ID",
+      cell: (_row, index) => <span className="text-gray-600">{index + 1}</span>,
+      minWidth: "60px",
+    },
+    {
+      name: "Category",
+      heading: (row) => row.name,
+      subInfo: (row) => `${row.products || 0} products`,
+      minWidth: "200px",
+    },
+    {
+      name: "Icon",
+      cell: (row) => (
+        <img 
+          src={row.icon || "/default-category.png"} 
+          alt={row.name} 
+          className="w-10 h-10 rounded-full object-cover border border-gray-200" 
+        />
+      ),
+      minWidth: "80px",
+    },
+  ];
+
+  // Breakpoints: 600px, 800px, 900px, 1000px, 1200px, 2040px
+  if (windowWidth < 600) {
+    // Very small screens: ID, Category, Actions (hide Icon)
+    return allColumns.filter((_, idx) => [0, 1].includes(idx));
+  }
+
+  if (windowWidth < 800) {
+    // Small screens: ID, Category, Actions (hide Icon)
+    return allColumns.filter((_, idx) => [0, 1].includes(idx));
+  }
+
+  if (windowWidth < 900) {
+    // Medium-small screens: ID, Category, Icon, Actions
+    return allColumns.filter((_, idx) => [0, 1, 2].includes(idx));
+  }
+
+  if (windowWidth < 1000) {
+    // Medium screens: All columns
+    return allColumns;
+  }
+
+  if (windowWidth < 1200) {
+    // Large-medium screens: All columns
+    return allColumns;
+  }
+
+  // Extra large screens (1200px+): All columns
+  return allColumns;
 };
 
   return (
@@ -113,36 +177,16 @@ const confirmDelete = async () => {
       </div>
 
       {/* -------- Table -------- */}
-      <div className="bg-white shadow rounded-lg p-3 overflow-visible">
-  <DataTable
-          columns={[
-{
-  name: "ID",
-  cell: (row, index) => index + 1, // 👈 Auto row number
-  width: "60px",
-  sortable: false,
-},
-            {
-              name: "Icon",
-              cell: (row) => <img src={row.icon || "/default-category.png"} alt="" className="w-8 h-8 rounded-full object-cover" />,
-              width: "100px",
-            },
-            { name: "Category", selector: (row) => row.name, sortable: true },
-            { name: "Products", selector: (row) => row.products, sortable: true },
-          ]}
+      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
+        <EnhancedDataTable<Category>
+          columns={getColumns()}
           data={filtered}
+          onView={openView}
+          onEdit={openEdit}
+          onDelete={handleDeleteClick}
           pagination
-          actions={(row: Category) => (
-            <ProductActions
-              row={row}
-              onView={openView}
-              onEdit={openEdit}
-              onDelete={() => handleDeleteClick(row)}
-
-            />
-          )}
         />
-</div>
+      </div>
 <CategoryModal
   open={modalOpen}
   mode={modalMode}

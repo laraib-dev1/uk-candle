@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Building2, Edit, RotateCcw, Upload, Image as ImageIcon } from "lucide-react";
 import { getCompany, updateCompany } from "@/api/company.api";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useToast } from "@/components/ui/toast";
 
 export default function CompanyPage() {
   const { updateTheme } = useTheme();
+  const { success, error } = useToast();
   const [companyData, setCompanyData] = useState({
     company: "",
     slogan: "",
@@ -86,20 +88,27 @@ export default function CompanyPage() {
   };
 
   const handleChange = (field: string, value: any) => {
-    setCompanyData((prev) => {
-      if (field.includes(".")) {
-        const [parent, child] = field.split(".");
-        return {
-          ...prev,
-          [parent]: {
-            ...prev[parent as keyof typeof prev],
-            [child]: value,
-          },
-        };
-      }
-      return { ...prev, [field]: value };
-    });
-  };
+  setCompanyData((prev) => {
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".");
+
+      const parentValue = prev[parent as keyof typeof prev];
+
+      return {
+        ...prev,
+        [parent]: {
+          ...(typeof parentValue === "object" && parentValue !== null
+            ? parentValue
+            : {}),
+          [child]: value,
+        },
+      };
+    }
+
+    return { ...prev, [field]: value };
+  });
+};
+
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,10 +221,10 @@ export default function CompanyPage() {
       if (updated.company) {
         document.title = updated.company || "Grace by Anu";
       }
-      alert("Company settings updated successfully!");
-    } catch (error) {
-      console.error("Failed to update company:", error);
-      alert("Failed to update company settings");
+      success("Company settings updated successfully!");
+    } catch (err) {
+      console.error("Failed to update company:", err);
+      error("Failed to update company settings");
     } finally {
       setIsLoading(false);
     }
@@ -247,14 +256,19 @@ export default function CompanyPage() {
               backgroundColor: "var(--theme-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+              if (!isLoading) {
+                e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+              if (!isLoading) {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+              }
             }}
           >
+            {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
             <Edit size={18} />
-            {isLoading ? "Updating..." : "Update"}
+            Update
           </button>
         </div>
       </div>
@@ -415,7 +429,9 @@ export default function CompanyPage() {
           {companyData.socialPosts.map((post, index) => (
             <div key={index}>
               <input
-                ref={(el) => (socialPostInputRefs.current[index] = el)}
+ref={(el) => {
+  socialPostInputRefs.current[index] = el;
+}}
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleSocialPostUpload(index, e)}

@@ -94,6 +94,8 @@ export default function ProductModal({
   const isView = mode === "view";
 const [cropModalOpen, setCropModalOpen] = useState(false);
 const [selectedFileForCrop, setSelectedFileForCrop] = useState<File | null>(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [removingImages, setRemovingImages] = useState<Record<string, boolean>>({});
 const [currentImageKey, setCurrentImageKey] =
   useState<`image${1|2|3|4|5|6}` | null>(null);
 const [toggles, setToggles] = useState({
@@ -239,16 +241,23 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 };
 
   
-  const handleRemoveImage = (key: `image${1|2|3|4|5|6}`) => {
-    setForm(prev => {
-      const newFiles = { ...(prev.imageFiles || {}) };
-      delete (newFiles as any)[key];
-      return {
-        ...prev,
-        imageFiles: newFiles,
+  const handleRemoveImage = async (key: `image${1|2|3|4|5|6}`) => {
+    if (removingImages[key]) return;
+    setRemovingImages(prev => ({ ...prev, [key]: true }));
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setForm(prev => {
+        const newFiles = { ...(prev.imageFiles || {}) };
+        delete (newFiles as any)[key];
+        return {
+          ...prev,
+          imageFiles: newFiles,
         [key]: "", // remove preview / url
       } as ProductForm;
     });
+    } finally {
+      setRemovingImages(prev => ({ ...prev, [key]: false }));
+    }
     setError(prev => ({ ...prev, [key]: undefined }));
   };
 
@@ -290,51 +299,58 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
 //   onSubmit(payload);
 // };
 
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    
+    // Convert category to string ID if it's an object
+    const categoryId = typeof form.category === "object" ? form.category._id : form.category;
 
-const handleSubmit = () => {
-  // Convert category to string ID if it's an object
-  const categoryId = typeof form.category === "object" ? form.category._id : form.category;
+    // Prepare candidate for validation
+    const candidate = { ...form, category: categoryId };
 
-  // Prepare candidate for validation
-  const candidate = { ...form, category: categoryId };
-
-  // Validate using Zod
-  const result = productSchema.safeParse(candidate);
-  if (!result.success) {
-    const issues: Partial<Record<keyof Product, string>> = {};
-    result.error.issues.forEach((err: ZodIssue) => {
-      const key = err.path[0] as keyof Product;
-      if (key) issues[key] = err.message;
-    });
-    setError(issues);
-    return;
-  }
-
-  // Ensure primary image exists in add mode
-  if (mode === "add") {
-    const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
-    const hasUrl1 = !!form.image1;
-    if (!hasFile1 && !hasUrl1) {
-      setError(prev => ({ ...prev, image1: "Primary image is required" }));
+    // Validate using Zod
+    const result = productSchema.safeParse(candidate);
+    if (!result.success) {
+      const issues: Partial<Record<keyof Product, string>> = {};
+      result.error.issues.forEach((err: ZodIssue) => {
+        const key = err.path[0] as keyof Product;
+        if (key) issues[key] = err.message;
+      });
+      setError(issues);
       return;
     }
-  }
+    
+    setIsSubmitting(true);
 
-  // Final payload
-  const payload: ProductForm = {
-    ...form,
-    category: categoryId,       // string ID
-    metaInfo: form.metaInfo,    // HTML string
+    // Ensure primary image exists in add mode
+    if (mode === "add") {
+      const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
+      const hasUrl1 = !!form.image1;
+      if (!hasFile1 && !hasUrl1) {
+        setError(prev => ({ ...prev, image1: "Primary image is required" }));
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Final payload
+    const payload: ProductForm = {
+      ...form,
+      category: categoryId,       // string ID
+      metaInfo: form.metaInfo,    // HTML string
+    };
+
+    console.log("Sending payload:", payload);
+
+    // Call the parent onSubmit
+    try {
+      await onSubmit(payload);
+    } catch (error) {
+      console.error("Error submitting:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  console.log("Sending payload:", payload);
-
-  // Call the parent onSubmit
-  onSubmit(payload);
-};
-
-
-
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -353,7 +369,7 @@ const handleSubmit = () => {
         <div className="p-4 space-y-4">
           {/* Top row: name */}
           <div>
-            <label className="text-sm font-medium">Product Title</label>
+            <label className="text-sm font-medium">Product Title *</label>
             <Input
               value={form.name}
               disabled={isView}
@@ -366,7 +382,7 @@ const handleSubmit = () => {
           {/* Category / Price */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-sm font-medium">Category</label>
+              <label className="text-sm font-medium">Category *</label>
               <select
   value={typeof form.category === "string" ? form.category : form.category._id}
   onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -393,7 +409,7 @@ const handleSubmit = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Price</label>
+              <label className="text-sm font-medium">Price *</label>
               <Input
                 type="number"
                 value={form.price}
@@ -405,7 +421,7 @@ const handleSubmit = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Currency</label>
+              <label className="text-sm font-medium">Currency *</label>
               <select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
@@ -432,7 +448,7 @@ const handleSubmit = () => {
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium">Description *</label>
             <Textarea
               value={form.description}
               disabled={isView}
@@ -504,9 +520,14 @@ const handleSubmit = () => {
       {!isView && form.image1 && (
         <button
           onClick={(e) => { e.stopPropagation(); handleRemoveImage("image1"); }}
-          className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+          disabled={removingImages["image1"]}
+          className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition disabled:opacity-100 disabled:cursor-not-allowed"
         >
-          ✕
+          {removingImages["image1"] ? (
+            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            "✕"
+          )}
         </button>
       )}
 
@@ -539,9 +560,14 @@ const handleSubmit = () => {
             {!isView && form[`image${n}` as ImageField] && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
-                className="absolute top-1 right-1 bg-white text-gray-900 rounded-full w-6 h-6 flex items-center justify-center  group-hover:opacity-100 transition"
+                disabled={removingImages[`image${n}`]}
+                className="absolute top-1 right-1 bg-white text-gray-900 rounded-full w-6 h-6 flex items-center justify-center group-hover:opacity-100 transition disabled:opacity-100 disabled:cursor-not-allowed"
               >
-                ✕
+                {removingImages[`image${n}`] ? (
+                  <span className="w-2.5 h-2.5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "✕"
+                )}
               </button>
             )}
 
@@ -572,9 +598,14 @@ const handleSubmit = () => {
             {!isView && form[`image${n}` as ImageField] && (
               <button
                 onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
-                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                disabled={removingImages[`image${n}`]}
+                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition disabled:opacity-100 disabled:cursor-not-allowed"
               >
-                ✕
+                {removingImages[`image${n}`] ? (
+                  <span className="w-2.5 h-2.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "✕"
+                )}
               </button>
             )}
 
@@ -694,7 +725,7 @@ const handleSubmit = () => {
 
         {!isView && (
           <DialogFooter>
-            <Button className="text-white theme-button" onClick={handleSubmit}>
+            <Button className="text-white theme-button" onClick={handleSubmit} loading={isSubmitting}>
               {mode === "add" ? "Add" : "Update"}
             </Button>
           </DialogFooter>

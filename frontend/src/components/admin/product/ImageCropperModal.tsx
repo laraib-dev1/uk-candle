@@ -21,6 +21,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   const [zoom, setZoom] = useState(1);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // When crop area changes
   const onCropComplete = useCallback(
@@ -67,10 +68,16 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   };
 
   const handleCropDone = async () => {
-    const blob = await getCroppedImageBlob();
-    if (blob) {
-      onCropDone(blob);
-      onClose();
+    if (loading) return;
+    setLoading(true);
+    try {
+      const blob = await getCroppedImageBlob();
+      if (blob) {
+        onCropDone(blob);
+        onClose();
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,7 +114,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           <Button className="text-black" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button className="text-black"  onClick={handleCropDone}>Crop</Button>
+          <Button className="text-black" onClick={handleCropDone} loading={loading}>Crop</Button>
         </div>
       </DialogContent>
     </Dialog>

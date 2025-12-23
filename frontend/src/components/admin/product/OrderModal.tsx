@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Order } from "@/types/Order";
 import { updateOrderStatus } from "@/api/order.api";
+import { useToast } from "@/components/ui/toast";
 
 interface OrderModalProps {
   order: Order | null;
@@ -10,7 +11,10 @@ interface OrderModalProps {
 }
 
 export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, onUpdate }) => {
+  const { success, error } = useToast();
   const [status, setStatus] = useState(order?.status || "Pending");
+  const [loading, setLoading] = useState(false);
+  const [statusError, setStatusError] = useState("");
 
   useEffect(() => {
     setStatus(order?.status || "Pending");
@@ -19,13 +23,25 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
   if (!open || !order) return null;
 
   const handleSave = async () => {
+    if (loading) return;
+    
+    if (!status) {
+      setStatusError("Status is required");
+      return;
+    }
+    
+    setLoading(true);
+    setStatusError("");
     try {
       await updateOrderStatus(order._id, status);
+      success("Order status updated successfully!");
       onUpdate(); 
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Failed to update status");
+      error("Failed to update status");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,8 +66,11 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
           <label className="block mb-1">Status:</label>
           <select 
             value={status} 
-            onChange={e => setStatus(e.target.value)} 
-            className="border rounded p-2 w-full text-black"
+            onChange={e => {
+              setStatus(e.target.value);
+              if (statusError) setStatusError("");
+            }} 
+            className={`border rounded p-2 w-full text-black ${statusError ? "border-red-500" : ""}`}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = "var(--theme-primary)";
               e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
@@ -66,11 +85,19 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
             <option value="Cancel">Cancel</option>
             <option value="Returned">Returned</option>
           </select>
+          {statusError && <p className="text-red-500 text-xs mt-1">{statusError}</p>}
         </div>
 
         <div className="flex justify-end mt-4 gap-2">
-          <button className="px-4 py-2 bg-gray-200 rounded text-black" onClick={onClose}>Close</button>
-          <button className="px-4 py-2 text-white rounded theme-button" onClick={handleSave}>Save</button>
+          <button className="px-4 py-2 bg-gray-200 rounded text-black" onClick={onClose} disabled={loading}>Close</button>
+          <button 
+            className="px-4 py-2 text-white rounded theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" 
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+            Save
+          </button>
         </div>
       </div>
     </div>

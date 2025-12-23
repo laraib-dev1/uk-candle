@@ -1,7 +1,6 @@
 // frontend/src/pages/admin/pages/ProductPage.tsx
 import React, { useEffect, useState } from "react";
-import DataTable from "../components/table/DataTable"; // make sure path is correct
-import { ProductActions } from "../../../components/admin/product/ProductActions";
+import EnhancedDataTable from "../components/table/EnhancedDataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ProductModal from "../../../components/admin/product/ProductModal";
@@ -56,6 +55,7 @@ export default function ProductPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view">("add");
   const [selected, setSelected] = useState<Product | null>(null);
+  const [openingModal, setOpeningModal] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -143,40 +143,98 @@ const mapped = productsArray.map((p: ProductAPI) => mapProduct(p, categories));
     setFiltered(products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())));
   }, [search, products]);
 
-  const openAddModal = () => { setSelected(null); setModalMode("add"); setModalOpen(true); };
+  const openAddModal = async () => {
+    if (openingModal) return;
+    setOpeningModal(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setSelected(null);
+      setModalMode("add");
+      setModalOpen(true);
+    } finally {
+      setOpeningModal(false);
+    }
+  };
   const openEditModal = (product: Product) => { setSelected(product); setModalMode("edit"); setModalOpen(true); };
   const openViewModal = (product: Product) => { setSelected(product); setModalMode("view"); setModalOpen(true); };
 
 const getColumns = () => {
   const allColumns = [
-    { name: "ID", cell: (_row: Product, i: number) => i + 1, grow: 0 },
-    { name: "Image", cell: (row: Product) => <img src={row.image1 || row.image2 || "/product.png"} alt={row.name} className="w-8 h-8 rounded-full object-cover border" />, minWidth: "60px", grow: 0 },
-    { name: "Name", selector: (row: Product) => row.name, sortable: true },
     { 
-  name: "Description", 
-  selector: (row: Product) => row.description, 
-  cell: (row: Product) => <span className="truncate block max-w-[200px]">{row.description}</span> 
-},
-    { name: "Category", selector: (row: Product) => row.categoryName || row.category, sortable: true },
-    { name: "Price", selector: (row: Product) => `${row.price} ${row.currency}`, sortable: true },
-    { name: "Status", selector: (row: Product) => row.status, sortable: true },
-    { name: "Actions", cell: (row: Product) => <ProductActions row={row} onView={() => openViewModal(row)} onEdit={() => openEditModal(row)} onDelete={() => { setDeleteId(row.id || null); setDeleteOpen(true); }} />, minWidth: "100px", grow: 0 },
+      name: "ID", 
+      cell: (_row: Product, i: number) => <span className="text-gray-600">{i + 1}</span>,
+      minWidth: "60px"
+    },
+    {
+      name: "Image",
+      cell: (row: Product) => (
+        <img 
+          src={row.image1 || row.image2 || "/product.png"} 
+          alt={row.name} 
+          className="w-10 h-10 rounded-full object-cover border border-gray-200" 
+        />
+      ),
+      minWidth: "80px"
+    },
+    { 
+      name: "Product", 
+      heading: (row: Product) => row.name,
+      subInfo: (row: Product) => row.categoryName || row.category || "No category",
+      minWidth: "200px"
+    },
+    { 
+      name: "Description", 
+      selector: (row: Product) => row.description?.substring(0, 50) + (row.description?.length > 50 ? "..." : "") || "No description",
+      minWidth: "200px"
+    },
+    { 
+      name: "Price", 
+      heading: (row: Product) => `${row.price} ${row.currency}`,
+      subInfo: (row: Product) => row.discount ? `${row.discount}% OFF` : "No discount",
+      minWidth: "120px"
+    },
+    { 
+      name: "Status", 
+      cell: (row: Product) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          row.status === "active" 
+            ? "bg-green-100 text-green-800" 
+            : "bg-gray-100 text-gray-800"
+        }`}>
+          {row.status}
+        </span>
+      ),
+      minWidth: "100px"
+    },
   ];
 
-  // Small screens: only 4 columns
-  if (windowWidth < 640) {
-    return allColumns.filter(c => ["ID", "Image", "Name", "Actions"].includes(c.name));
+  // Breakpoints: 600px, 800px, 900px, 1000px, 1200px, 2040px
+  if (windowWidth < 600) {
+    // Very small screens: ID, Image, Product, Status, Actions
+    return allColumns.filter((_, idx) => [0, 1, 2, 5].includes(idx));
   }
 
-  // Medium screens: 5 columns
-  if (windowWidth < 768) {
-    return allColumns.filter(c => ["ID", "Image", "Name",  "Actions"].includes(c.name));
-  }
-   if (windowWidth < 800) {
-    return allColumns.filter(c => ["ID", "Image", "Name",  "Actions"].includes(c.name));
+  if (windowWidth < 800) {
+    // Small screens: ID, Image, Product, Price, Status, Actions
+    return allColumns.filter((_, idx) => [0, 1, 2, 4, 5].includes(idx));
   }
 
-  // Large screens: all columns
+  if (windowWidth < 900) {
+    // Medium-small screens: ID, Image, Product, Price, Status, Actions
+    return allColumns.filter((_, idx) => [0, 1, 2, 4, 5].includes(idx));
+  }
+
+  if (windowWidth < 1000) {
+    // Medium screens: ID, Image, Product, Description, Price, Status, Actions
+    return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+  }
+
+  if (windowWidth < 1200) {
+    // Large-medium screens: All columns except maybe Description
+    return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+  }
+
+  // Extra large screens (1200px+): All columns
   return allColumns;
 };
 
@@ -188,21 +246,25 @@ const getColumns = () => {
         <h2 className="text-2xl font-semibold theme-heading">Products</h2>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Input placeholder="Search" value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-64 text-black" />
-          <Button className="text-white w-full sm:w-auto theme-button" onClick={openAddModal}>
+          <Button className="text-white w-full sm:w-auto theme-button" onClick={openAddModal} loading={openingModal}>
             + Add New
           </Button>
         </div>
       </div>
 
-    <div className="w-full overflow-x-auto">
-  <DataTable<Product>
-    columns={getColumns()}
-    data={filtered}
-    pagination
-    dense
-    responsive
-  />
-</div>
+    <div className="w-full overflow-x-auto bg-white rounded-lg border border-gray-200">
+      <EnhancedDataTable<Product>
+        columns={getColumns()}
+        data={filtered}
+        onView={openViewModal}
+        onEdit={openEditModal}
+        onDelete={(row) => {
+          setDeleteId(row.id || null);
+          setDeleteOpen(true);
+        }}
+        pagination
+      />
+    </div>
 
 
       <ProductModal open={modalOpen} mode={modalMode} categories={categories} data={selected ?? undefined} onClose={() => setModalOpen(false)}

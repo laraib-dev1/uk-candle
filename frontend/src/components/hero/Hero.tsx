@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../ui/buttons/Button";
 import { useNavigate } from "react-router-dom";
 
@@ -20,8 +20,17 @@ const Hero = ({
 }: Props) => {
   const heroImage = image || "/hero.png";
   const navigate = useNavigate();
-const handleShopMore = () => {
-    navigate("/shop"); // <-- navigate to your shop page
+  const [loading, setLoading] = useState(false);
+  
+const handleShopMore = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      navigate("/shop");
+    } finally {
+      setLoading(false);
+    }
   };
   // FULL BACKGROUND VERSION
   if (variant === "full-background") {
@@ -41,7 +50,7 @@ const handleShopMore = () => {
           </p>
 
           <div className="mt-8">
-            <Button onClick={handleShopMore}>Shop More</Button>
+            <Button onClick={handleShopMore} loading={loading}>Shop More</Button>
           </div>
         </div>
       </section>
@@ -64,7 +73,7 @@ const handleShopMore = () => {
           </p>
 
           <div className="mt-8">
-            <Button onClick={handleShopMore}>Shop More</Button>
+            <Button onClick={handleShopMore} loading={loading}>Shop More</Button>
           </div>
         </div>
 

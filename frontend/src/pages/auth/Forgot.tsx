@@ -13,7 +13,6 @@ export default function ResetPassword() {
   const handleReset = async () => {
     try {
       await API.post("/reset-password", { email });
-
       setMessage("Password reset link has been sent to your email.");
       setError("");
     } catch (err: any) {
@@ -24,28 +23,39 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout>
-      <h2 className="text-white text-2xl font-semibold mb-6">Reset Password</h2>
+      <div className="flex flex-col gap-4 text-gray-800">
+        <div>
+          <h2 className="text-2xl font-semibold text-[var(--theme-primary,#A8734B)] mb-2">
+            Reset Password
+          </h2>
+          <p className="text-sm text-gray-600">
+            Enter your email and we’ll send you a reset link.
+          </p>
+        </div>
 
-      <div className="text-black/80 flex flex-col gap-4">
         <Input
           label="Email"
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="text-gray-800"
         />
 
-        {error && <p className="text-red-400">{error}</p>}
-        {message && <p className="text-green-400">{message}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {message && <p className="text-green-600 text-sm">{message}</p>}
 
         <Button
-          className="bg-orange-400 hover:bg-orange-500 text-white rounded-md mt-3"
+          className="mt-2 w-full bg-[color:var(--theme-primary,#4f05fa)] hover:bg-[color:var(--theme-primary-dark,#28037d)] text-white rounded-lg py-3 border border-transparent transition-colors"
           onClick={handleReset}
         >
           Send Reset Link
         </Button>
 
-        <p className="text-white/80 text-sm mt-2">
-          Back to login? <Link to="/login" className="underline">Login</Link>
+        <p className="text-sm text-gray-700 mt-1">
+          Back to login?{" "}
+          <Link to="/login" className="text-[var(--theme-primary,#A8734B)] underline">
+            Login
+          </Link>
         </p>
       </div>
     </AuthLayout>

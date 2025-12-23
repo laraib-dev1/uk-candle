@@ -7,6 +7,7 @@ import {
   deleteWebPage,
 } from "@/api/webpage.api";
 import IconPicker from "@/components/developer/IconPicker";
+import { useToast } from "@/components/ui/toast";
 
 interface WebPage {
   _id: string;
@@ -20,9 +21,12 @@ interface WebPage {
 }
 
 export default function WebPagesPage() {
+  const { success, error } = useToast();
   const [pages, setPages] = useState<WebPage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
+  const [deleteLoading, setDeleteLoading] = useState<Record<string, boolean>>({});
   const [newPage, setNewPage] = useState({
     title: "",
     slug: "",
@@ -31,6 +35,7 @@ export default function WebPagesPage() {
     enabled: true,
     location: "footer" as "nav" | "footer" | "both",
   });
+  const [pageErrors, setPageErrors] = useState<{ title?: string; slug?: string }>({});
 
   useEffect(() => {
     loadPages();
@@ -46,28 +51,46 @@ export default function WebPagesPage() {
   };
 
   const togglePage = async (id: string, enabled: boolean) => {
+    if (toggleLoading[id]) return;
+    setToggleLoading(prev => ({ ...prev, [id]: true }));
     try {
       await updateWebPage(id, { enabled: !enabled });
       await loadPages();
     } catch (error) {
       console.error("Failed to toggle page:", error);
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const handleAddPage = async () => {
-    if (!newPage.title || !newPage.slug) {
-      alert("Please fill in title and slug");
+    const errors: { title?: string; slug?: string } = {};
+    
+    if (!newPage.title.trim()) {
+      errors.title = "Title is required";
+    }
+    if (!newPage.slug.trim()) {
+      errors.slug = "Slug is required";
+    } else if (!/^\/?[a-z0-9-]+(\/[a-z0-9-]+)*\/?$/.test(newPage.slug)) {
+      errors.slug = "Slug must be a valid URL path (e.g., /about-us)";
+    }
+    
+    setPageErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      error("Please fill in all required fields correctly.");
       return;
     }
 
     setIsLoading(true);
     try {
       await createWebPage(newPage);
+      success("Page created successfully!");
       await loadPages();
       setShowAddModal(false);
       setNewPage({ title: "", slug: "", icon: "", subInfo: "", enabled: true, location: "footer" });
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to create page");
+      setPageErrors({});
+    } catch (err: any) {
+      error(err.response?.data?.message || "Failed to create page");
     } finally {
       setIsLoading(false);
     }
@@ -75,11 +98,15 @@ export default function WebPagesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this page?")) return;
+    if (deleteLoading[id]) return;
+    setDeleteLoading(prev => ({ ...prev, [id]: true }));
     try {
       await deleteWebPage(id);
       await loadPages();
     } catch (error) {
       console.error("Failed to delete page:", error);
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -87,13 +114,14 @@ export default function WebPagesPage() {
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold theme-heading">Web Pages</h1>
-        <button
+        {/* Add Button - Commented Out */}
+        {/* <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors theme-button"
         >
           <Plus size={18} />
           Add Page
-        </button>
+        </button> */}
       </div>
 
       {/* Pages List */}
@@ -121,23 +149,33 @@ export default function WebPagesPage() {
                 {/* Toggle Switch */}
                 <button
                   onClick={() => togglePage(page._id, page.enabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  disabled={toggleLoading[page._id]}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     page.enabled ? "" : "bg-gray-300"
                   }`}
                   style={page.enabled ? { backgroundColor: "var(--theme-primary)" } : {}}
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      page.enabled ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
+                  {toggleLoading[page._id] ? (
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        page.enabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  )}
                 </button>
 
                 <button
                   onClick={() => handleDelete(page._id)}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  disabled={deleteLoading[page._id]}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <X size={18} />
+                  {deleteLoading[page._id] ? (
+                    <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <X size={18} />
+                  )}
                 </button>
               </div>
             </div>
@@ -145,8 +183,8 @@ export default function WebPagesPage() {
         </div>
       </div>
 
-      {/* Add Page Modal */}
-      {showAddModal && (
+      {/* Add Page Modal - Commented Out */}
+      {/* {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
@@ -162,13 +200,16 @@ export default function WebPagesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title
+                  Title *
                 </label>
                 <input
                   type="text"
                   value={newPage.title}
-                  onChange={(e) => setNewPage({ ...newPage, title: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  onChange={(e) => {
+                    setNewPage({ ...newPage, title: e.target.value });
+                    if (pageErrors.title) setPageErrors(prev => ({ ...prev, title: undefined }));
+                  }}
+                  className={`w-full px-4 py-2.5 border rounded-lg outline-none ${pageErrors.title ? "border-red-500" : "border-gray-300"}`}
                   style={{
                     "--tw-ring-color": "var(--theme-primary)",
                   } as React.CSSProperties & { "--tw-ring-color": string }}
@@ -177,22 +218,26 @@ export default function WebPagesPage() {
                     e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.borderColor = pageErrors.title ? "" : "";
                     e.currentTarget.style.boxShadow = "";
                   }}
                   placeholder="Page Title"
                 />
+                {pageErrors.title && <p className="text-red-500 text-xs mt-1">{pageErrors.title}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Slug (URL)
+                  Slug (URL) *
                 </label>
                 <input
                   type="text"
                   value={newPage.slug}
-                  onChange={(e) => setNewPage({ ...newPage, slug: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg outline-none"
+                  onChange={(e) => {
+                    setNewPage({ ...newPage, slug: e.target.value });
+                    if (pageErrors.slug) setPageErrors(prev => ({ ...prev, slug: undefined }));
+                  }}
+                  className={`w-full px-4 py-2.5 border rounded-lg outline-none ${pageErrors.slug ? "border-red-500" : "border-gray-300"}`}
                   style={{
                     "--tw-ring-color": "var(--theme-primary)",
                   } as React.CSSProperties & { "--tw-ring-color": string }}
@@ -201,11 +246,12 @@ export default function WebPagesPage() {
                     e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.borderColor = pageErrors.slug ? "" : "";
                     e.currentTarget.style.boxShadow = "";
                   }}
                   placeholder="/page-slug"
                 />
+                {pageErrors.slug && <p className="text-red-500 text-xs mt-1">{pageErrors.slug}</p>}
               </div>
 
               <div>
@@ -284,15 +330,16 @@ export default function WebPagesPage() {
                 <button
                   onClick={handleAddPage}
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
+                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button flex items-center justify-center gap-2"
                 >
-                  {isLoading ? "Adding..." : "Add Page"}
+                  {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                  Add Page
                 </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
