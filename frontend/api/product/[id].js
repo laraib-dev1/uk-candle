@@ -35,19 +35,22 @@ const CRAWLER_USER_AGENTS = [
 
 function isCrawler(userAgent) {
   if (!userAgent) {
-    // If no user agent, assume it might be a crawler (some don't send UA)
-    // But we'll be more lenient - check for other indicators
+    // Some crawlers don't send user-agent, but we'll be conservative
     return false;
   }
   const ua = userAgent.toLowerCase();
-  const isBot = CRAWLER_USER_AGENTS.some(bot => ua.includes(bot.toLowerCase()));
   
-  // Also check for common bot patterns
-  if (ua.includes('bot') || ua.includes('crawler') || ua.includes('spider')) {
-    return true;
-  }
+  // Check against known crawler list
+  const isKnownBot = CRAWLER_USER_AGENTS.some(bot => ua.includes(bot.toLowerCase()));
   
-  return isBot;
+  // Also check for common bot patterns (but be careful not to catch regular browsers)
+  const botPatterns = ['bot', 'crawler', 'spider', 'scraper', 'facebookexternalhit'];
+  const hasBotPattern = botPatterns.some(pattern => ua.includes(pattern));
+  
+  // Exclude common browsers
+  const isBrowser = ua.includes('chrome') || ua.includes('firefox') || ua.includes('safari') || ua.includes('edge') || ua.includes('opera');
+  
+  return (isKnownBot || hasBotPattern) && !isBrowser;
 }
 
 function getApiUrl() {
@@ -195,8 +198,12 @@ export default async function handler(req, res) {
   }
   
   console.log('🤖 CRAWLER DETECTED - Injecting meta tags for social sharing');
-  
-  console.log('🤖 Crawler detected, fetching product data...');
+  console.log('📋 Request details:', {
+    id,
+    userAgent: userAgent.substring(0, 100),
+    method: req.method,
+    url: req.url
+  });
   
   // For crawlers, fetch product data and inject meta tags
   if (!id) {
