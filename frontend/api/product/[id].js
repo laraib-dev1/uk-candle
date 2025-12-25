@@ -83,18 +83,20 @@ async function fetchProductData(productId) {
 }
 
 function getAbsoluteImageUrl(imageUrl, apiUrl) {
-  const frontendUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:5173');
-  
+  // If no image, return default product image from frontend
   if (!imageUrl || imageUrl === '/product.png' || imageUrl.trim() === '') {
+    const frontendUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'https://uk-candles.vercel.app';
     return `${frontendUrl}/product.png`;
   }
   
+  // If already absolute URL (Cloudinary or full URL), return as is
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
   }
   
+  // If relative URL, make it absolute using API base URL
   const baseUrl = apiUrl.replace('/api', '');
   if (imageUrl.startsWith('/')) {
     return `${baseUrl}${imageUrl}`;
@@ -277,8 +279,17 @@ export default async function handler(req, res) {
       title: pageTitle,
       description: ogDescription.substring(0, 50) + '...',
       image: ogImageUrl,
-      url: pageUrl
+      url: pageUrl,
+      hasImage: !!images[0],
+      imageUrl: images[0]
     });
+    
+    // Validate image URL is accessible
+    if (!ogImageUrl || ogImageUrl.includes('/product.png')) {
+      console.warn('⚠️ Using fallback product image');
+    } else {
+      console.log('✅ Product image URL:', ogImageUrl);
+    }
     
     // Read index.html or create base HTML
     let html = '';
@@ -360,11 +371,16 @@ export default async function handler(req, res) {
       console.log('✅ Meta tags verified in HTML');
     } else {
       console.error('❌ Meta tags NOT found in HTML after injection!');
+      console.error('HTML preview:', html.substring(0, 200));
     }
     
-    res.setHeader('Content-Type', 'text/html');
+    // Set headers for proper caching and content type
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
-    console.log('✅ Sending HTML with meta tags');
+    res.setHeader('X-OG-Image', ogImageUrl); // Debug header
+    res.setHeader('X-OG-Description', ogDescription.substring(0, 100)); // Debug header
+    
+    console.log('✅ Sending HTML with meta tags to crawler');
     return res.send(html);
     
   } catch (error) {
