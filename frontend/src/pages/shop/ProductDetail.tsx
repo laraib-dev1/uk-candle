@@ -17,6 +17,7 @@ import ProductCard from "@/components/products/ProductCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getProduct, getProducts } from "@/api/product.api";
 import { getCompany } from "@/api/company.api";
+import PageLoader from "@/components/ui/PageLoader";
 
 /* =======================
    Types
@@ -45,7 +46,8 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
 
   /* =======================
@@ -82,6 +84,7 @@ export default function ProductDetail() {
         console.error("PRODUCT FETCH ERROR:", err);
       } finally {
         setLoading(false);
+        setInitialLoad(false);
       }
     };
 
@@ -315,8 +318,8 @@ export default function ProductDetail() {
     }, 100);
   }, [product, companyName]);
 
-  if (loading || !product) {
-    return <div className="p-10 text-center">Loading...</div>;
+  if (initialLoad && (loading || !product)) {
+    return <PageLoader message="Loading product..." />;
   }
 
   /* =======================

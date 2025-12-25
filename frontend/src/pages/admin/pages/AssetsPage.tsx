@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ImageCropperModal from "@/components/admin/product/ImageCropperModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { RichTextEditor } from "@mantine/rte";
 import { getBanners, updateBanner, type BannerSlot } from "@/api/banner.api";
 import { getAllContent, updateContent, type ContentPage, type FAQ } from "@/api/content.api";
 import { useToast } from "@/components/ui/toast";
+import PageLoader from "@/components/ui/PageLoader";
 
 // -------------------- CONFIG: Banner slots --------------------
 // Each slot connects admin UI → backend → Landing/Shop components.
@@ -59,6 +61,7 @@ interface BannerState {
 // -------------------- MAIN COMPONENT --------------------
 const AssetsPage: React.FC = () => {
   const { success, error } = useToast();
+  const navigate = useNavigate();
   const [banners, setBanners] = useState<Record<string, BannerState>>({});
 
   // Cropper state (re‑used for all banners)
@@ -72,38 +75,38 @@ const AssetsPage: React.FC = () => {
   const [termsContent, setTermsContent] = useState({ title: "", subTitle: "", description: "", loading: false });
   const [faqsContent, setFaqsContent] = useState<{ faqs: FAQ[]; loading: boolean }>({ faqs: [], loading: false });
   const [addingFAQ, setAddingFAQ] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  
+  // Edit mode states
+  const [isPrivacyEditing, setIsPrivacyEditing] = useState(false);
+  const [isTermsEditing, setIsTermsEditing] = useState(false);
+  const [privacyOriginalContent, setPrivacyOriginalContent] = useState({ title: "", subTitle: "", description: "" });
+  const [termsOriginalContent, setTermsOriginalContent] = useState({ title: "", subTitle: "", description: "" });
 
-  // -------- 1. Load existing banners from backend on mount --------
+  // -------- 1. Load existing banners and content from backend on mount --------
   useEffect(() => {
-    const load = async () => {
+    const loadAll = async () => {
+      setInitialLoading(true);
       try {
-        const data = await getBanners();
+        // Load banners and content in parallel
+        const [bannersData, contents] = await Promise.all([
+          getBanners(),
+          getAllContent().catch(() => [])
+        ]);
 
-        // Convert array from backend into a record keyed by slot id.
+        // Process banners
         const initial: Record<string, BannerState> = {};
         BANNER_SLOTS.forEach((slot) => {
-          const found = data.find((b) => b.slot === slot.id);
+          const found = bannersData.find((b) => b.slot === slot.id);
           initial[slot.id] = {
-            imageUrl: found?.imageUrl || "", // empty means "no banner yet"
+            imageUrl: found?.imageUrl || "",
             targetUrl: found?.targetUrl || "",
             loading: false,
           };
         });
         setBanners(initial);
-      } catch (err) {
-        console.error("Failed to load banners", err);
-      }
-    };
-
-    load();
-  }, []);
-
-  // Load content pages on mount
-  useEffect(() => {
-    const loadContent = async () => {
-      try {
-        const contents = await getAllContent();
         
+        // Process content pages
         const privacy = contents.find(c => c.type === "privacy");
         const terms = contents.find(c => c.type === "terms");
         const faqs = contents.find(c => c.type === "faqs");
@@ -133,11 +136,13 @@ const AssetsPage: React.FC = () => {
           });
         }
       } catch (err) {
-        console.error("Failed to load content pages", err);
+        console.error("Failed to load assets", err);
+      } finally {
+        setInitialLoading(false);
       }
     };
     
-    loadContent();
+    loadAll();
   }, []);
 
   // -------- 2. When user picks a file for a banner slot --------
@@ -229,16 +234,46 @@ const AssetsPage: React.FC = () => {
     }
   };
 
-  // Save Privacy Policy
+  // Privacy Policy handlers
+  const handleEditPrivacy = () => {
+    setPrivacyOriginalContent({
+      title: privacyContent.title,
+      subTitle: privacyContent.subTitle,
+      description: privacyContent.description
+    });
+    setIsPrivacyEditing(true);
+  };
+
+  const handleDiscardPrivacy = () => {
+    setPrivacyContent({
+      ...privacyContent,
+      title: privacyOriginalContent.title,
+      subTitle: privacyOriginalContent.subTitle,
+      description: privacyOriginalContent.description
+    });
+    setIsPrivacyEditing(false);
+  };
+
   const handleSavePrivacy = async () => {
     try {
       setPrivacyContent(prev => ({ ...prev, loading: true }));
-      await updateContent("privacy", {
+      const updated = await updateContent("privacy", {
         title: privacyContent.title,
         subTitle: privacyContent.subTitle,
         description: privacyContent.description
       });
-      setPrivacyContent(prev => ({ ...prev, loading: false }));
+      // Reload content to get the latest data including lastUpdated
+      const contents = await getAllContent();
+      const privacy = contents.find(c => c.type === "privacy");
+      if (privacy) {
+        setPrivacyContent({
+          title: privacy.title || "",
+          subTitle: privacy.subTitle || "",
+          description: privacy.description || "",
+          loading: false
+        });
+      }
+      setIsPrivacyEditing(false);
       success("Privacy Policy updated successfully!");
     } catch (err: any) {
       console.error("Failed to save privacy policy", err);
@@ -247,16 +282,46 @@ const AssetsPage: React.FC = () => {
     }
   };
 
-  // Save Terms & Conditions
+  // Terms & Conditions handlers
+  const handleEditTerms = () => {
+    setTermsOriginalContent({
+      title: termsContent.title,
+      subTitle: termsContent.subTitle,
+      description: termsContent.description
+    });
+    setIsTermsEditing(true);
+  };
+
+  const handleDiscardTerms = () => {
+    setTermsContent({
+      ...termsContent,
+      title: termsOriginalContent.title,
+      subTitle: termsOriginalContent.subTitle,
+      description: termsOriginalContent.description
+    });
+    setIsTermsEditing(false);
+  };
+
   const handleSaveTerms = async () => {
     try {
       setTermsContent(prev => ({ ...prev, loading: true }));
-      await updateContent("terms", {
+      const updated = await updateContent("terms", {
         title: termsContent.title,
         subTitle: termsContent.subTitle,
         description: termsContent.description
       });
-      setTermsContent(prev => ({ ...prev, loading: false }));
+      // Reload content to get the latest data including lastUpdated
+      const contents = await getAllContent();
+      const terms = contents.find(c => c.type === "terms");
+      if (terms) {
+        setTermsContent({
+          title: terms.title || "",
+          subTitle: terms.subTitle || "",
+          description: terms.description || "",
+          loading: false
+        });
+      }
+      setIsTermsEditing(false);
       success("Terms & Conditions updated successfully!");
     } catch (err: any) {
       console.error("Failed to save terms", err);
@@ -315,6 +380,10 @@ const AssetsPage: React.FC = () => {
     }));
   };
 
+  if (initialLoading) {
+    return <PageLoader message="Loading assets..." />;
+  }
+
   return (
     <div className="space-y-6">
       {/* Page title */}
@@ -329,13 +398,33 @@ const AssetsPage: React.FC = () => {
 
       {/* Tabs wrapper – "banners" is active by default */}
       <Tabs defaultValue="banners" className="bg-white rounded-xl shadow-sm border">
-        <div className="border-b px-6 py-3 flex items-center justify-between">
-          {/* Tab buttons */}
-          <TabsList className="bg-transparent p-0 gap-1 text-black">
-            <TabsTrigger value="banners">Banners</TabsTrigger>
-            <TabsTrigger value="privacy">Privacy Policy</TabsTrigger>
-            <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
-            <TabsTrigger value="faqs">FAQs</TabsTrigger>
+        <div className="border-b border-gray-200 px-6">
+          {/* Tab buttons - styled as actual tabs with underline */}
+          <TabsList className="bg-transparent h-auto p-0 gap-8 w-auto border-0">
+            <TabsTrigger 
+              value="banners"
+              className="assets-tab-trigger"
+            >
+              Banners
+            </TabsTrigger>
+            <TabsTrigger 
+              value="privacy"
+              className="assets-tab-trigger"
+            >
+              Privacy Policy
+            </TabsTrigger>
+            <TabsTrigger 
+              value="terms"
+              className="assets-tab-trigger"
+            >
+              Terms &amp; Conditions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="faqs"
+              className="assets-tab-trigger"
+            >
+              FAQs
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -390,7 +479,22 @@ const AssetsPage: React.FC = () => {
                 />
 
                 {/* Image preview box – tries to visually match your screenshot */}
-                <div className="w-full h-48 bg-white rounded-lg border border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                <div 
+                  className={`w-full h-48 bg-white rounded-lg border border-dashed border-gray-300 flex items-center justify-center overflow-hidden ${
+                    state.targetUrl && state.targetUrl.trim() !== "" ? "cursor-pointer" : ""
+                  }`}
+                  onClick={() => {
+                    if (state.targetUrl && state.targetUrl.trim() !== "") {
+                      // Check if it's an external URL or internal route
+                      if (state.targetUrl.startsWith("http://") || state.targetUrl.startsWith("https://")) {
+                        window.open(state.targetUrl, "_blank");
+                      } else {
+                        navigate(state.targetUrl);
+                      }
+                    }
+                  }}
+                  title={state.targetUrl && state.targetUrl.trim() !== "" ? `Click to go to: ${state.targetUrl}` : ""}
+                >
                   {state.imageUrl ? (
                     <img
                       src={state.imageUrl}
@@ -453,100 +557,166 @@ const AssetsPage: React.FC = () => {
         <TabsContent value="privacy" className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Privacy Policy</h2>
-            <div className="flex gap-2">
-              <Button variant="outline" className="text-black" onClick={() => setPrivacyContent({ title: "", subTitle: "", description: "", loading: false })}>
-                Discard
+            {!isPrivacyEditing ? (
+              <Button variant="outline" className="text-black" onClick={handleEditPrivacy}>
+                Edit
               </Button>
-              <Button 
-                className="theme-button" 
-                onClick={handleSavePrivacy}
-                loading={privacyContent.loading}
-              >
-                Update
-              </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button variant="outline" className="text-black" onClick={handleDiscardPrivacy}>
+                  Discard
+                </Button>
+                <Button 
+                  className="theme-button" 
+                  onClick={handleSavePrivacy}
+                  loading={privacyContent.loading}
+                >
+                  Update
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white border rounded-lg p-6 space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
-              <Input
-                placeholder="placeholder"
-                className="text-black"
-                value={privacyContent.title}
-                onChange={(e) => setPrivacyContent(prev => ({ ...prev, title: e.target.value }))}
-              />
+          {!isPrivacyEditing ? (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <div className="text-black py-2">{privacyContent.title || "placeholder"}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+                <div className="text-black py-2">{privacyContent.subTitle || "placeholder"}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <div 
+                  className="content-page text-gray-700 py-2"
+                  dangerouslySetInnerHTML={{ __html: privacyContent.description || "<p>placeholder placeholder Desc Description Desc Description...</p>" }}
+                />
+              </div>
             </div>
+          ) : (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <Input
+                  placeholder="placeholder"
+                  className="text-black"
+                  value={privacyContent.title}
+                  onChange={(e) => setPrivacyContent(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
-              <Input
-                placeholder="placeholder"
-                className="text-black"
-                value={privacyContent.subTitle}
-                onChange={(e) => setPrivacyContent(prev => ({ ...prev, subTitle: e.target.value }))}
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+                <Input
+                  placeholder="placeholder"
+                  className="text-black"
+                  value={privacyContent.subTitle}
+                  onChange={(e) => setPrivacyContent(prev => ({ ...prev, subTitle: e.target.value }))}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
-              <RichTextEditor
-                value={privacyContent.description}
-                onChange={(value) => setPrivacyContent(prev => ({ ...prev, description: value }))}
-                className="w-full bg-white text-gray-900 min-h-[300px]"
-              />
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <RichTextEditor
+                  value={privacyContent.description}
+                  onChange={(value) => setPrivacyContent(prev => ({ ...prev, description: value }))}
+                  className="w-full bg-white text-gray-900 min-h-[300px]"
+                  controls={[
+                    ['bold', 'italic', 'underline'],
+                    ['h1', 'h2', 'h3', 'h4'],
+                    ['unorderedList', 'orderedList'],
+                    ['alignLeft', 'alignCenter', 'alignRight'],
+                    ['sup', 'sub'],
+                  ]}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </TabsContent>
 
         {/* -------- TAB: TERMS & CONDITIONS -------- */}
         <TabsContent value="terms" className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Terms &amp; Conditions</h2>
-            <div className="flex gap-2">
-              <Button variant="outline" className="text-black" onClick={() => setTermsContent({ title: "", subTitle: "", description: "", loading: false })}>
-                Discard
+            {!isTermsEditing ? (
+              <Button variant="outline" className="text-black" onClick={handleEditTerms}>
+                Edit
               </Button>
-              <Button 
-                className="theme-button" 
-                onClick={handleSaveTerms}
-                loading={termsContent.loading}
-              >
-                Update
-              </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button variant="outline" className="text-black" onClick={handleDiscardTerms}>
+                  Discard
+                </Button>
+                <Button 
+                  className="theme-button" 
+                  onClick={handleSaveTerms}
+                  loading={termsContent.loading}
+                >
+                  Update
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white border rounded-lg p-6 space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
-              <Input
-                placeholder="placeholder"
-                className="text-black"
-                value={termsContent.title}
-                onChange={(e) => setTermsContent(prev => ({ ...prev, title: e.target.value }))}
-              />
+          {!isTermsEditing ? (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <div className="text-black py-2">{termsContent.title || "placeholder"}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+                <div className="text-black py-2">{termsContent.subTitle || "placeholder"}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <div 
+                  className="content-page text-gray-700 py-2"
+                  dangerouslySetInnerHTML={{ __html: termsContent.description || "<p>placeholder placeholder Desc Description Desc Description...</p>" }}
+                />
+              </div>
             </div>
+          ) : (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <Input
+                  placeholder="placeholder"
+                  className="text-black"
+                  value={termsContent.title}
+                  onChange={(e) => setTermsContent(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
-              <Input
-                placeholder="placeholder"
-                className="text-black"
-                value={termsContent.subTitle}
-                onChange={(e) => setTermsContent(prev => ({ ...prev, subTitle: e.target.value }))}
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Sub Title</label>
+                <Input
+                  placeholder="placeholder"
+                  className="text-black"
+                  value={termsContent.subTitle}
+                  onChange={(e) => setTermsContent(prev => ({ ...prev, subTitle: e.target.value }))}
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
-              <RichTextEditor
-                value={termsContent.description}
-                onChange={(value) => setTermsContent(prev => ({ ...prev, description: value }))}
-                className="w-full bg-white text-gray-900 min-h-[300px]"
-              />
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <RichTextEditor
+                  value={termsContent.description}
+                  onChange={(value) => setTermsContent(prev => ({ ...prev, description: value }))}
+                  className="w-full bg-white text-gray-900 min-h-[300px]"
+                  controls={[
+                    ['bold', 'italic', 'underline'],
+                    ['h1', 'h2', 'h3', 'h4'],
+                    ['unorderedList', 'orderedList'],
+                    ['alignLeft', 'alignCenter', 'alignRight'],
+                    ['sup', 'sub'],
+                  ]}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </TabsContent>
 
         {/* -------- TAB: FAQs -------- */}
@@ -597,6 +767,13 @@ const AssetsPage: React.FC = () => {
                     value={faq.answer}
                     onChange={(value) => handleUpdateFAQ(index, "answer", value)}
                     className="w-full bg-white text-gray-900 min-h-[150px]"
+                    controls={[
+                      ['bold', 'italic', 'underline'],
+                      ['h1', 'h2', 'h3', 'h4'],
+                      ['unorderedList', 'orderedList'],
+                      ['alignLeft', 'alignCenter', 'alignRight'],
+                      ['sup', 'sub'],
+                    ]}
                   />
                 </div>
               </div>

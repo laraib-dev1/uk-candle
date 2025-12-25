@@ -63,3 +63,5 @@ export const deleteQuery = async (req) => {
   return { message: "Query deleted successfully" };
 };
 
+
+

@@ -202,10 +202,16 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
         <div
           className={`flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer transition-colors ${
             isActive
-              ? "bg-[#A8734B]/10 text-[#A8734B] font-semibold"
+              ? "font-semibold"
               : "hover:bg-gray-100 text-gray-700"
           }`}
-          style={{ paddingLeft: `${12 + depth * 20}px` }}
+          style={{
+            paddingLeft: `${12 + depth * 20}px`,
+            ...(isActive ? {
+              backgroundColor: "rgba(var(--theme-primary-rgb), 0.1)",
+              color: "var(--theme-primary)"
+            } : {})
+          }}
           onClick={() => {
             scrollToSection(item.id);
             if (hasChildren) {

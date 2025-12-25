@@ -39,8 +39,10 @@ export default function Footer() {
   const hasGallery = galleryImages.length > 0;
   const hasContent = hasColumns || hasGallery;
 
-  // If footer disabled or nothing at all to show, hide footer entirely
-  if (!showFooter || !hasContent) return null;
+  // If footer disabled, hide footer entirely
+  if (!showFooter) return null;
+  
+  // Footer should always show, even if no content (will show at least copyright)
 
   return (
     <footer className="text-gray-300 mt-12" style={{ backgroundColor: "var(--theme-dark)" }}>

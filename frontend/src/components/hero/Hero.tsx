@@ -8,7 +8,8 @@ type Props = {
   subtitle?: string;
   image?: string;
   imagePosition?: "left" | "right"; 
-  variant?: "side-image" | "full-background"; 
+  variant?: "side-image" | "full-background";
+  targetUrl?: string;
 };
 
 const Hero = ({
@@ -17,12 +18,13 @@ const Hero = ({
   image,
   imagePosition = "right",
   variant = "side-image",
+  targetUrl,
 }: Props) => {
   const heroImage = image || "/hero.png";
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   
-const handleShopMore = async () => {
+  const handleShopMore = async () => {
     if (loading) return;
     setLoading(true);
     try {
@@ -32,16 +34,29 @@ const handleShopMore = async () => {
       setLoading(false);
     }
   };
+
+  const handleBannerClick = () => {
+    if (targetUrl && targetUrl.trim() !== "") {
+      // Check if it's an external URL or internal route
+      if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
+        window.open(targetUrl, "_blank");
+      } else {
+        navigate(targetUrl);
+      }
+    }
+  };
+  
   // FULL BACKGROUND VERSION
   if (variant === "full-background") {
     return (
       <section
-        className="relative bg-cover bg-center bg-no-repeat  h-[500px]"
+        className={`relative bg-cover bg-center bg-no-repeat h-[500px] ${targetUrl ? "cursor-pointer" : ""}`}
         style={{ backgroundImage: `url(${heroImage})` }}
+        onClick={targetUrl ? handleBannerClick : undefined}
       >
         <div className="bg-black/40 w-full h-full absolute inset-0"></div>
 
-        <div className="relative max-w-8xl mx-auto px-6 py-24 text-white  flex flex-col justify-center h-full">
+        <div className="relative max-w-8xl mx-auto px-6 py-24 text-white flex flex-col justify-center h-full">
           <h1 className="text-4xl md:text-5xl font-serif leading-tight ">
             {title || "Welcome to Our Store"}
           </h1>
@@ -81,8 +96,9 @@ const handleShopMore = async () => {
         <div
           className={`w-full h-80 md:h-[420px] rounded bg-cover bg-center ${
             imagePosition === "left" ? "order-1 md:order-2" : "order-2"
-          }`}
+          } ${targetUrl ? "cursor-pointer" : ""}`}
           style={{ backgroundImage: `url(${heroImage})` }}
+          onClick={targetUrl ? handleBannerClick : undefined}
         ></div>
       </div>
     </section>

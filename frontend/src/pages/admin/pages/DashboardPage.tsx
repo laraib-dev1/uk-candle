@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { fetchOrders } from "@/api/order.api";
 import { getProducts } from "@/api/product.api";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface DashboardStats {
   products: number;
@@ -89,6 +90,10 @@ export default function DashboardPage() {
   const formatCurrency = (num: number) => {
     return `$${num.toLocaleString()}`;
   };
+
+  if (loading) {
+    return <PageLoader message="Loading dashboard..." />;
+  }
 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6">

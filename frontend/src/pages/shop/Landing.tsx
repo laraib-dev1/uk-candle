@@ -41,7 +41,8 @@ interface Category {
 export default function () {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
 
   // Store all banners keyed by `slot` so we can use 3 different ones on this page.
@@ -63,6 +64,7 @@ export default function () {
       console.error(err);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -101,6 +103,7 @@ export default function () {
             subtitle="Discover our latest collections."
             image={bannersBySlot["hero-main"].imageUrl}
             variant="full-background"
+            targetUrl={bannersBySlot["hero-main"].targetUrl}
           />
         ) : (
           <Hero
@@ -144,7 +147,10 @@ export default function () {
         </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
            {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set */}
-           <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
+           <FeatureHero 
+             image={bannersBySlot["hero-tertiary"]?.imageUrl}
+             targetUrl={bannersBySlot["hero-tertiary"]?.targetUrl}
+           />
         </section>
 
 
@@ -193,6 +199,7 @@ export default function () {
              subtitle="A selection of fragrances to brighten your mood."
              image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
              imagePosition="right"
+             targetUrl={bannersBySlot["hero-secondary"]?.targetUrl}
            />
          </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

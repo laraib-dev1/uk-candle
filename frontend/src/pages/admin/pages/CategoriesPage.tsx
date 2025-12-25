@@ -9,6 +9,7 @@ import { getCategories, addCategory, updateCategory, deleteCategory } from "@/ap
 import DeleteModal from "@/components/admin/product/DeleteModal";
 import { Category } from "../../../types/Category";
 import { useToast } from "@/components/ui/toast";
+import PageLoader from "@/components/ui/PageLoader";
 interface CategoryFromAPI {
   _id: string;
   name: string;
@@ -153,6 +154,10 @@ const getColumns = () => {
   // Extra large screens (1200px+): All columns
   return allColumns;
 };
+
+  if (loading) {
+    return <PageLoader message="Loading categories..." />;
+  }
 
   return (
     <div className="bg-white shadow rounded-lg p-6 overflow-visible">

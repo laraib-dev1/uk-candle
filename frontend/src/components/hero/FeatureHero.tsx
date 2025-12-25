@@ -1,14 +1,28 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 // Simple banner-like hero used on the Landing page.
 // We add an optional `image` prop so you can control the image
 // from the admin Assets → Banners tab.
 type FeatureHeroProps = {
   image?: string;
+  targetUrl?: string;
 };
 
-const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
+const FeatureHero: React.FC<FeatureHeroProps> = ({ image, targetUrl }) => {
   const bannerImage = image || "/hero.png";
+  const navigate = useNavigate();
+
+  const handleBannerClick = () => {
+    if (targetUrl && targetUrl.trim() !== "") {
+      // Check if it's an external URL or internal route
+      if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
+        window.open(targetUrl, "_blank");
+      } else {
+        navigate(targetUrl);
+      }
+    }
+  };
 
   return (
     <section className="bg-white text-black py-4">
@@ -19,13 +33,16 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
             An alchemy of gold and perfume
           </h2>
           <p className="text-sm md:text-base text-gray-600">
-            The Maison’s iconic fragrance, adorned in gold to celebrate the
+            The Maison's iconic fragrance, adorned in gold to celebrate the
             brilliance of the holidays.
           </p>
         </div>
 
         {/* Image */}
-        <div className="w-full">
+        <div 
+          className={`w-full ${targetUrl ? "cursor-pointer" : ""}`}
+          onClick={targetUrl ? handleBannerClick : undefined}
+        >
           <img
             src={bannerImage}
             alt="Perfume collection"

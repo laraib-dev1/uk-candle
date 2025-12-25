@@ -8,6 +8,7 @@ import ProductModal from "../../../components/admin/product/ProductModal";
 import { getProducts, createProduct, updateProduct, deleteProduct as apiDelete } from "@/api/product.api";
 import { getCategories } from "@/api/category.api";
 import DeleteModal from "../../../components/admin/product/DeleteModal";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface Category {
   _id: string;

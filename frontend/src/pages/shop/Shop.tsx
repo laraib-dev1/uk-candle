@@ -9,6 +9,7 @@ import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
+import PageLoader from "@/components/ui/PageLoader";
 
 // API product type
 interface ApiProduct {
@@ -41,7 +42,8 @@ interface Product {
 
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [limit, setLimit] = useState(8);
   const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
 
@@ -90,6 +92,7 @@ console.log("Mapped Products:", mapped);
       console.error(err);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -107,6 +110,10 @@ console.log("Mapped Products:", mapped);
   const handleLoadMore = () => setLimit((prev) => prev + 4);
   const displayedProducts = products.slice(0, limit);
 
+  if (initialLoad && loading) {
+    return <PageLoader message="Loading products..." />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-black">
       <Navbar />
@@ -114,7 +121,10 @@ console.log("Mapped Products:", mapped);
       <main className="flex-1 py-20">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* Shop banner – if admin configured one, use it, otherwise use default image */}
-          <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
+          <Banner 
+            imageSrc={shopBanner?.imageUrl || "/hero.png"}
+            targetUrl={shopBanner?.targetUrl}
+          />
 
           <div className="flex justify-between items-center mt-10 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -128,7 +138,7 @@ console.log("Mapped Products:", mapped);
             />
           </div>
 
-          {loading ? (
+          {loading && !initialLoad ? (
             <ProductGridSkeleton count={8} />
           ) : (
             <ProductGrid items={displayedProducts} />

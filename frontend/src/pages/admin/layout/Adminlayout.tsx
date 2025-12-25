@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth"; // adjust path
+import PageLoader from "@/components/ui/PageLoader";
 
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
@@ -50,70 +51,83 @@ export default function AdminLayout() {
   const [user, setUser] = useState<UserType | null>(null);
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadAll = async () => {
+      setInitialLoading(true);
       const token = localStorage.getItem("token");
-      if (!token) return navigate("/login");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
       try {
-        const data = await getMe(token);
-        // prepend backend URL if avatar exists and doesn't already start with http
-        const avatarUrl = data.user.avatar 
-          ? (data.user.avatar.startsWith('http') 
-              ? data.user.avatar 
-              : `${import.meta.env.VITE_API_URL}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
-          : undefined;
-        
-        const fullUser = {
-          ...data.user,
-          avatar: avatarUrl
-        };
-        setUser(fullUser);
+        // Load user and menu in parallel
+        const [userData, tabs] = await Promise.all([
+          getMe(token).catch(() => null),
+          getEnabledAdminTabs().catch(() => null)
+        ]);
+
+        if (userData) {
+          // prepend backend URL if avatar exists and doesn't already start with http
+          const avatarUrl = userData.user.avatar 
+            ? (userData.user.avatar.startsWith('http') 
+                ? userData.user.avatar 
+                : `${import.meta.env.VITE_API_URL}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
+            : undefined;
+          
+          const fullUser = {
+            ...userData.user,
+            avatar: avatarUrl
+          };
+          setUser(fullUser);
+        } else {
+          navigate("/login");
+          return;
+        }
+
+        if (tabs) {
+          const menuItems: MenuItem[] = tabs.map((tab: any) => {
+            // Get icon component from lucide-react by name
+            const IconComponent = (LucideIcons as any)[tab.icon] || LayoutDashboard;
+            return {
+              label: tab.label,
+              icon: IconComponent,
+              path: tab.path,
+            };
+          });
+          
+          // Filter out Sp Console from menu items (it will be shown separately)
+          const filteredMenu = menuItems.filter(item => item.path !== "/admin/sp-console");
+          
+          setMenu(filteredMenu);
+        } else {
+          // Fallback to default menu (without Sp Console)
+          setMenu([
+            { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+            { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
+            { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
+            { label: "Products", icon: Package, path: "/admin/products" },
+            { label: "Categories", icon: FolderOpen, path: "/admin/categories" },
+            { label: "Assets Panel", icon: Palette, path: "/admin/assets" },
+            { label: "Setting", icon: Sliders, path: "/admin/settings" },
+          ]);
+        }
       } catch (err) {
         console.log(err);
         navigate("/login");
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    loadUser();
+    loadAll();
   }, [navigate]);
 
-  useEffect(() => {
-    const loadMenu = async () => {
-      try {
-        const tabs = await getEnabledAdminTabs();
-        const menuItems: MenuItem[] = tabs.map((tab: any) => {
-          // Get icon component from lucide-react by name
-          const IconComponent = (LucideIcons as any)[tab.icon] || LayoutDashboard;
-          return {
-            label: tab.label,
-            icon: IconComponent,
-            path: tab.path,
-          };
-        });
-        
-        // Filter out Sp Console from menu items (it will be shown separately)
-        const filteredMenu = menuItems.filter(item => item.path !== "/admin/sp-console");
-        
-        setMenu(filteredMenu);
-      } catch (error) {
-        console.error("Failed to load admin tabs:", error);
-        // Fallback to default menu (without Sp Console)
-        setMenu([
-          { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-          { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
-          { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
-          { label: "Products", icon: Package, path: "/admin/products" },
-          { label: "Categories", icon: FolderOpen, path: "/admin/categories" },
-          { label: "Assets Panel", icon: Palette, path: "/admin/assets" },
-          { label: "Setting", icon: Sliders, path: "/admin/settings" },
-        ]);
-      }
-    };
-
-    loadMenu();
-  }, []);
+  if (initialLoading) {
+    return <PageLoader message="Loading admin panel..." />;
+  }
 
   // Sidebar content component (reusable for both desktop and mobile)
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (

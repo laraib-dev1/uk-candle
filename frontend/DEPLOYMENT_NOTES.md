@@ -108,3 +108,5 @@ curl -A "facebookexternalhit/1.1" https://your-frontend.vercel.app/product/PRODU
 
 This should return HTML with meta tags in the `<head>` section.
 
+
+

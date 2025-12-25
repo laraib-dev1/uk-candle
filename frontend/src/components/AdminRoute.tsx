@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import PageLoader from "./ui/PageLoader";
 
 interface Props {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ const AdminRoute: React.FC<Props> = ({ children }) => {
 
   if (loading) {
     // wait until localStorage is loaded
-    return <div>Loading...</div>; // ⚡ can replace with a spinner
+    return <PageLoader message="Loading..." />;
   }
 
   if (!user || user.role.toLowerCase() !== "admin") {

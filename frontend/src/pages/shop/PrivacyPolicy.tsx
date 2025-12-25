@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { TableOfContents } from "@/components/ui/TableOfContents";
+import PageLoader from "@/components/ui/PageLoader";
 type PageContent = {
   title: string;
   subTitle: string;
@@ -14,7 +15,7 @@ export default function PrivacyPolicy() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [content, setContent] = useState<PageContent>({
     title: "Privacy Policy",
-    subTitle: "Legal page related Sub Title",
+    subTitle: "Legal page details",
     description: "",
     lastUpdated: new Date().toISOString()
   });
@@ -48,7 +49,7 @@ export default function PrivacyPolicy() {
     });
   }, [content.description, loading]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <PageLoader message="Loading Privacy Policy..." />;
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -58,45 +59,51 @@ export default function PrivacyPolicy() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-20">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Title - Centered */}
-        <div className="text-center mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold" style={{ color: "var(--theme-primary)" }}>
-            {content.title || "Privacy Policy"}
-          </h1>
-          
-          {/* Subtitle - Centered */}
-          <p className="text-lg text-gray-600 mt-2">
-            {content.subTitle || "Legal page related Sub Title"}
-          </p>
-        </div>
-
-        {/* HR Line - Full Width */}
-        <hr className="my-8 border-t border-gray-400" style={{ borderWidth: "1px" }} />
-
-        {/* Two Column Layout - Table of Contents and Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Table of Contents - Left Sidebar */}
-          <div className="lg:col-span-1">
-            {content.description && (
-              <TableOfContents htmlContent={content.description} contentRef={contentRef} />
-            )}
+      <main className="flex-1 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Title - Centered */}
+          <div className="text-center mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold" style={{ color: "var(--theme-primary)" }}>
+              {content.title || "Privacy Policy"}
+            </h1>
+            
+            {/* Subtitle - Centered */}
+            <p className="text-lg text-gray-500 mt-2">
+              {content.subTitle || "Legal page details"}
+            </p>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* Content - Preserves formatting */}
-            <div 
-              ref={contentRef}
-              className="max-w-none text-gray-700 mb-8 content-page"
-              dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
-            />
+          {/* HR Line - Full Width */}
+          <hr className="my-8 border-t border-gray-300" style={{ borderWidth: "1px" }} />
 
-            {/* Last Updated */}
-            <div className="text-right text-sm text-gray-500 mt-12">
-              Last updated {formatDate(content.lastUpdated)}
+          {/* Two Column Layout - Table of Contents and Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Table of Contents - Left Sidebar */}
+            <div className="lg:col-span-1">
+              {content.description && (
+                <TableOfContents htmlContent={content.description} contentRef={contentRef} />
+              )}
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {/* Content - Preserves formatting */}
+              <div 
+                ref={contentRef}
+                className="max-w-none text-gray-700 mb-8 content-page"
+                dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
+              />
+
+              {/* Last Updated */}
+              <div className="flex justify-center mt-12">
+                <div className="border border-gray-300 rounded-lg px-6 py-3 bg-white">
+                  <div className="text-sm text-gray-700 text-center">
+                    Last updated {formatDate(content.lastUpdated)}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { PanelBottom, Save, Plus, Trash2, GripVertical, X } from "lucide-react";
 import { getFooter, updateFooter } from "@/api/footer.api";
 import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
 import { useToast } from "@/components/ui/toast";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface FooterLink {
   label: string;
@@ -34,17 +35,12 @@ export default function FooterPage() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [pages, setPages] = useState<{ _id: string; title: string; slug: string }[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSectionEnabled, setNewSectionEnabled] = useState(true);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [selectedPageIds, setSelectedPageIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    loadFooter();
-    loadPages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const loadFooter = async () => {
     try {
@@ -108,6 +104,19 @@ export default function FooterPage() {
       console.error("Failed to load footer pages:", err);
     }
   };
+
+  useEffect(() => {
+    const loadAll = async () => {
+      setInitialLoading(true);
+      try {
+        await Promise.all([loadFooter(), loadPages()]);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -254,6 +263,10 @@ export default function FooterPage() {
       setNewSectionTitle("");
     }
   }, [showAddModal]);
+
+  if (initialLoading) {
+    return <PageLoader message="Loading footer settings..." />;
+  }
 
   return (
     <>

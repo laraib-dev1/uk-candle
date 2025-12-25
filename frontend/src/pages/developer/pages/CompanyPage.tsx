@@ -3,6 +3,7 @@ import { Building2, Edit, RotateCcw, Upload, Image as ImageIcon, Plus, X } from 
 import { getCompany, updateCompany } from "@/api/company.api";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/ui/toast";
+import PageLoader from "@/components/ui/PageLoader";
 
 const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", order: i }));
 
@@ -37,12 +38,21 @@ export default function CompanyPage() {
 
   const [originalData, setOriginalData] = useState(companyData);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const socialPostInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    loadCompanyData();
+    const load = async () => {
+      setInitialLoading(true);
+      try {
+        await loadCompanyData();
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -260,6 +270,10 @@ export default function CompanyPage() {
     if (logoInputRef.current) logoInputRef.current.value = "";
     if (faviconInputRef.current) faviconInputRef.current.value = "";
   };
+
+  if (initialLoading) {
+    return <PageLoader message="Loading company settings..." />;
+  }
 
   return (
     <div className="max-w-5xl">

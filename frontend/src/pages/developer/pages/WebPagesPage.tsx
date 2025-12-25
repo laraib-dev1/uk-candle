@@ -115,6 +115,10 @@ export default function WebPagesPage() {
     }
   };
 
+  if (loading) {
+    return <PageLoader message="Loading web pages..." />;
+  }
+
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">

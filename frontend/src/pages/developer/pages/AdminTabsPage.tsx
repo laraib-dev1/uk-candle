@@ -9,6 +9,7 @@ import {
 import IconPicker from "@/components/developer/IconPicker";
 import { useToast } from "@/components/ui/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface AdminTab {
   _id: string;
@@ -112,6 +113,10 @@ export default function AdminTabsPage() {
       setDeleteLoading(prev => ({ ...prev, [id]: false }));
     }
   };
+
+  if (loading) {
+    return <PageLoader message="Loading admin tabs..." />;
+  }
 
   return (
     <div className="max-w-5xl">

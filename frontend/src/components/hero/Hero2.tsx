@@ -8,6 +8,7 @@ type Props = {
   image?: string;
   imagePosition?: "left" | "right";
   fullWidthText?: boolean; // new prop
+  targetUrl?: string;
 };
 
 const Hero2 = ({
@@ -16,6 +17,7 @@ const Hero2 = ({
   image,
   imagePosition = "right",
   fullWidthText = false,
+  targetUrl,
 }: Props) => {
   const navigate = useNavigate(); // <-- useNavigate hook
   const heroImage = image || "/hero.png";
@@ -29,6 +31,17 @@ const Hero2 = ({
       navigate("/shop");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBannerClick = () => {
+    if (targetUrl && targetUrl.trim() !== "") {
+      // Check if it's an external URL or internal route
+      if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
+        window.open(targetUrl, "_blank");
+      } else {
+        navigate(targetUrl);
+      }
     }
   };
 
@@ -55,7 +68,10 @@ const Hero2 = ({
             className={`grid grid-cols-1 md:grid-cols-[1fr_1.6fr] gap-6 items-center`}
           >
             {imagePosition === "left" && image && (
-              <div className="w-full h-72 md:h-[380px] overflow-hidden rounded-l-2xl md:rounded-l-2xl md:rounded-r-none">
+              <div 
+                className={`w-full h-72 md:h-[380px] overflow-hidden rounded-l-2xl md:rounded-l-2xl md:rounded-r-none ${targetUrl ? "cursor-pointer" : ""}`}
+                onClick={targetUrl ? handleBannerClick : undefined}
+              >
                 <img
                   src={heroImage}
                   alt="hero"
@@ -77,7 +93,10 @@ const Hero2 = ({
             </div>
 
             {imagePosition === "right" && image && (
-              <div className="w-full h-72 md:h-[380px] overflow-hidden rounded-r-2xl md:rounded-r-2xl md:rounded-l-none">
+              <div 
+                className={`w-full h-72 md:h-[380px] overflow-hidden rounded-r-2xl md:rounded-r-2xl md:rounded-l-none ${targetUrl ? "cursor-pointer" : ""}`}
+                onClick={targetUrl ? handleBannerClick : undefined}
+              >
                 <img
                   src={heroImage}
                   alt="hero"

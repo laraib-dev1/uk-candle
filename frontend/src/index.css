@@ -24,6 +24,73 @@ body {
   min-height: 160px !important;
 }
 
+/* Preserve text-align styles in RichTextEditor content area (Quill editor) */
+.mantine-RichTextEditor-content .ql-editor [style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor [style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor [style*='text-align:center'],
+.mantine-RichTextEditor-content .ql-editor [style*='text-align: center'],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align: center"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align:center"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+.mantine-RichTextEditor-content .ql-editor [style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor [style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align: left"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align:left"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align: left"] {
+  text-align: left !important;
+}
+
+.mantine-RichTextEditor-content .ql-editor [style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor [style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor p[style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor div[style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor h1[style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor h2[style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor h3[style*="text-align: right"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align:right"],
+.mantine-RichTextEditor-content .ql-editor h4[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+/* Also handle Quill's class-based alignment (if used) */
+.mantine-RichTextEditor-content .ql-editor .ql-align-center {
+  text-align: center !important;
+}
+
+.mantine-RichTextEditor-content .ql-editor .ql-align-left {
+  text-align: left !important;
+}
+
+.mantine-RichTextEditor-content .ql-editor .ql-align-right {
+  text-align: right !important;
+}
+
 ::-webkit-scrollbar {
   height: 0px;
   width: 0px;
@@ -118,11 +185,43 @@ body {
     color: var(--theme-primary) !important;
   }
   
-  /* Active tab styling - no theme background */
-  [data-state="active"] {
-    background-color: transparent !important;
+  /* AssetsPage tabs styling - clean tabs with underline */
+  .assets-tab-trigger {
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important; /* gray-600 */
+    text-transform: none !important;
+    box-shadow: none !important;
+    transition: color 0.2s, border-bottom-color 0.2s, background-color 0.2s !important;
+  }
+  
+  .assets-tab-trigger:hover {
+    color: #111827 !important; /* gray-900 */
+    background: transparent !important;
+  }
+  
+  .assets-tab-trigger[data-state="active"] {
     color: var(--theme-primary) !important;
-    font-weight: 600;
+    border-bottom-color: var(--theme-primary) !important;
+    border-bottom-width: 2px !important;
+    font-weight: 600 !important;
+    background-color: #f3f4f6 !important; /* light gray background */
+    box-shadow: none !important;
+  }
+  
+  /* Hide screen reader announcements for tabs */
+  [role="tablist"] {
+    position: relative;
+  }
+  
+  [role="tabpanel"] {
+    outline: none;
   }
   
   /* Hide broken images in meta info */
@@ -295,34 +394,106 @@ body {
     max-width: 100%;
   }
   
-  /* Preserve text alignment and all inline styles from rich text editor */
-  .content-page [style] {
-    /* Let inline styles take precedence - don't override them */
+  /* CRITICAL: Preserve text-align from inline styles - must work for all cases */
+  /* Match any element with text-align in style attribute, regardless of format */
+  .content-page [style*="text-align:center"],
+  .content-page [style*="text-align: center"],
+  .content-page [style*='text-align:center'],
+  .content-page [style*='text-align: center'],
+  .content-page [style*="text-align:center;"],
+  .content-page [style*="text-align: center;"],
+  .content-page p[style*="text-align:center"],
+  .content-page p[style*="text-align: center"],
+  .content-page div[style*="text-align:center"],
+  .content-page div[style*="text-align: center"],
+  .content-page span[style*="text-align:center"],
+  .content-page span[style*="text-align: center"],
+  .content-page h1[style*="text-align:center"],
+  .content-page h1[style*="text-align: center"],
+  .content-page h2[style*="text-align:center"],
+  .content-page h2[style*="text-align: center"],
+  .content-page h3[style*="text-align:center"],
+  .content-page h3[style*="text-align: center"],
+  .content-page h4[style*="text-align:center"],
+  .content-page h4[style*="text-align: center"] {
+    text-align: center !important;
   }
   
-  /* Ensure text-align from inline styles is preserved */
-  .content-page p[style*="text-align"],
-  .content-page div[style*="text-align"],
-  .content-page span[style*="text-align"],
-  .content-page h1[style*="text-align"],
-  .content-page h2[style*="text-align"],
-  .content-page h3[style*="text-align"],
-  .content-page h4[style*="text-align"],
-  .content-page h5[style*="text-align"],
-  .content-page h6[style*="text-align"] {
-    /* Inline styles will be preserved automatically */
+  .content-page [style*="text-align:left"],
+  .content-page [style*="text-align: left"],
+  .content-page [style*='text-align:left'],
+  .content-page [style*='text-align: left'],
+  .content-page [style*="text-align:left;"],
+  .content-page [style*="text-align: left;"],
+  .content-page p[style*="text-align:left"],
+  .content-page p[style*="text-align: left"],
+  .content-page div[style*="text-align:left"],
+  .content-page div[style*="text-align: left"],
+  .content-page span[style*="text-align:left"],
+  .content-page span[style*="text-align: left"] {
+    text-align: left !important;
   }
   
-  .content-page p,
-  .content-page div,
-  .content-page span,
-  .content-page h1,
-  .content-page h2,
-  .content-page h3,
-  .content-page h4,
-  .content-page h5,
-  .content-page h6 {
-    /* Preserve all inline styles from rich text editor */
+  .content-page [style*="text-align:right"],
+  .content-page [style*="text-align: right"],
+  .content-page [style*='text-align:right'],
+  .content-page [style*='text-align: right'],
+  .content-page [style*="text-align:right;"],
+  .content-page [style*="text-align: right;"],
+  .content-page p[style*="text-align:right"],
+  .content-page p[style*="text-align: right"],
+  .content-page div[style*="text-align:right"],
+  .content-page div[style*="text-align: right"],
+  .content-page span[style*="text-align:right"],
+  .content-page span[style*="text-align: right"] {
+    text-align: right !important;
+  }
+  
+  /* Handle Quill's class-based alignment format (ql-align-center, ql-align-left, ql-align-right) */
+  /* Apply to any element with these classes */
+  .content-page [class*="ql-align-center"],
+  .content-page .ql-align-center,
+  .content-page p.ql-align-center,
+  .content-page div.ql-align-center,
+  .content-page span.ql-align-center,
+  .content-page h1.ql-align-center,
+  .content-page h2.ql-align-center,
+  .content-page h3.ql-align-center,
+  .content-page h4.ql-align-center,
+  .content-page h5.ql-align-center,
+  .content-page h6.ql-align-center,
+  .content-page li.ql-align-center {
+    text-align: center !important;
+  }
+  
+  .content-page [class*="ql-align-left"],
+  .content-page .ql-align-left,
+  .content-page p.ql-align-left,
+  .content-page div.ql-align-left,
+  .content-page span.ql-align-left,
+  .content-page h1.ql-align-left,
+  .content-page h2.ql-align-left,
+  .content-page h3.ql-align-left,
+  .content-page h4.ql-align-left,
+  .content-page h5.ql-align-left,
+  .content-page h6.ql-align-left,
+  .content-page li.ql-align-left {
+    text-align: left !important;
+  }
+  
+  .content-page [class*="ql-align-right"],
+  .content-page .ql-align-right,
+  .content-page p.ql-align-right,
+  .content-page div.ql-align-right,
+  .content-page span.ql-align-right,
+  .content-page h1.ql-align-right,
+  .content-page h2.ql-align-right,
+  .content-page h3.ql-align-right,
+  .content-page h4.ql-align-right,
+  .content-page h5.ql-align-right,
+  .content-page h6.ql-align-right,
+  .content-page li.ql-align-right {
+    text-align: right !important;
   }
   
   .content-page p {
@@ -346,12 +517,12 @@ body {
   }
   
   .content-page a {
-    color: var(--theme-primary);
+    color: var(--theme-primary) !important;
     text-decoration: underline;
   }
   
   .content-page a:hover {
-    color: var(--theme-dark);
+    color: var(--theme-dark) !important;
   }
   
   .content-page strong,

@@ -49,3 +49,5 @@ Check these:
 - ✅ Backend API is accessible
 - ✅ Product has images in database
 
+
+
