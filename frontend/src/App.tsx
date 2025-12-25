@@ -7,6 +7,7 @@ import CartPage from "./pages/shop/CartPage";
 import PrivacyPolicy from "./pages/shop/PrivacyPolicy";
 import TermsConditions from "./pages/shop/TermsConditions";
 import FAQs from "./pages/shop/FAQs";
+import ContactUs from "./pages/shop/ContactUs";
 import { CartProvider } from "./components/products/CartContext";
 import AdminCategories from "@/pages/admin/pages/CategoriesPage";
 import { AuthProvider } from "./hooks/useAuth";
@@ -24,6 +25,7 @@ const AdminAssets = React.lazy(() => import("./pages/admin/pages/AssetsPage"));
 // const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
 const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
 const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
+const AdminQueries = React.lazy(() => import("./pages/admin/pages/QueriesPage"));
 const SpConsolePage = React.lazy(() => import("./pages/admin/pages/SpConsolePage"));
 const DeveloperLayout = React.lazy(() => import("./pages/developer/layout/DeveloperLayout"));
 const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabsPage"));
@@ -64,10 +66,11 @@ export default function App() {
         <Route path="/access" element={<Access />} />
         <Route path="/forgot" element={<Forgot />} />
 
-      {/* ---------- CONTENT PAGES (Privacy, Terms, FAQs) ---------- */}
+      {/* ---------- CONTENT PAGES (Privacy, Terms, FAQs, Contact) ---------- */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/faqs" element={<FAQs />} />
+        <Route path="/contact-us" element={<ContactUs />} />
 
                 {/* ---------- PROTECTED ADMIN ROUTES ---------- */}
               <Route
@@ -87,6 +90,7 @@ export default function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="queries" element={<AdminQueries />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="assets" element={<AdminAssets />} />

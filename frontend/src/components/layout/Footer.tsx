@@ -43,7 +43,7 @@ export default function Footer() {
   if (!showFooter || !hasContent) return null;
 
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-12">
+    <footer className="text-gray-300 mt-12" style={{ backgroundColor: "var(--theme-dark)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row justify-between gap-8">
           {/* Left side: Logo and Footer Sections */}
@@ -94,7 +94,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 border-t border-gray-700 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+        <div className="mt-8 border-t pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
           <span>© {new Date().getFullYear()}  All rights reserved.</span>
           <div className="flex gap-4 mt-2 md:mt-0">
             <span>Visa</span>

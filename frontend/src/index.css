@@ -285,4 +285,119 @@ body {
   textarea::placeholder {
     color: #9ca3af !important;
   }
+  
+  /* Content page formatting - preserve all styles from admin panel */
+  .content-page {
+    line-height: 1.6;
+  }
+  
+  .content-page * {
+    max-width: 100%;
+  }
+  
+  /* Preserve text alignment and all inline styles from rich text editor */
+  .content-page [style] {
+    /* Let inline styles take precedence - don't override them */
+  }
+  
+  /* Ensure text-align from inline styles is preserved */
+  .content-page p[style*="text-align"],
+  .content-page div[style*="text-align"],
+  .content-page span[style*="text-align"],
+  .content-page h1[style*="text-align"],
+  .content-page h2[style*="text-align"],
+  .content-page h3[style*="text-align"],
+  .content-page h4[style*="text-align"],
+  .content-page h5[style*="text-align"],
+  .content-page h6[style*="text-align"] {
+    /* Inline styles will be preserved automatically */
+  }
+  
+  .content-page p,
+  .content-page div,
+  .content-page span,
+  .content-page h1,
+  .content-page h2,
+  .content-page h3,
+  .content-page h4,
+  .content-page h5,
+  .content-page h6 {
+    /* Preserve all inline styles from rich text editor */
+  }
+  
+  .content-page p {
+    margin-bottom: 1rem;
+  }
+  
+  .content-page ul,
+  .content-page ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+  
+  .content-page li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .content-page img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .content-page a {
+    color: var(--theme-primary);
+    text-decoration: underline;
+  }
+  
+  .content-page a:hover {
+    color: var(--theme-dark);
+  }
+  
+  .content-page strong,
+  .content-page b {
+    font-weight: 600;
+  }
+  
+  .content-page em,
+  .content-page i {
+    font-style: italic;
+  }
+  
+  .content-page h1,
+  .content-page h2,
+  .content-page h3,
+  .content-page h4,
+  .content-page h5,
+  .content-page h6 {
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .content-page blockquote {
+    border-left: 4px solid var(--theme-primary);
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+  
+  .content-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+  
+  .content-page th,
+  .content-page td {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: left;
+  }
+  
+  .content-page th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+  }
 }

@@ -28,7 +28,8 @@ export default function ProductImageGallery({ images }: Props) {
             key={i}
             onClick={() => setSelected(img)}
             className={`w-full aspect-square bg-gray-100 overflow-hidden rounded-lg border-2 cursor-pointer transition-all
-              ${selected === img ? "border-[#A8734B]" : "border-gray-200"}`}
+              ${selected === img ? "" : "border-gray-200"}`}
+            style={selected === img ? { borderColor: "var(--theme-primary)" } : {}}
           >
             <img
               src={img}

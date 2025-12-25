@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import {
   Flag,
   RotateCcw,
@@ -16,6 +16,7 @@ import SocialShare from "@/components/products/SocialShare";
 import ProductCard from "@/components/products/ProductCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getProduct, getProducts } from "@/api/product.api";
+import { getCompany } from "@/api/company.api";
 
 /* =======================
    Types
@@ -45,6 +46,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [companyName, setCompanyName] = useState<string>("Grace by Anu");
 
   /* =======================
      Fetch Single Product
@@ -92,8 +94,8 @@ export default function ProductDetail() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await getProducts();
-        const mapped = res.data.map((p: any) => ({
+        const products = await getProducts();
+        const mapped = products.map((p: any) => ({
           ...p,
           images: [
             p.image1,
@@ -109,6 +111,24 @@ export default function ProductDetail() {
     };
 
     fetchAll();
+  }, []);
+
+  /* =======================
+     Fetch Company Name
+  ======================= */
+  useEffect(() => {
+    const fetchCompany = async () => {
+      try {
+        const data = await getCompany();
+        if (data?.company) {
+          setCompanyName(data.company);
+        }
+      } catch (err) {
+        console.error("Failed to load company:", err);
+      }
+    };
+
+    fetchCompany();
   }, []);
 
   /* =======================
@@ -156,6 +176,144 @@ export default function ProductDetail() {
       }, 100);
     }
   }, [product]);
+
+  /* =======================
+     Helper: Get Absolute Image URL
+  ======================= */
+  const getAbsoluteImageUrl = (imageUrl: string | undefined): string => {
+    if (!imageUrl || imageUrl === "/product.png" || imageUrl.trim() === "") {
+      // Return absolute URL for default product image
+      return `${window.location.origin}/product.png`;
+    }
+    
+    // If already absolute URL (from API mapImages function), return as is
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+      return imageUrl;
+    }
+    
+    // If relative URL, make it absolute using API URL
+    const apiUrl = import.meta.env.VITE_API_URL?.replace("/api", "") || window.location.origin;
+    if (imageUrl.startsWith("/")) {
+      return `${apiUrl}${imageUrl}`;
+    }
+    
+    // If relative path without leading slash
+    return `${apiUrl}/${imageUrl}`;
+  };
+
+  /* =======================
+     Helper: Clean Description for Meta Tags
+  ======================= */
+  const cleanDescription = (desc: string | undefined, productName: string): string => {
+    if (!desc) return `${productName} - Available at ${companyName}`;
+    
+    // Remove HTML tags and decode HTML entities
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = desc;
+    let text = tempDiv.textContent || tempDiv.innerText || "";
+    
+    // Trim and limit length (OG description should be max 200 chars)
+    text = text.trim().replace(/\s+/g, " ");
+    if (text.length > 200) {
+      text = text.substring(0, 197) + "...";
+    }
+    
+    return text || `${productName} - Available at ${companyName}`;
+  };
+
+  // Set meta tags in document head (must be before early return to follow Rules of Hooks)
+  useEffect(() => {
+    if (!product) return;
+
+    const ogImageUrl = getAbsoluteImageUrl(product.images?.[0]);
+    const ogDescription = cleanDescription(product.description, product.name);
+    const pageTitle = `${product.name} | ${companyName}`;
+
+    console.log("🔍 Product Meta Tags Debug:", {
+      productName: product.name,
+      productDescription: product.description,
+      cleanedDescription: ogDescription,
+      productImages: product.images,
+      firstImage: product.images?.[0],
+      ogImageUrl: ogImageUrl,
+      companyName: companyName,
+      pageUrl: window.location.href,
+    });
+
+    // Set meta tags directly in document head as fallback for crawlers
+    const setMetaTag = (property: string, content: string, isProperty = true) => {
+      if (!content || content.trim() === "") {
+        console.warn(`⚠️ Empty content for meta tag: ${property}`);
+        return;
+      }
+      
+      const attr = isProperty ? "property" : "name";
+      let meta = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement;
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute(attr, property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", content);
+    };
+
+    // Verify image URL is accessible
+    if (ogImageUrl) {
+      const img = new Image();
+      img.onload = () => console.log("✅ Product image is accessible:", ogImageUrl);
+      img.onerror = () => console.error("❌ Product image failed to load:", ogImageUrl);
+      img.src = ogImageUrl;
+    }
+
+    // Set all OG tags directly
+    setMetaTag("og:title", product.name);
+    setMetaTag("og:description", ogDescription);
+    setMetaTag("og:image", ogImageUrl);
+    setMetaTag("og:image:secure_url", ogImageUrl);
+    setMetaTag("og:image:width", "1200");
+    setMetaTag("og:image:height", "630");
+    setMetaTag("og:image:alt", product.name);
+    setMetaTag("og:url", window.location.href);
+    setMetaTag("og:type", "product");
+    setMetaTag("og:site_name", companyName);
+    setMetaTag("product:price:amount", product.price.toString());
+    setMetaTag("product:price:currency", "PKR");
+    
+    // Set Twitter tags
+    setMetaTag("twitter:card", "summary_large_image", false);
+    setMetaTag("twitter:title", product.name, false);
+    setMetaTag("twitter:description", ogDescription, false);
+    setMetaTag("twitter:image", ogImageUrl, false);
+    setMetaTag("twitter:image:alt", product.name, false);
+    
+    // Set description
+    setMetaTag("description", ogDescription, false);
+    
+    // Set title
+    document.title = pageTitle;
+
+    // Verify meta tags are set (for debugging)
+    setTimeout(() => {
+      const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute("content");
+      const ogImage = document.querySelector('meta[property="og:image"]')?.getAttribute("content");
+      const ogDesc = document.querySelector('meta[property="og:description"]')?.getAttribute("content");
+      
+      console.log("✅ Meta Tags Verification:", {
+        ogTitle: ogTitle || "❌ MISSING",
+        ogImage: ogImage || "❌ MISSING",
+        ogDescription: ogDesc || "❌ MISSING",
+        allMetaTags: Array.from(document.querySelectorAll("meta[property^='og:'], meta[name^='twitter:']")).map(m => ({
+          attr: m.getAttribute("property") || m.getAttribute("name"),
+          content: m.getAttribute("content")
+        }))
+      });
+
+      if (!ogTitle || !ogImage || !ogDesc) {
+        console.error("❌ CRITICAL: Some meta tags are missing! Social media crawlers won't see them.");
+        console.error("💡 Solution: You need server-side rendering (SSR) or pre-rendering for social media sharing to work.");
+      }
+    }, 100);
+  }, [product, companyName]);
 
   if (loading || !product) {
     return <div className="p-10 text-center">Loading...</div>;
@@ -213,20 +371,37 @@ export default function ProductDetail() {
   };
 
   /* =======================
-     JSX
+     JSX - Calculate meta tag values
   ======================= */
+  const ogImageUrl = getAbsoluteImageUrl(product.images?.[0]);
+  const ogDescription = cleanDescription(product.description, product.name);
+  const pageTitle = `${product.name} | ${companyName}`;
+
   return (
     <>
       <Helmet>
-        <title>{product.name} | My Shop</title>
+        <title>{pageTitle}</title>
+        <meta name="description" content={ogDescription} />
         <meta property="og:title" content={product.name} />
-        <meta property="og:description" content={product.description || ""} />
-        <meta
-          property="og:image"
-          content={product.images?.[0] || "/product.png"}
-        />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:secure_url" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={product.name} />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:type" content="product" />
+        <meta property="og:site_name" content={companyName} />
+        <meta property="product:price:amount" content={product.price.toString()} />
+        <meta property="product:price:currency" content="PKR" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={product.name} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <meta name="twitter:image:alt" content={product.name} />
+        {/* Additional meta tags for better compatibility */}
+        <meta name="og:image" content={ogImageUrl} />
+        <link rel="canonical" href={window.location.href} />
       </Helmet>
 
       <Navbar />

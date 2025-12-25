@@ -61,6 +61,22 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-white py-20">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Title - Centered */}
+        <div className="text-center mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold" style={{ color: "var(--theme-primary)" }}>
+            {content.title || "Privacy Policy"}
+          </h1>
+          
+          {/* Subtitle - Centered */}
+          <p className="text-lg text-gray-600 mt-2">
+            {content.subTitle || "Legal page related Sub Title"}
+          </p>
+        </div>
+
+        {/* HR Line - Full Width */}
+        <hr className="my-8 border-t border-gray-400" style={{ borderWidth: "1px" }} />
+
+        {/* Two Column Layout - Table of Contents and Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Table of Contents - Left Sidebar */}
           <div className="lg:col-span-1">
@@ -71,20 +87,10 @@ export default function PrivacyPolicy() {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-4">
-              {content.title || "Privacy Policy"}
-            </h1>
-            
-            {/* Subtitle */}
-            <p className="text-lg text-gray-600 mb-8">
-              {content.subTitle || "Legal page related Sub Title"}
-            </p>
-
-            {/* Content */}
+            {/* Content - Preserves formatting */}
             <div 
               ref={contentRef}
-              className="prose prose-lg max-w-none text-gray-700 mb-8"
+              className="max-w-none text-gray-700 mb-8 content-page"
               dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
             />
 

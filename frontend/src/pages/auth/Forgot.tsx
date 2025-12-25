@@ -45,7 +45,14 @@ export default function ResetPassword() {
         {message && <p className="text-green-600 text-sm">{message}</p>}
 
         <Button
-          className="mt-2 w-full bg-[color:var(--theme-primary,#4f05fa)] hover:bg-[color:var(--theme-primary-dark,#28037d)] text-white rounded-lg py-3 border border-transparent transition-colors"
+          className="mt-2 w-full text-white rounded-lg py-3 border border-transparent transition-colors"
+          style={{ backgroundColor: "var(--theme-primary)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+          }}
           onClick={handleReset}
         >
           Send Reset Link

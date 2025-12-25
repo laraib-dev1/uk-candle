@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Hero from "../../components/hero/Hero";
 import ProductGrid from "../../components/products/ProductGrid";
@@ -11,6 +12,7 @@ import AtYourService from "@/components/ui/AtYourService";
 import Hero2 from "@/components/hero/Hero2";
 import FeatureSection from "@/components/hero/FeatureSection";
 import ClientFeedback from "@/components/hero/ClientFeedback";
+import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
@@ -37,6 +39,7 @@ interface Category {
 }
 
 export default function () {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -147,30 +150,38 @@ export default function () {
 
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {loading ? (
-            <ProductGridSkeleton count={5} />
+            <ProductGridSkeleton count={15} />
           ) : (
-            <ProductGrid
-              items={products
-                .slice(0, 5) // <-- only take the first 5 products
-                .map((p) => ({
-                  id: p._id,
-                  name: p.name,
-                  price: p.price,
-                  image: [
-                    p.image1,
-                    p.image2,
-                    p.image3,
-                    p.image4,
-                    p.image5,
-                    p.image6
-                  ].filter(Boolean)[0] || "/product.png",
-                  offer: p.discount ? `${p.discount}% OFF` : undefined
-                }))
-              }
-            />
+            <>
+              <ProductGrid
+                items={products
+                  .slice(0, 15) // Show 3 rows (15 products for desktop with 5 columns)
+                  .map((p) => ({
+                    id: p._id,
+                    name: p.name,
+                    price: p.price,
+                    image: [
+                      p.image1,
+                      p.image2,
+                      p.image3,
+                      p.image4,
+                      p.image5,
+                      p.image6
+                    ].filter(Boolean)[0] || "/product.png",
+                    offer: p.discount ? `${p.discount}% OFF` : undefined
+                  }))
+                }
+              />
+              <div className="flex justify-center mt-6">
+                <DynamicButton 
+                  label="See All" 
+                  variant="filled" 
+                  shape="pill"
+                  onClick={() => navigate("/shop")}
+                />
+              </div>
+            </>
           )}
-
-
         </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <OfferSection />

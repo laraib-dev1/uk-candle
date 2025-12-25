@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { ThemeProvider as LightDarkThemeProvider } from "./lib/ThemeProvider";
 import { ThemeProvider as BrandThemeProvider } from "./contexts/ThemeContext";
@@ -15,21 +16,23 @@ const stripePromise = loadStripe("pk_test_51SZR8tBr6feLHBsTihpvakcYTtUKzYmD86ImC
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <LightDarkThemeProvider>
-      <BrandThemeProvider>
-        <CartProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <BrowserRouter>
-              {/* Wrap your app in Elements for Stripe */}
-              <Elements stripe={stripePromise}>
-                <App />
-              </Elements>
-            </BrowserRouter>
-            </ToastProvider>
-          </AuthProvider>
-        </CartProvider>
-      </BrandThemeProvider>
-    </LightDarkThemeProvider>
+    <HelmetProvider>
+      <LightDarkThemeProvider>
+        <BrandThemeProvider>
+          <CartProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <BrowserRouter>
+                {/* Wrap your app in Elements for Stripe */}
+                <Elements stripe={stripePromise}>
+                  <App />
+                </Elements>
+              </BrowserRouter>
+              </ToastProvider>
+            </AuthProvider>
+          </CartProvider>
+        </BrandThemeProvider>
+      </LightDarkThemeProvider>
+    </HelmetProvider>
   </React.StrictMode>
 );

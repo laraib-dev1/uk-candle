@@ -14,6 +14,11 @@ import {
   LogOut,
   Cog,
   Menu,
+  MessageSquare,
+  FileText,
+  FolderOpen,
+  Palette,
+  Sliders,
 } from "lucide-react";
 import { getMe } from "@/api/auth.api"; // make sure path is correct
 import { getEnabledAdminTabs } from "@/api/admintab.api";
@@ -98,10 +103,11 @@ export default function AdminLayout() {
         setMenu([
           { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
           { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
+          { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
           { label: "Products", icon: Package, path: "/admin/products" },
-          { label: "Categories", icon: Layers, path: "/admin/categories" },
-          { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
-          { label: "Setting", icon: Settings, path: "/admin/settings" },
+          { label: "Categories", icon: FolderOpen, path: "/admin/categories" },
+          { label: "Assets Panel", icon: Palette, path: "/admin/assets" },
+          { label: "Setting", icon: Sliders, path: "/admin/settings" },
         ]);
       }
     };

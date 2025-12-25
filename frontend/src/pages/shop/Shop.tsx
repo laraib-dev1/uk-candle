@@ -1,6 +1,6 @@
 // pages/shop/Shop.tsx
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import ProductGrid from "../../components/products/ProductGrid";
@@ -46,6 +46,7 @@ const Shop = () => {
   const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category"); // category from query
 
@@ -119,7 +120,12 @@ console.log("Mapped Products:", mapped);
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
               Products
             </h2>
-            <DynamicButton label="All" variant="filled" shape="pill" />
+            <DynamicButton 
+              label="All" 
+              variant="filled" 
+              shape="pill" 
+              onClick={() => navigate("/shop")}
+            />
           </div>
 
           {loading ? (

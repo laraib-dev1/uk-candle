@@ -23,8 +23,8 @@ const DynamicButton: React.FC<DynamicButtonProps> = ({
     "px-5 py-2 font-medium transition-all duration-200 flex items-center justify-center gap-2";
 
   const variants = {
-  filled: "bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700",
-  transparent: "bg-transparent border border-orange-500 text-orange-500 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-300 dark:hover:bg-gray-800",
+  filled: "text-white",
+  transparent: "bg-transparent border text-[var(--theme-primary)] hover:bg-[var(--theme-light)]/20",
 };
 
 
@@ -34,14 +34,45 @@ const DynamicButton: React.FC<DynamicButtonProps> = ({
     square: "rounded-none",
   };
 
+  const buttonStyle = variant === "filled" 
+    ? { 
+        backgroundColor: "var(--theme-primary)",
+        borderColor: "var(--theme-primary)",
+        borderWidth: "1px",
+        borderStyle: "solid",
+      }
+    : {
+        borderColor: "var(--theme-primary)",
+      };
+
+  const hoverStyle = variant === "filled"
+    ? {
+        onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
+          if (!loading) {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+            e.currentTarget.style.borderColor = "var(--theme-dark)";
+          }
+        },
+        onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => {
+          if (!loading) {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+          }
+        },
+      }
+    : {};
+
   return (
     <button
       onClick={onClick}
       disabled={loading}
+      style={buttonStyle}
+      {...hoverStyle}
       className={clsx(
         baseClasses,
         variants[variant],
         shapes[shape],
+        variant === "transparent" && "border",
         loading && "opacity-70 cursor-not-allowed",
         className
       )}

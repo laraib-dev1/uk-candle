@@ -17,6 +17,7 @@ import companyRoutes from "./src/routes/company.routes.js";
 import footerRoutes from "./src/routes/footer.routes.js";
 import admintabRoutes from "./src/routes/admintab.routes.js";
 import webpageRoutes from "./src/routes/webpage.routes.js";
+import queryRoutes from "./src/routes/query.routes.js";
 
 dotenv.config();
 
@@ -26,17 +27,40 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    // CORS
-    app.use(
-      cors({
-        origin: [
-          "https://uk-candles.vercel.app",
-          "http://localhost:3000",
-          "http://localhost:5173",
-        ],
-        credentials: true,
-      })
-    );
+    // CORS - must be before routes
+    const allowedOrigins = [
+      "https://uk-candles.vercel.app",
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+    ];
+    
+    const corsOptions = {
+      origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // In development or if origin is in allowed list, allow it
+        if (process.env.NODE_ENV !== "production" || allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          // In production, be more strict but still allow common localhost patterns
+          if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+            callback(null, true);
+          } else {
+            callback(new Error("Not allowed by CORS"));
+          }
+        }
+      },
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    };
+    
+    app.use(cors(corsOptions));
 
     app.use(morgan("dev"));
     app.use(express.json());
@@ -55,6 +79,7 @@ const startServer = async () => {
     app.use("/api/footer", footerRoutes);
     app.use("/api/admintabs", admintabRoutes);
     app.use("/api/webpages", webpageRoutes);
+    app.use("/api/queries", queryRoutes);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

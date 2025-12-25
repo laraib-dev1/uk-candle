@@ -37,6 +37,7 @@ export default function FooterPage() {
   const [pages, setPages] = useState<{ _id: string; title: string; slug: string }[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSectionEnabled, setNewSectionEnabled] = useState(true);
+  const [newSectionTitle, setNewSectionTitle] = useState("");
   const [selectedPageIds, setSelectedPageIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -146,6 +147,10 @@ export default function FooterPage() {
       error("Select at least one page");
       return;
     }
+    if (!newSectionTitle.trim()) {
+      error("Please enter a group name");
+      return;
+    }
     const newLinks = pages
       .filter((p) => selectedPageIds.has(p._id))
       .map((p, idx) => ({
@@ -159,7 +164,7 @@ export default function FooterPage() {
       sections: [
         ...prev.sections,
         {
-          title: "Quick Links",
+          title: newSectionTitle.trim(),
           links: newLinks,
           order: prev.sections.length,
           enabled: newSectionEnabled,
@@ -168,6 +173,7 @@ export default function FooterPage() {
     }));
     setSelectedPageIds(new Set());
     setNewSectionEnabled(true);
+    setNewSectionTitle("");
     setShowAddModal(false);
   };
 
@@ -245,6 +251,7 @@ export default function FooterPage() {
     if (showAddModal) {
       setSelectedPageIds(new Set());
       setNewSectionEnabled(true);
+      setNewSectionTitle("");
     }
   }, [showAddModal]);
 
@@ -432,6 +439,36 @@ export default function FooterPage() {
                   style={{ accentColor: "var(--theme-primary)" }}
                 />
                 <span className="text-sm text-gray-700">Show this column</span>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Group Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  placeholder="Enter group name (e.g., Quick Links, Support, etc.)"
+                  required
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)]"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px rgba(var(--theme-primary-rgb), 0.2)";
+                  }}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.value.trim()) {
+                      e.currentTarget.style.borderColor = "#ef4444";
+                    } else {
+                      e.currentTarget.style.borderColor = "";
+                    }
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                  autoFocus
+                />
+                {!newSectionTitle.trim() && (
+                  <p className="text-xs text-red-500 mt-1">Group name is required</p>
+                )}
               </div>
 
               <div>

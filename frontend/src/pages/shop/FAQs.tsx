@@ -49,10 +49,20 @@ const [content, setContent] = useState<FAQContent>({
     <div className="min-h-screen bg-white py-20">
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-12">
-          Frequently Asked Questions
-        </h1>
+        {/* Title - Centered */}
+        <div className="text-center mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold" style={{ color: "var(--theme-primary)" }}>
+            Frequently Asked Questions
+          </h1>
+          
+          {/* Subtitle - Centered */}
+          <p className="text-lg text-gray-600 mt-2">
+            Legal page details
+          </p>
+        </div>
+
+        {/* HR Line */}
+        <hr className="my-8 border-t border-gray-400" style={{ borderWidth: "1px" }} />
 
         {/* FAQs List */}
         <div className="space-y-4">
@@ -81,7 +91,7 @@ const [content, setContent] = useState<FAQContent>({
                 {expandedIndex === index && (
                   <div className="px-6 pb-6 pt-0">
                     <div
-                      className="prose prose-sm max-w-none text-gray-700"
+                      className="max-w-none text-gray-700 content-page"
                       dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
                     />
                   </div>
