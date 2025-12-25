@@ -189,9 +189,9 @@ export default function () {
             </>
           )}
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <OfferSection />
-        </section>
+        </section> */}
          <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
            {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner */}
            <Hero2

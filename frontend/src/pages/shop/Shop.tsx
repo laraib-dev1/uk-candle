@@ -9,7 +9,15 @@ import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
+import { getCategories } from "@/api/category.api";
 import PageLoader from "@/components/ui/PageLoader";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // API product type
 interface ApiProduct {
@@ -40,8 +48,16 @@ interface Product {
   currency?: string;
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  icon?: string;
+}
+
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [limit, setLimit] = useState(8);
@@ -50,13 +66,43 @@ const Shop = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
-  const selectedCategory = params.get("category"); // category from query
+  const selectedCategoryFromUrl = params.get("category"); // category from query
+  const [selectedCategory, setSelectedCategory] = useState<string>(selectedCategoryFromUrl || "all");
 
   
   useEffect(() => {
+    fetchCategories();
     fetchProducts();
     fetchBanners();
-  }, [selectedCategory]);
+  }, []);
+
+  useEffect(() => {
+    // Update selected category when URL changes
+    if (selectedCategoryFromUrl) {
+      setSelectedCategory(selectedCategoryFromUrl);
+    } else {
+      setSelectedCategory("all");
+    }
+  }, [selectedCategoryFromUrl]);
+
+  useEffect(() => {
+    // Filter products when category changes
+    if (selectedCategory === "all") {
+      setProducts(allProducts);
+    } else {
+      setProducts(allProducts.filter((p) => p.categoryName === selectedCategory));
+    }
+    setLimit(8); // Reset limit when category changes
+  }, [selectedCategory, allProducts]);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -64,35 +110,41 @@ const Shop = () => {
       const res: ApiProduct[] = await getProducts(); // API returns array
 
       // map API product to frontend Product type
-   const mapped: Product[] = res.map((p) => ({
-  id: p._id,
-  name: p.name,
-  price: p.price,
-  discount: p.discount,
-  image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
-  (img) => img && img.trim() !== "" && img !== "/product.png"
-) || "/product.png",
+      const mapped: Product[] = res.map((p) => ({
+        id: p._id,
+        name: p.name,
+        price: p.price,
+        discount: p.discount,
+        image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
+          (img) => img && img.trim() !== "" && img !== "/product.png"
+        ) || "/product.png",
+        categoryName: p.category?.name || "Category",
+        description: p.description,
+        currency: p.currency,
+      }));
 
-  categoryName: p.category?.name || "Category",
-  description: p.description,
-  currency: p.currency,
-}));
-console.log("Products API:", res);
-console.log("Mapped Products:", mapped);
-
-
-      if (selectedCategory) {
-        // only show products of selected category
-        setProducts(mapped.filter((p) => p.categoryName === selectedCategory));
-      } else {
-        // show all products
+      setAllProducts(mapped);
+      
+      // Filter based on selected category
+      if (selectedCategory === "all") {
         setProducts(mapped);
+      } else {
+        setProducts(mapped.filter((p) => p.categoryName === selectedCategory));
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
       setInitialLoad(false);
+    }
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    if (value === "all") {
+      navigate("/shop");
+    } else {
+      navigate(`/shop?category=${encodeURIComponent(value)}`);
     }
   };
 
@@ -127,15 +179,28 @@ console.log("Mapped Products:", mapped);
           />
 
           <div className="flex justify-between items-center mt-10 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+            <h2 className="text-2xl font-bold text-gray-900">
               Products
             </h2>
-            <DynamicButton 
-              label="All" 
-              variant="filled" 
-              shape="pill" 
-              onClick={() => navigate("/shop")}
-            />
+            <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-[180px] bg-white text-black border-gray-300">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-300">
+                <SelectItem value="all" className="text-black hover:bg-gray-100 focus:bg-gray-100">
+                  All Categories
+                </SelectItem>
+                {categories.map((category) => (
+                  <SelectItem 
+                    key={category._id} 
+                    value={category.name}
+                    className="text-black hover:bg-gray-100 focus:bg-gray-100"
+                  >
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {loading && !initialLoad ? (

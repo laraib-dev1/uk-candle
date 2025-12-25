@@ -104,7 +104,10 @@ export default function ProductDetail() {
             p.image1,
             p.image2,
             p.image3,
-          ].filter(Boolean),
+            p.image4,
+            p.image5,
+            p.image6,
+          ].filter((img: string) => img && img.trim() !== "" && img !== "/product.png"),
           categoryName: p.category?.name,
         }));
         setAllProducts(mapped);
@@ -535,22 +538,32 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-xl font-semibold mb-4">
-            Similar Products
-          </h3>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {similarProducts.map((p) => (
-              <ProductCard
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price}
-                image={p.images?.[0] || "/product.png"}
-                offer={p.discount ? `${p.discount}% OFF` : undefined}
-              />
-            ))}
-          </div>
+          {similarProducts && similarProducts.length > 0 && (
+            <div className="mt-12">
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">
+                Similar Products
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {similarProducts.map((p) => {
+                  // Get the first available image from images array or fallback to image1-6
+                  const productImage = p.images?.[0] || 
+                    [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find((img: string) => img && img.trim() !== "") || 
+                    "/product.png";
+                  
+                  return (
+                    <ProductCard
+                      key={p._id}
+                      id={p._id}
+                      name={p.name || "Product"}
+                      price={p.price || 0}
+                      image={productImage}
+                      offer={p.discount ? `${p.discount}% OFF` : undefined}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
