@@ -3,6 +3,7 @@ import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDat
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { getAllReviews, deleteReview } from "../../../api/review.api";
 import { useToast } from "@/components/ui/toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Star, Trash2 } from "lucide-react";
 
 interface Review {
@@ -28,6 +29,7 @@ export default function ReviewsTable() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const { success, error } = useToast();
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const loadReviews = async () => {
     setLoading(true);
@@ -46,15 +48,20 @@ export default function ReviewsTable() {
     loadReviews();
   }, []);
 
-  const handleDelete = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
-    
+  const handleDelete = (reviewId: string) => {
+    setDeleteConfirm(reviewId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteReview(reviewId);
+      await deleteReview(deleteConfirm);
       success("Review deleted successfully");
+      setDeleteConfirm(null);
       loadReviews();
     } catch (err: any) {
       error(err.message || "Failed to delete review");
+      setDeleteConfirm(null);
     }
   };
 
@@ -115,6 +122,15 @@ export default function ReviewsTable() {
 
   return (
     <div className="w-full">
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title="Delete Review"
+        message="Are you sure you want to delete this review? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold theme-heading">Reviews</h2>
       </div>

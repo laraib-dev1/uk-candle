@@ -8,7 +8,9 @@ import {
 } from "@/api/webpage.api";
 import IconPicker from "@/components/developer/IconPicker";
 import { useToast } from "@/components/ui/toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface WebPage {
   _id: string;
@@ -29,6 +31,7 @@ export default function WebPagesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
   const [deleteLoading, setDeleteLoading] = useState<Record<string, boolean>>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [newPage, setNewPage] = useState({
     title: "",
     slug: "",
@@ -101,17 +104,22 @@ export default function WebPagesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this page?")) return;
-    if (deleteLoading[id]) return;
-    setDeleteLoading(prev => ({ ...prev, [id]: true }));
+  const handleDelete = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm || deleteLoading[deleteConfirm]) return;
+    setDeleteLoading(prev => ({ ...prev, [deleteConfirm]: true }));
     try {
-      await deleteWebPage(id);
+      await deleteWebPage(deleteConfirm);
+      setDeleteConfirm(null);
       await loadPages();
     } catch (error) {
       console.error("Failed to delete page:", error);
+      setDeleteConfirm(null);
     } finally {
-      setDeleteLoading(prev => ({ ...prev, [id]: false }));
+      setDeleteLoading(prev => ({ ...prev, [deleteConfirm]: false }));
     }
   };
 
@@ -121,6 +129,15 @@ export default function WebPagesPage() {
 
   return (
     <div className="max-w-5xl">
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title="Delete Page"
+        message="Are you sure you want to delete this page? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold theme-heading">Web Pages</h1>
         {/* Add Button - Commented Out */}
@@ -190,7 +207,8 @@ export default function WebPagesPage() {
                   )}
                 </button>
 
-                <button
+                {/* Delete Button - Commented Out */}
+                {/* <button
                   onClick={() => handleDelete(page._id)}
                   disabled={deleteLoading[page._id]}
                   className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
@@ -200,7 +218,7 @@ export default function WebPagesPage() {
                   ) : (
                     <X size={18} />
                   )}
-                </button>
+                </button> */}
               </div>
             </div>
             ))

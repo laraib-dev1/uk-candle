@@ -19,6 +19,7 @@ const CompanySchema = new mongoose.Schema({
   },
   socialPosts: [{
     image: { type: String, default: "" },
+    url: { type: String, default: "" },
     order: { type: Number, default: 0 },
   }],
   brandTheme: {

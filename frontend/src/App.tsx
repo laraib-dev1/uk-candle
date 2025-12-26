@@ -34,6 +34,7 @@ const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabs
 const CompanyPage = React.lazy(() => import("./pages/developer/pages/CompanyPage"));
 const WebPagesPage = React.lazy(() => import("./pages/developer/pages/WebPagesPage"));
 const FooterPage = React.lazy(() => import("./pages/developer/pages/FooterPage"));
+const SpComponentsPage = React.lazy(() => import("./pages/developer/pages/SpComponentsPage"));
 
 
 export default function App() {
@@ -127,6 +128,7 @@ export default function App() {
             <Route path="company" element={<CompanyPage />} />
             <Route path="web-pages" element={<WebPagesPage />} />
             <Route path="footer" element={<FooterPage />} />
+            <Route path="sp-components" element={<SpComponentsPage />} />
             <Route path="sp-console" element={<SpConsolePage />} />
           </Route>
    {/* ---------- 404 PAGE ---------- */}

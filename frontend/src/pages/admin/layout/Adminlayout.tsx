@@ -6,7 +6,7 @@ import PageLoader from "@/components/ui/PageLoader";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  ShoppingBag,
+  ShoppingCart,
   Package,
   Layers,
   ImageIcon,
@@ -17,10 +17,9 @@ import {
   Menu,
   MessageSquare,
   FileText,
-  FolderOpen,
-  Palette,
-  Sliders,
+  FolderTree,
   Star,
+  BarChart3,
 } from "lucide-react";
 import { getMe } from "@/api/auth.api"; // make sure path is correct
 import { getEnabledAdminTabs } from "@/api/admintab.api";
@@ -106,14 +105,14 @@ export default function AdminLayout() {
         } else {
           // Fallback to default menu (without Sp Console)
           setMenu([
-            { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-            { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
+            { label: "Dashboard", icon: BarChart3, path: "/admin/dashboard" },
+            { label: "Orders", icon: ShoppingCart, path: "/admin/orders" },
+            { label: "Categories", icon: FolderTree, path: "/admin/categories" },
+            { label: "Products", icon: Package, path: "/admin/products" },
+            { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
             { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
             { label: "Reviews", icon: Star, path: "/admin/reviews" },
-            { label: "Products", icon: Package, path: "/admin/products" },
-            { label: "Categories", icon: FolderOpen, path: "/admin/categories" },
-            { label: "Assets Panel", icon: Palette, path: "/admin/assets" },
-            { label: "Setting", icon: Sliders, path: "/admin/settings" },
+            { label: "Settings", icon: Settings, path: "/admin/settings" },
           ]);
         }
       } catch (err) {

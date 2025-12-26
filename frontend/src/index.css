@@ -393,6 +393,17 @@ body {
     color: #9ca3af !important;
   }
   
+  /* All checkboxes use theme primary color */
+  input[type="checkbox"] {
+    accent-color: var(--theme-primary) !important;
+    cursor: pointer;
+  }
+  
+  /* Also apply to checkboxes in Radix UI components */
+  [role="checkbox"] {
+    accent-color: var(--theme-primary) !important;
+  }
+  
   /* Content page formatting - preserve all styles from admin panel */
   .content-page {
     line-height: 1.6;

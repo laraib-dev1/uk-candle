@@ -6,7 +6,7 @@ export default function Footer() {
   const [footerSections, setFooterSections] = useState<
     { title: string; links: { label: string; url: string; order: number }[]; order: number; enabled?: boolean }[]
   >([]);
-  const [socialPosts, setSocialPosts] = useState<{ image: string; order: number }[]>([]);
+  const [socialPosts, setSocialPosts] = useState<{ image: string; url: string; order: number }[]>([]);
   const [showFooter, setShowFooter] = useState(true);
 
   useEffect(() => {
@@ -33,10 +33,8 @@ export default function Footer() {
     ? footerSections.filter((s) => s.enabled !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).slice(0, 3)
     : [];
 
-  const galleryImages = socialPosts.length > 0 ? socialPosts.map((p) => p.image).slice(0, 8) : [];
-
   const hasColumns = activeSections.length > 0;
-  const hasGallery = galleryImages.length > 0;
+  const hasGallery = socialPosts.length > 0;
   const hasContent = hasColumns || hasGallery;
 
   // If footer disabled, hide footer entirely
@@ -75,20 +73,40 @@ export default function Footer() {
           </div>
 
           {/* Right side: Social posts gallery */}
-          {galleryImages.length > 0 && (
+          {socialPosts.length > 0 && (
             <div className="flex-shrink-0">
               <div className="grid grid-cols-4 gap-2">
-                {galleryImages.map((src, index) => (
-                  <img
-                    key={index}
-                    src={src}
-                    alt={`Social post ${index + 1}`}
-                    className="w-12 h-12 object-cover rounded"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                    loading="lazy"
-                  />
+                {socialPosts.map((post, index) => (
+                  post.url ? (
+                    <a
+                      key={index}
+                      href={post.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:opacity-80 transition-opacity"
+                    >
+                      <img
+                        src={post.image}
+                        alt={`Social post ${index + 1}`}
+                        className="w-12 h-12 object-cover rounded cursor-pointer"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                        loading="lazy"
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      key={index}
+                      src={post.image}
+                      alt={`Social post ${index + 1}`}
+                      className="w-12 h-12 object-cover rounded"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                      loading="lazy"
+                    />
+                  )
                 ))}
               </div>
             </div>

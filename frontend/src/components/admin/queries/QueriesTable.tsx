@@ -4,6 +4,7 @@ import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { getQueries, updateQueryStatus, deleteQuery } from "../../../api/query.api";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Trash2, Eye } from "lucide-react";
 
 interface Query {
@@ -85,15 +86,23 @@ export default function QueriesTable() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this query?")) return;
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     
     try {
-      await deleteQuery(id);
+      await deleteQuery(deleteConfirm);
       success("Query deleted successfully");
+      setDeleteConfirm(null);
       loadQueries();
     } catch (err: any) {
       error(err?.response?.data?.message || "Failed to delete query");
+      setDeleteConfirm(null);
     }
   };
 
@@ -191,6 +200,15 @@ export default function QueriesTable() {
 
   return (
     <div className="space-y-4">
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title="Delete Query"
+        message="Are you sure you want to delete this query? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold theme-heading">Queries</h1>

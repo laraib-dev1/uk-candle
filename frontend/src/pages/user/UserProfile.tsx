@@ -21,6 +21,7 @@ import { createQuery } from "@/api/query.api";
 import { createReview } from "@/api/review.api";
 import { getProducts } from "@/api/product.api";
 import { useToast } from "@/components/ui/toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
   User,
   Package,
@@ -545,14 +546,22 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
     }
   };
 
-  const handleDelete = async (addressId: string) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  
+  const handleDelete = (addressId: string) => {
+    setDeleteConfirm(addressId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteUserAddress(addressId);
+      await deleteUserAddress(deleteConfirm);
       success("Address deleted successfully!");
+      setDeleteConfirm(null);
       onUpdate();
     } catch (err: any) {
       error(err.message || "Failed to delete address");
+      setDeleteConfirm(null);
     }
   };
 
@@ -573,6 +582,15 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
 
   return (
     <div>
+      <ConfirmDialog
+        open={deleteConfirm !== null}
+        title="Delete Address"
+        message="Are you sure you want to delete this address? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Saved Addresses</h2>
         <button
@@ -814,6 +832,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -842,18 +861,21 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
     }
   };
 
-  const handleCancelOrder = async (orderId: string) => {
-    if (!confirm("Are you sure you want to cancel this order? This action cannot be undone.")) {
-      return;
-    }
+  const handleCancelOrder = (orderId: string) => {
+    setCancelConfirm(orderId);
+  };
 
+  const confirmCancelOrder = async () => {
+    if (!cancelConfirm) return;
     setIsCancelling(true);
     try {
-      await cancelOrder(orderId);
+      await cancelOrder(cancelConfirm);
       success("Order cancelled successfully! Admin has been notified.");
+      setCancelConfirm(null);
       onUpdate(); // Refresh orders list
     } catch (err: any) {
       error(err.message || "Failed to cancel order");
+      setCancelConfirm(null);
     } finally {
       setIsCancelling(false);
     }

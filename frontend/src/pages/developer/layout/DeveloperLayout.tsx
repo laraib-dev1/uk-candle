@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Cog,
   Menu,
+  Package,
 } from "lucide-react";
 import {
   Sheet,
@@ -36,6 +37,7 @@ export default function DeveloperLayout() {
     { label: "Company", icon: Building2, path: "/developer/company" },
     { label: "Web Pages", icon: FileText, path: "/developer/web-pages" },
     { label: "Footer", icon: PanelBottom, path: "/developer/footer" },
+    { label: "SP Components", icon: Package, path: "/developer/sp-components" },
   ];
 
   const handleBackToAdmin = () => {

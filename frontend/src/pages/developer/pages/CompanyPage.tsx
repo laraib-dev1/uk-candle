@@ -5,7 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/ui/toast";
 import PageLoader from "@/components/ui/PageLoader";
 
-const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", order: i }));
+const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", url: "", order: i }));
 
 export default function CompanyPage() {
   const { updateTheme } = useTheme();
@@ -39,9 +39,13 @@ export default function CompanyPage() {
   const [originalData, setOriginalData] = useState(companyData);
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null);
+  const [postUrl, setPostUrl] = useState("");
+  const [postImageFile, setPostImageFile] = useState<File | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const socialPostInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const postUrlInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -91,6 +95,14 @@ export default function CompanyPage() {
   const loadCompanyData = async () => {
     try {
       const data = await getCompany();
+      // Ensure socialPosts have url field
+      if (data.socialPosts) {
+        data.socialPosts = data.socialPosts.map((post: any) => ({
+          ...post,
+          url: post.url || "",
+          image: post.image || "",
+        }));
+      }
       setCompanyData(data);
       setOriginalData(data);
       // Initialize refs array to match the number of social posts
@@ -156,21 +168,80 @@ export default function CompanyPage() {
     }
   };
 
-  const handleSocialPostUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const openPostEditor = (index: number) => {
+    const post = companyData.socialPosts[index];
+    setEditingPostIndex(index);
+    setPostUrl(post?.url || "");
+    setPostImageFile(null);
+  };
+
+  const closePostEditor = () => {
+    setEditingPostIndex(null);
+    setPostUrl("");
+    setPostImageFile(null);
+  };
+
+  const handlePostUrlChange = async (url: string) => {
+    setPostUrl(url);
+    if (url && editingPostIndex !== null) {
+      // Validate URL and try to load image
+      try {
+        const img = new Image();
+        img.onload = () => {
+          const newPosts = [...companyData.socialPosts];
+          newPosts[editingPostIndex] = { ...newPosts[editingPostIndex], image: url, url: url };
+          handleChange("socialPosts", newPosts);
+        };
+        img.onerror = () => {
+          // URL might not be a direct image, but still save it
+          const newPosts = [...companyData.socialPosts];
+          newPosts[editingPostIndex] = { ...newPosts[editingPostIndex], url: url };
+          handleChange("socialPosts", newPosts);
+        };
+        img.src = url;
+      } catch (error) {
+        console.error("Error loading image from URL:", error);
+      }
+    }
+  };
+
+  const handlePostFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && editingPostIndex !== null) {
+      setPostImageFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         const newPosts = [...companyData.socialPosts];
-        newPosts[index] = { ...newPosts[index], image: event.target?.result as string };
+        newPosts[editingPostIndex] = { 
+          ...newPosts[editingPostIndex], 
+          image: event.target?.result as string,
+          url: newPosts[editingPostIndex].url || "" // Keep existing URL if any
+        };
         handleChange("socialPosts", newPosts);
       };
       reader.readAsDataURL(file);
     }
+    // Reset input
+    if (e.target) {
+      e.target.value = "";
+    }
+  };
+
+  const savePost = () => {
+    if (editingPostIndex !== null) {
+      const newPosts = [...companyData.socialPosts];
+      newPosts[editingPostIndex] = { 
+        ...newPosts[editingPostIndex], 
+        url: postUrl || newPosts[editingPostIndex].url || ""
+      };
+      handleChange("socialPosts", newPosts);
+      closePostEditor();
+    }
   };
 
   const addSocialPost = () => {
-    const newPosts = [...companyData.socialPosts, { image: "", order: companyData.socialPosts.length }];
+    const newPosts = [...companyData.socialPosts, { image: "", url: "", order: companyData.socialPosts.length }];
     handleChange("socialPosts", newPosts);
     // Update refs array
     socialPostInputRefs.current = [...socialPostInputRefs.current, null];
@@ -480,11 +551,11 @@ export default function CompanyPage() {
                 }}
                 type="file"
                 accept="image/*"
-                onChange={(e) => handleSocialPostUpload(index, e)}
+                onChange={handlePostFileUpload}
                 className="hidden"
               />
               <button
-                onClick={() => socialPostInputRefs.current[index]?.click()}
+                onClick={() => openPostEditor(index)}
                 className="w-full text-black aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center relative overflow-hidden"
               >
                 {post.image ? (
@@ -514,6 +585,87 @@ export default function CompanyPage() {
             </div>
           ))}
         </div>
+
+        {/* Social Post Editor Modal */}
+        {editingPostIndex !== null && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Edit Social Post</h3>
+                <button
+                  onClick={closePostEditor}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* URL Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    URL/Link Address
+                  </label>
+                  <input
+                    ref={postUrlInputRef}
+                    type="url"
+                    value={postUrl}
+                    onChange={(e) => handlePostUrlChange(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                    placeholder="https://example.com/image.jpg or https://instagram.com/p/..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter image URL or post link</p>
+                </div>
+
+                {/* Image Preview */}
+                {companyData.socialPosts[editingPostIndex]?.image && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Image Preview
+                    </label>
+                    <img
+                      src={companyData.socialPosts[editingPostIndex].image}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                    />
+                  </div>
+                )}
+
+                {/* File Upload Option */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Or Upload Image
+                  </label>
+                  <button
+                    onClick={() => socialPostInputRefs.current[editingPostIndex]?.click()}
+                    className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center gap-2 text-gray-700"
+                  >
+                    <Upload size={18} />
+                    Choose File
+                  </button>
+                  {postImageFile && (
+                    <p className="text-xs text-gray-500 mt-1">{postImageFile.name}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <button
+                    onClick={closePostEditor}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-black"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={savePost}
+                    className="flex-1 px-4 py-2 text-white rounded-lg transition-colors theme-button"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Brand Theme Section */}
