@@ -97,7 +97,7 @@ export default function ReviewsTable() {
       },
       {
         name: "Comment",
-        selector: (row: Review) => (
+        cell: (row: Review) => (
           <div className="max-w-xs">
             <p className="text-sm text-gray-900 line-clamp-2">{row.comment}</p>
           </div>

@@ -1241,12 +1241,12 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
   // Only show products from completed orders
   const completedOrders = orders.filter(o => o.status === "Complete" || o.status === "Completed");
   
-  const handleWriteReview = (item: { name: string; orderId: string }, orderId: string) => {
+  const handleWriteReview = (item: { name: string; quantity: number; price: number }, orderId: string) => {
     // Try to find product ID from the item (if available)
     setSelectedProduct({
       name: item.name,
       orderId: orderId,
-      productId: (item as any).productId || (item as any).id,
+      productId: (item as any).productId || (item as any).id || undefined,
     });
     setShowReviewModal(true);
     setReviewData({ rating: 0, comment: "" });
@@ -1268,7 +1268,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
     setSubmitting(true);
     try {
       // If productId is not available, search for it by product name
-      let productId = selectedProduct.productId;
+      let productId: string | undefined = selectedProduct.productId;
       if (!productId) {
         const products = await getProducts();
         const product = products.find((p: any) => p.name === selectedProduct.name);
@@ -1278,6 +1278,12 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
           return;
         }
         productId = product._id;
+      }
+
+      if (!productId) {
+        error("Product ID is required. Please contact support.");
+        setSubmitting(false);
+        return;
       }
 
       await createReview({

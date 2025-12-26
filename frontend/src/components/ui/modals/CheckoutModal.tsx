@@ -12,14 +12,16 @@ type CheckoutModalProps = {
 };
 
 type Address = {
+  _id?: string;
   firstName: string;
   lastName: string;
   province: string;
   city: string;
-  area: string;
+  area?: string;
   postalCode: string;
   phone: string;
   line1: string;
+  isDefault?: boolean;
 };
 
 type CartItem = {
