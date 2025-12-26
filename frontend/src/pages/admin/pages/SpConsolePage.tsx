@@ -6,35 +6,38 @@ export default function SpConsolePage() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Sp Console</h1>
+    <div>
+      {/* Full Width Header and Main Card */}
+      <div className="w-full -mx-4 lg:-mx-8 px-4 lg:px-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Sp Console</h1>
 
-      {/* Main Card */}
-      <div className="theme-bg-accent border rounded-2xl p-8 shadow-sm mb-8" style={{ borderColor: "var(--theme-light)" }}>
-        {/* Header Icon & Title */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 border-2" style={{ borderColor: "var(--theme-primary)" }}>
-            <Code2 className="w-8 h-8 theme-text-primary" />
+        {/* Main Card - Full Width */}
+        <div className="theme-bg-accent border rounded-2xl p-8 shadow-sm mb-8 w-full" style={{ borderColor: "var(--theme-light)" }}>
+          {/* Header Icon & Title */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 border-2" style={{ borderColor: "var(--theme-primary)" }}>
+              <Code2 className="w-8 h-8 theme-text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold theme-text-primary">Developer Verification</h2>
+            <p className="text-gray-600 text-sm mt-2 text-center">
+              We are enhancing the Ui, Ux, Cx, Dx, Px. Do best serve best.
+            </p>
           </div>
-          <h2 className="text-2xl font-bold theme-text-primary">Developer Verification</h2>
-          <p className="text-gray-600 text-sm mt-2 text-center">
-            We are enhancing the Ui, Ux, Cx, Dx, Px. Do best serve best.
-          </p>
-        </div>
 
-        {/* Continue Button */}
-        <div className="flex justify-center mb-8">
-          <button
-            onClick={() => setShowModal(true)}
-            className="text-white px-6 py-2.5 rounded-lg font-medium transition-colors theme-button"
-          >
-            Continue to Sp Console
-          </button>
+          {/* Continue Button */}
+          <div className="flex justify-center mb-8">
+            <button
+              onClick={() => setShowModal(true)}
+              className="text-white px-6 py-2.5 rounded-lg font-medium transition-colors theme-button"
+            >
+              Continue to Sp Console
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Content Sections */}
-      <div className="space-y-8">
+      {/* Content Sections - Constrained Width */}
+      <div className="max-w-4xl space-y-8">
         {/* How We Add Value Section */}
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-3">How We Add Value:</h3>
@@ -84,8 +87,10 @@ export default function SpConsolePage() {
             We don't just build websites and applications we create reliable digital products that deliver long-term value. Every solution is crafted with precision, performance, and real-world usability in mind. Our team takes full ownership from design to delivery, ensuring consistency and excellence at every stage. We work as a technology partner, not just a service provider. Our clients take pride in products that are scalable, secure, and built to industry standards.
           </p>
         </div>
+      </div>
 
-        {/* Contact Us Section */}
+      {/* Contact Us Section - Full Width */}
+      <div className="w-full -mx-4 lg:-mx-8 px-4 lg:px-8 mt-8">
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-4">Contact Us</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
