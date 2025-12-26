@@ -1,0 +1,138 @@
+import React, { useEffect, useState } from "react";
+import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
+import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
+import { getAllReviews, deleteReview } from "../../../api/review.api";
+import { useToast } from "@/components/ui/toast";
+import { Star, Trash2 } from "lucide-react";
+
+interface Review {
+  _id: string;
+  userId: string | {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  productId: string | {
+    _id: string;
+    name: string;
+    image1?: string;
+  };
+  productName: string;
+  orderId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export default function ReviewsTable() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { success, error } = useToast();
+
+  const loadReviews = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllReviews();
+      setReviews(data);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      error("Failed to load reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReviews();
+  }, []);
+
+  const handleDelete = async (reviewId: string) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+    
+    try {
+      await deleteReview(reviewId);
+      success("Review deleted successfully");
+      loadReviews();
+    } catch (err: any) {
+      error(err.message || "Failed to delete review");
+    }
+  };
+
+  const getColumns = () => {
+    return [
+      {
+        name: "Product",
+        heading: (row: Review) => row.productName || (typeof row.productId === 'object' ? row.productId?.name : "N/A"),
+        subInfo: (row: Review) => new Date(row.createdAt).toLocaleDateString(),
+        minWidth: "200px",
+      },
+      {
+        name: "Customer",
+        heading: (row: Review) => (typeof row.userId === 'object' ? row.userId?.name : "Unknown"),
+        subInfo: (row: Review) => (typeof row.userId === 'object' ? row.userId?.email : ""),
+        minWidth: "200px",
+      },
+      {
+        name: "Rating",
+        cell: (row: Review) => (
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={16}
+                className={star <= row.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+              />
+            ))}
+            <span className="ml-2 text-sm text-gray-600">({row.rating}/5)</span>
+          </div>
+        ),
+        minWidth: "150px",
+      },
+      {
+        name: "Comment",
+        selector: (row: Review) => (
+          <div className="max-w-xs">
+            <p className="text-sm text-gray-900 line-clamp-2">{row.comment}</p>
+          </div>
+        ),
+        minWidth: "300px",
+      },
+      {
+        name: "Actions",
+        cell: (row: Review) => (
+          <button
+            onClick={() => handleDelete(row._id)}
+            className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete review"
+          >
+            <Trash2 size={18} />
+          </button>
+        ),
+        minWidth: "100px",
+      },
+    ];
+  };
+
+  return (
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold theme-heading">Reviews</h2>
+      </div>
+
+      <div className="bg-white shadow-md rounded-lg border border-gray-200">
+        {loading ? (
+          <div className="p-4">
+            <DataTableSkeleton rows={8} />
+          </div>
+        ) : (
+          <EnhancedDataTable<Review>
+            columns={getColumns()}
+            data={reviews}
+            pagination
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+

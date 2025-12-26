@@ -6,7 +6,11 @@ import {
   RotateCcw,
   Headphones,
   Truck,
+  Heart,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
+import { useToast } from "@/components/ui/toast";
 
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -44,11 +48,15 @@ interface Product {
 ======================= */
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { success, error } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   /* =======================
      Fetch Single Product
@@ -80,6 +88,17 @@ export default function ProductDetail() {
           metaFeatures: data.metaFeatures || "",
           metaInfo: data.metaInfo || "",
         });
+
+        // Check if product is in wishlist
+        if (user) {
+          try {
+            const wishlist = await getUserWishlist();
+            const isWishlisted = wishlist.some((item: any) => item._id === data._id);
+            setIsInWishlist(isWishlisted);
+          } catch (err) {
+            console.warn("Failed to check wishlist:", err);
+          }
+        }
       } catch (err) {
         console.error("PRODUCT FETCH ERROR:", err);
       } finally {
@@ -446,15 +465,52 @@ export default function ProductDetail() {
                 {product.description}
               </p>
 
-              <AddToCartButton
-                product={{
-                  id: product._id,
-                  name: product.name,
-                  price: product.price,
-                  discount: product.discount,
-                  image: product.images?.[0],
-                }}
-              />
+              <div className="flex gap-3 items-center">
+                <AddToCartButton
+                  product={{
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    discount: product.discount,
+                    image: product.images?.[0],
+                  }}
+                />
+                {user && (
+                  <button
+                    onClick={async () => {
+                      if (wishlistLoading) return;
+                      setWishlistLoading(true);
+                      try {
+                        if (isInWishlist) {
+                          await removeFromWishlist(product._id);
+                          setIsInWishlist(false);
+                          success("Removed from wishlist");
+                        } else {
+                          await addToWishlist(product._id);
+                          setIsInWishlist(true);
+                          success("Added to wishlist");
+                        }
+                      } catch (err: any) {
+                        error(err.message || "Failed to update wishlist");
+                      } finally {
+                        setWishlistLoading(false);
+                      }
+                    }}
+                    disabled={wishlistLoading}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      isInWishlist 
+                        ? 'bg-white theme-text-primary theme-border-primary' 
+                        : 'border-gray-300 hover:border-gray-400 text-gray-600'
+                    } ${wishlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart 
+                      size={20} 
+                      className={isInWishlist ? 'fill-current' : ''}
+                    />
+                  </button>
+                )}
+              </div>
 
               <SocialShare
                 productName={product.name}

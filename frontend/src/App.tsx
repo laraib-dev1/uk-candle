@@ -8,6 +8,7 @@ import PrivacyPolicy from "./pages/shop/PrivacyPolicy";
 import TermsConditions from "./pages/shop/TermsConditions";
 import FAQs from "./pages/shop/FAQs";
 import ContactUs from "./pages/shop/ContactUs";
+import UserProfile from "./pages/user/UserProfile";
 import { CartProvider } from "./components/products/CartContext";
 import AdminCategories from "@/pages/admin/pages/CategoriesPage";
 import { AuthProvider } from "./hooks/useAuth";
@@ -26,6 +27,7 @@ const AdminAssets = React.lazy(() => import("./pages/admin/pages/AssetsPage"));
 const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPage"));
 const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
 const AdminQueries = React.lazy(() => import("./pages/admin/pages/QueriesPage"));
+const AdminReviews = React.lazy(() => import("./pages/admin/pages/ReviewsPage"));
 const SpConsolePage = React.lazy(() => import("./pages/admin/pages/SpConsolePage"));
 const DeveloperLayout = React.lazy(() => import("./pages/developer/layout/DeveloperLayout"));
 const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabsPage"));
@@ -72,6 +74,16 @@ export default function App() {
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/contact-us" element={<ContactUs />} />
 
+      {/* ---------- USER PROFILE ROUTE ---------- */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
                 {/* ---------- PROTECTED ADMIN ROUTES ---------- */}
               <Route
   path="/admin/*"
@@ -91,6 +103,7 @@ export default function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="queries" element={<AdminQueries />} />
+          <Route path="reviews" element={<AdminReviews />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="assets" element={<AdminAssets />} />

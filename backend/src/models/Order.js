@@ -12,6 +12,7 @@ const AddressSchema = new mongoose.Schema({
 });
 
 const OrderSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }, // Optional for backward compatibility
   customerName: { type: String, required: true },
   address: { type: AddressSchema, required: true },
   phoneNumber: { type: String, required: true },
@@ -26,6 +27,8 @@ const OrderSchema = new mongoose.Schema({
   bill: { type: Number, required: true },
   payment: { type: String, required: true },
   status: { type: String, default: "Pending" },
+  cancelledBy: { type: String, enum: ["user", "admin"], required: false }, // Track who cancelled
+  cancelledAt: { type: Date, required: false }, // When it was cancelled
   createdAt: { type: Date, default: Date.now },
 });
 

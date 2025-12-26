@@ -25,5 +25,7 @@ export interface Order {
   bill: number;
   payment: string;
   status: string;
+  cancelledBy?: "user" | "admin";
+  cancelledAt?: string;
   createdAt: string;
 }

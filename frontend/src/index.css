@@ -166,6 +166,14 @@ body {
     color: var(--theme-dark) !important;
   }
   
+  .hover\:theme-bg-light:hover {
+    background-color: var(--theme-light) !important;
+  }
+  
+  .hover\:theme-bg-primary:hover {
+    background-color: var(--theme-primary) !important;
+  }
+  
   .theme-border-primary {
     border-color: var(--theme-primary) !important;
   }

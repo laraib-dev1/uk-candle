@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "@/components/products/CartContext";
 import StripeCardForm from "./StripeCardForm";
 import { createOrder } from "@/api/order.api";
 import { useToast } from "@/components/ui/toast";
+import { getUserAddresses, addUserAddress } from "@/api/user.api";
+import { useAuth } from "@/hooks/useAuth";
 
 type CheckoutModalProps = {
   isOpen: boolean;
@@ -30,6 +32,7 @@ type CartItem = {
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const { cartItems, clearCart } = useCart();
   const { success, error } = useToast();
+  const { user } = useAuth();
   const total = cartItems.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
 
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
@@ -47,8 +50,88 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   });
 
   const [addressErrors, setAddressErrors] = useState<Partial<Record<keyof Address, string>>>({});
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
   const [savingAddress, setSavingAddress] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
+
+  // Load saved addresses from backend and localStorage when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const loadAddresses = async () => {
+        try {
+          const allAddresses: Address[] = [];
+          
+          // Try to load from backend first (if user is logged in)
+          if (user) {
+            try {
+              const backendAddresses = await getUserAddresses();
+              if (backendAddresses && Array.isArray(backendAddresses) && backendAddresses.length > 0) {
+                allAddresses.push(...backendAddresses);
+              }
+            } catch (err) {
+              console.warn("Failed to load addresses from backend:", err);
+            }
+          }
+          
+          // Also load from localStorage and merge (avoid duplicates)
+          const savedAddresses = localStorage.getItem("savedAddresses");
+          if (savedAddresses) {
+            try {
+              const parsedAddresses = JSON.parse(savedAddresses);
+              if (Array.isArray(parsedAddresses) && parsedAddresses.length > 0) {
+                // Add addresses from localStorage that don't already exist
+                parsedAddresses.forEach((localAddr: Address) => {
+                  const exists = allAddresses.some(
+                    (addr) =>
+                      addr.phone?.trim() === localAddr.phone?.trim() &&
+                      addr.line1?.trim() === localAddr.line1?.trim() &&
+                      addr.postalCode?.trim() === localAddr.postalCode?.trim()
+                  );
+                  if (!exists) {
+                    allAddresses.push(localAddr);
+                  }
+                });
+              }
+            } catch (err) {
+              console.error("Error loading saved addresses:", err);
+            }
+          }
+          
+          if (allAddresses.length > 0) {
+            setAddresses(allAddresses);
+            setSelectedAddressIndex(0);
+            setAddressType("existing");
+          }
+        } catch (err) {
+          console.error("Error loading addresses:", err);
+        }
+      };
+      loadAddresses();
+    }
+  }, [isOpen, user]);
+
+  // Save addresses to localStorage
+  const saveAddressesToStorage = (addressList: Address[]) => {
+    try {
+      localStorage.setItem("savedAddresses", JSON.stringify(addressList));
+    } catch (err) {
+      console.error("Error saving addresses to localStorage:", err);
+    }
+  };
+
+  // Check if address already exists (to avoid duplicates)
+  const addressExists = (address: Address, addressList: Address[]): boolean => {
+    if (!address || !addressList || addressList.length === 0) return false;
+    
+    return addressList.some(
+      (addr) =>
+        addr.phone?.trim() === address.phone?.trim() &&
+        addr.line1?.trim() === address.line1?.trim() &&
+        addr.postalCode?.trim() === address.postalCode?.trim() &&
+        addr.firstName?.trim() === address.firstName?.trim() &&
+        addr.lastName?.trim() === address.lastName?.trim()
+    );
+  };
 
   if (!isOpen) return null;
 
@@ -99,9 +182,54 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
     setSavingAddress(true);
     try {
+      // Try to save to backend first (if user is logged in)
+      if (user) {
+        try {
+          const updatedAddresses = await addUserAddress(newAddress);
+          setAddresses(updatedAddresses);
+          setSelectedAddressIndex(updatedAddresses.length - 1);
+          setAddressType("existing");
+          setAddressErrors({});
+          setNewAddress({
+            firstName: "",
+            lastName: "",
+            province: "",
+            city: "",
+            area: "",
+            postalCode: "",
+            phone: "",
+            line1: "",
+          });
+          success("Address saved successfully!");
+          return;
+        } catch (err) {
+          console.warn("Failed to save address to backend:", err);
+          // Fall through to localStorage save
+        }
+      }
+      
+      // Fallback to localStorage
       await new Promise(resolve => setTimeout(resolve, 500));
-      setAddresses(prev => [...prev, newAddress]);
-      setSelectedAddressIndex(addresses.length);
+      
+      // Check if address already exists
+      const updatedAddresses = [...addresses];
+      if (!addressExists(newAddress, updatedAddresses)) {
+        updatedAddresses.push(newAddress);
+        setAddresses(updatedAddresses);
+        setSelectedAddressIndex(updatedAddresses.length - 1);
+        // Save to localStorage
+        saveAddressesToStorage(updatedAddresses);
+      } else {
+        // Address already exists, just select it
+        const existingIndex = updatedAddresses.findIndex(
+          (addr) =>
+            addr.phone === newAddress.phone &&
+            addr.line1 === newAddress.line1 &&
+            addr.postalCode === newAddress.postalCode
+        );
+        setSelectedAddressIndex(existingIndex);
+      }
+      
       setAddressType("existing");
       setAddressErrors({});
 
@@ -187,20 +315,45 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                   name="addressType"
                   value="existing"
                   checked={addressType === "existing"}
-                  onChange={() => setAddressType("existing")}
+                  onChange={() => {
+                    setAddressType("existing");
+                    if (selectedAddressIndex === null && addresses.length > 0) {
+                      setSelectedAddressIndex(0);
+                    }
+                  }}
                 />
                 <span>Use existing address</span>
               </label>
             )}
           </div>
 
-          {addressType === "existing" && selectedAddressIndex !== null && (
-            <div className="space-y-2 mb-4 p-2 bg-gray-50 rounded">
-              <p>{addresses[selectedAddressIndex]?.firstName} {addresses[selectedAddressIndex]?.lastName}</p>
-              <p>{addresses[selectedAddressIndex]?.line1}, {addresses[selectedAddressIndex]?.area}</p>
-              <p>{addresses[selectedAddressIndex]?.city}, {addresses[selectedAddressIndex]?.province}</p>
-              <p>Postal: {addresses[selectedAddressIndex]?.postalCode}</p>
-              <p>Phone: {addresses[selectedAddressIndex]?.phone}</p>
+          {addressType === "existing" && addresses.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {addresses.map((addr, index) => (
+                <label
+                  key={index}
+                  className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                    selectedAddressIndex === index
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="selectedAddress"
+                    checked={selectedAddressIndex === index}
+                    onChange={() => setSelectedAddressIndex(index)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium">{addr.firstName} {addr.lastName}</p>
+                    <p className="text-sm text-gray-600">{addr.line1}{addr.area ? `, ${addr.area}` : ""}</p>
+                    <p className="text-sm text-gray-600">{addr.city}, {addr.province}</p>
+                    <p className="text-sm text-gray-600">Postal: {addr.postalCode}</p>
+                    <p className="text-sm text-gray-600">Phone: {addr.phone}</p>
+                  </div>
+                </label>
+              ))}
             </div>
           )}
 
@@ -332,53 +485,182 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
               />
               <span>Credit / Debit Card</span>
             </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={() => setPaymentMethod("cod")}
+              />
+              <span>Cash on Delivery</span>
+            </label>
           </div>
         </div>
 
         {/* Payment Section */}
         {paymentMethod === "card" && (
-   <StripeCardForm
-  amount={total > 0 ? total : 10}
-  onSuccess={async () => {
-    try {
-      // Use the address the user selected
-      const orderData = {
-        customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
-        address: {
-          firstName: addressToUse.firstName,
-          lastName: addressToUse.lastName,
-          line1: addressToUse.line1,
-          area: addressToUse.area,
-          city: addressToUse.city,
-          province: addressToUse.province,
-          postalCode: addressToUse.postalCode,
-          phone: addressToUse.phone,
-        },
-        phoneNumber: addressToUse.phone,
-        items: cartItems.map(i => ({
-          name: i.name,
-          quantity: i.quantity,
-          price: i.price,
-        })),
-        type: "Online",
-        bill: total > 0 ? total : 10,
-        payment: paymentMethod,
-        status: "Pending",
-      };
+          <StripeCardForm
+            amount={total > 0 ? total : 10}
+            onBeforePayment={async () => {
+              // Validate address before creating order
+              if (addressType === "new" && !validateAddress()) {
+                throw new Error("Please fill all required address fields correctly.");
+              }
 
-      await createOrder(orderData); // API call to backend
+              // Use the address the user selected
+              const orderData = {
+                customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
+                address: {
+                  firstName: addressToUse.firstName,
+                  lastName: addressToUse.lastName,
+                  line1: addressToUse.line1,
+                  area: addressToUse.area,
+                  city: addressToUse.city,
+                  province: addressToUse.province,
+                  postalCode: addressToUse.postalCode,
+                  phone: addressToUse.phone,
+                },
+                phoneNumber: addressToUse.phone,
+                items: cartItems.map(i => ({
+                  name: i.name,
+                  quantity: i.quantity,
+                  price: i.price,
+                })),
+                type: "Online",
+                bill: total > 0 ? total : 10,
+                payment: paymentMethod,
+                status: "Pending",
+              };
 
-      clearCart();
-      success("Order successfully placed!");
-      onClose();
-    } catch (err) {
-      console.error(err);
-      error("Failed to place order. Please try again.");
-    }
-  }}
-/>
+              // Create order first - this will throw if it fails
+              await createOrder(orderData);
+              success("Order created successfully!");
+            }}
+            onSuccess={async () => {
+              try {
+                // Only save address if it's a new address that wasn't already saved
+                // Check if address already exists in the addresses list
+                if (!addressExists(addressToUse, addresses)) {
+                  // Save the address used in the order to backend (if user is logged in) or localStorage
+                  if (user) {
+                    try {
+                      // Try to save to backend first
+                      const updatedAddresses = await addUserAddress(addressToUse);
+                      setAddresses(updatedAddresses);
+                    } catch (err) {
+                      console.warn("Failed to save address to backend:", err);
+                      // Fallback to localStorage
+                      const updatedAddresses = [...addresses];
+                      updatedAddresses.push(addressToUse);
+                      setAddresses(updatedAddresses);
+                      saveAddressesToStorage(updatedAddresses);
+                    }
+                  } else {
+                    // Save to localStorage for guests
+                    const updatedAddresses = [...addresses];
+                    updatedAddresses.push(addressToUse);
+                    setAddresses(updatedAddresses);
+                    saveAddressesToStorage(updatedAddresses);
+                  }
+                }
 
+                clearCart();
+                success("Order successfully placed!");
+                onClose();
+              } catch (err) {
+                console.error(err);
+                error("Failed to complete order. Please contact support.");
+              }
+            }}
+          />
+        )}
 
+        {/* Cash on Delivery Section */}
+        {paymentMethod === "cod" && (
+          <div className="mb-4 p-4 border rounded-lg bg-blue-50">
+            <p className="text-sm text-gray-700 mb-4">
+              You will pay cash when the order is delivered to your address.
+            </p>
+            <button
+              onClick={async () => {
+                // Validate address
+                if (addressType === "new" && !validateAddress()) {
+                  error("Please fill all required address fields correctly.");
+                  return;
+                }
+
+                if (placingOrder) return;
+
+                setPlacingOrder(true);
+                try {
+                  // Use the address the user selected
+                  const orderData = {
+                    customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
+                    address: {
+                      firstName: addressToUse.firstName,
+                      lastName: addressToUse.lastName,
+                      line1: addressToUse.line1,
+                      area: addressToUse.area,
+                      city: addressToUse.city,
+                      province: addressToUse.province,
+                      postalCode: addressToUse.postalCode,
+                      phone: addressToUse.phone,
+                    },
+                    phoneNumber: addressToUse.phone,
+                    items: cartItems.map(i => ({
+                      name: i.name,
+                      quantity: i.quantity,
+                      price: i.price,
+                    })),
+                    type: "Online",
+                    bill: total > 0 ? total : 10,
+                    payment: "Cash on Delivery",
+                    status: "Pending",
+                  };
+
+                  // Create order
+                  await createOrder(orderData);
+
+                  // Only save address if it's a new address that wasn't already saved
+                  if (!addressExists(addressToUse, addresses)) {
+                    // Save the address used in the order to backend (if user is logged in) or localStorage
+                    if (user) {
+                      try {
+                        const updatedAddresses = await addUserAddress(addressToUse);
+                        setAddresses(updatedAddresses);
+                      } catch (err) {
+                        console.warn("Failed to save address to backend:", err);
+                        const updatedAddresses = [...addresses];
+                        updatedAddresses.push(addressToUse);
+                        setAddresses(updatedAddresses);
+                        saveAddressesToStorage(updatedAddresses);
+                      }
+                    } else {
+                      const updatedAddresses = [...addresses];
+                      updatedAddresses.push(addressToUse);
+                      setAddresses(updatedAddresses);
+                      saveAddressesToStorage(updatedAddresses);
+                    }
+                  }
+
+                  clearCart();
+                  success("Order successfully placed! You will pay cash on delivery.");
+                  onClose();
+                } catch (err: any) {
+                  console.error(err);
+                  error(err.message || "Failed to place order. Please try again.");
+                } finally {
+                  setPlacingOrder(false);
+                }
+              }}
+              disabled={placingOrder}
+              className="w-full px-4 py-3 theme-button rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {placingOrder && <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />}
+              {placingOrder ? "Placing Order..." : "Place Order (Cash on Delivery)"}
+            </button>
+          </div>
         )}
       </div>
     </div>

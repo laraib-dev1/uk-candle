@@ -35,7 +35,7 @@ export default function OrdersTable() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState("");
-  const [selectedTab, setSelectedTab] = useState<"All" | "cancel" | "complete" | "Returned">("All");
+  const [selectedTab, setSelectedTab] = useState<"All" | "cancel" | "cancelled" | "complete" | "Returned">("All");
   const [modalOpen, setModalOpen] = useState(false);
 const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -92,7 +92,15 @@ useEffect(() => {
 
     // Filter by tab
     if (selectedTab !== "All") {
-      data = data.filter(order => order.status.toLowerCase() === selectedTab.toLowerCase());
+      if (selectedTab === "cancel" || selectedTab === "cancelled") {
+        // Handle both "cancel" and "cancelled" statuses
+        data = data.filter(order => 
+          order.status.toLowerCase() === "cancel" || 
+          order.status.toLowerCase() === "cancelled"
+        );
+      } else {
+        data = data.filter(order => order.status.toLowerCase() === selectedTab.toLowerCase());
+      }
     }
 
     // Filter by search
@@ -145,6 +153,7 @@ useEffect(() => {
         cell: (row: Order) => {
           const statusColors: Record<string, string> = {
             complete: "bg-green-100 text-green-800",
+            cancelled: "bg-red-100 text-red-800",
             cancel: "bg-red-100 text-red-800",
             returned: "bg-yellow-100 text-yellow-800",
             pending: "bg-blue-100 text-blue-800",
@@ -198,7 +207,7 @@ useEffect(() => {
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
         <h2 className="text-2xl font-semibold theme-heading mr-4">Orders</h2>
-        {["All", "cancel", "complete", "Returned"].map(tab => (
+        {["All", "cancel", "cancelled", "complete", "Returned"].map(tab => (
           <button
             key={tab}
             className={`px-4 py-1 rounded-full border ${

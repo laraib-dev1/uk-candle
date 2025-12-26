@@ -18,6 +18,8 @@ import footerRoutes from "./src/routes/footer.routes.js";
 import admintabRoutes from "./src/routes/admintab.routes.js";
 import webpageRoutes from "./src/routes/webpage.routes.js";
 import queryRoutes from "./src/routes/query.routes.js";
+import userRoutes from "./src/routes/user.routes.js";
+import reviewRoutes from "./src/routes/review.routes.js";
 
 dotenv.config();
 
@@ -80,6 +82,8 @@ const startServer = async () => {
     app.use("/api/admintabs", admintabRoutes);
     app.use("/api/webpages", webpageRoutes);
     app.use("/api/queries", queryRoutes);
+    app.use("/api/user", userRoutes);
+    app.use("/api/reviews", reviewRoutes);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

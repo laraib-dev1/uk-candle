@@ -9,6 +9,11 @@ export const createOrder = async (orderData: any) => {
   return res.data;
 };
 
+export const getOrderById = async (orderId: string) => {
+  const res = await API.get(`/orders/${orderId}`);
+  return res.data;
+};
+
 export const updateOrderStatus = async (orderId: string, status: string) => {
   const res = await API.patch(`/orders/${orderId}/status`, { status });
   return res.data;

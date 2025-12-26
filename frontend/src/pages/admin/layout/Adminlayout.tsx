@@ -20,6 +20,7 @@ import {
   FolderOpen,
   Palette,
   Sliders,
+  Star,
 } from "lucide-react";
 import { getMe } from "@/api/auth.api"; // make sure path is correct
 import { getEnabledAdminTabs } from "@/api/admintab.api";
@@ -108,6 +109,7 @@ export default function AdminLayout() {
             { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
             { label: "Orders", icon: ShoppingBag, path: "/admin/orders" },
             { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
+            { label: "Reviews", icon: Star, path: "/admin/reviews" },
             { label: "Products", icon: Package, path: "/admin/products" },
             { label: "Categories", icon: FolderOpen, path: "/admin/categories" },
             { label: "Assets Panel", icon: Palette, path: "/admin/assets" },

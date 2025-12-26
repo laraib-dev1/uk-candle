@@ -9,7 +9,15 @@ import React, { useState } from "react";
 import { createPaymentIntent } from "@/api/payment.api";
 import { useToast } from "@/components/ui/toast";
 
-const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () => void }) => {
+const StripeCardForm = ({ 
+  amount, 
+  onSuccess, 
+  onBeforePayment 
+}: { 
+  amount: number; 
+  onSuccess: () => void;
+  onBeforePayment?: () => Promise<void>;
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const { success, error } = useToast();
@@ -20,23 +28,34 @@ const StripeCardForm = ({ amount, onSuccess }: { amount: number; onSuccess: () =
 
     setLoading(true);
 
-    const res = await createPaymentIntent(Math.round(amount * 100));
-    const clientSecret = res.clientSecret;
+    try {
+      // First, create the order (if callback provided)
+      if (onBeforePayment) {
+        await onBeforePayment();
+      }
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardNumberElement)!,
-      },
-    });
+      // Then, process payment
+      const res = await createPaymentIntent(Math.round(amount * 100));
+      const clientSecret = res.clientSecret;
 
-    if (result.error) {
-      error(result.error.message || "Payment failed");
-    } else if (result.paymentIntent.status === "succeeded") {
-      success("Payment Successful!");
-      onSuccess();
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardNumberElement)!,
+        },
+      });
+
+      if (result.error) {
+        error(result.error.message || "Payment failed");
+      } else if (result.paymentIntent.status === "succeeded") {
+        success("Payment Successful!");
+        onSuccess();
+      }
+    } catch (err: any) {
+      console.error(err);
+      error(err.message || "Failed to process order. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

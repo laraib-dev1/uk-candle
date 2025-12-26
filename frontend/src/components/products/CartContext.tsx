@@ -27,16 +27,51 @@ export const useCart = () => {
   return context;
 };
 
+// Get user-specific cart key
+const getCartKey = (): string => {
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      return `cartItems_${user.id}`;
+    }
+  } catch (err) {
+    console.warn("Failed to get user ID for cart", err);
+  }
+  return "cartItems_guest"; // Fallback for guests
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const stored = localStorage.getItem("cartItems"); // ✅ same key used for load/save
+    const cartKey = getCartKey();
+    const stored = localStorage.getItem(cartKey);
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Save cartItems to localStorage whenever it changes
+  // Save cartItems to localStorage whenever it changes (user-specific)
   useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    const cartKey = getCartKey();
+    localStorage.setItem(cartKey, JSON.stringify(cartItems));
   }, [cartItems]);
+
+  // Reload cart when user changes (login/logout)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const cartKey = getCartKey();
+      const stored = localStorage.getItem(cartKey);
+      setCartItems(stored ? JSON.parse(stored) : []);
+    };
+
+    // Listen for user changes
+    window.addEventListener("storage", handleStorageChange);
+    // Also check on focus (in case user logged in/out in another tab)
+    window.addEventListener("focus", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleStorageChange);
+    };
+  }, []);
 
   const addToCart = (item: CartItem) => {
     setCartItems(prev => {

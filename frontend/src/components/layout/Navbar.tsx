@@ -4,7 +4,7 @@ import Button from "../ui/buttons/Button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
-import { Menu, ShoppingCart, LogOut } from "lucide-react";
+import { Menu, ShoppingCart, LogOut, User } from "lucide-react";
 import { getCompany } from "@/api/company.api";
 import * as LucideIcons from "lucide-react";
 
@@ -165,10 +165,19 @@ let user = null;
               {/* Dropdown */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
-                  <div className="p-4 text-black">
+                  <div className="p-4 text-black border-b">
                     <p className="font-semibold">{user.name}</p>
                     <p className="text-sm text-gray-500">{user.email}</p>
                   </div>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      navigate("/profile");
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-black"
+                  >
+                    <User size={16} /> Profile
+                  </button>
                   <button
                     onClick={() => {
                       localStorage.removeItem("user");
