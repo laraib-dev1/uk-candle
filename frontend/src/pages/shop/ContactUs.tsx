@@ -34,16 +34,17 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-20">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Title */}
         <h1 className="text-4xl md:text-5xl font-bold mb-8" style={{ color: "var(--theme-primary)" }}>
           Contact Us
         </h1>
 
         {/* Main Content Card */}
-        <div className="bg-[#E8D4C4] rounded-xl p-8 md:p-12">
+        <div className="rounded-xl p-8 md:p-12" style={{ backgroundColor: "var(--theme-accent)" }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Section - Contact Form */}
             <div>
@@ -129,11 +130,13 @@ export default function ContactUs() {
             </div>
           </div>
         </div>
+        </div>
       </main>
       <Footer />
     </div>
   );
 }
+
 
 
 

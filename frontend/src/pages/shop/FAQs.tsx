@@ -11,11 +11,13 @@ type FAQItem = {
 
 type FAQContent = {
   faqs?: FAQItem[];
+  lastUpdated?: string;
 };
 
 export default function FAQs() {
 const [content, setContent] = useState<FAQContent>({
   faqs: [],
+  lastUpdated: new Date().toISOString(),
 });
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0); // First FAQ expanded by default
@@ -26,6 +28,7 @@ const [content, setContent] = useState<FAQContent>({
         const data = await getContentByType("faqs");
         setContent({
   faqs: data.faqs ?? [],
+  lastUpdated: data.lastUpdated,
 });
         // Expand first FAQ if available
         if (data.faqs && data.faqs.length > 0) {
@@ -41,6 +44,13 @@ const [content, setContent] = useState<FAQContent>({
   }, []);
 
   if (loading) return <PageLoader message="Loading FAQs..." />;
+
+  // Format date
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "15 Nov 2023";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  };
 
   const toggleFAQ = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -77,7 +87,7 @@ const [content, setContent] = useState<FAQContent>({
                   {/* Question Header */}
                   <button
                     onClick={() => toggleFAQ(index)}
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition"
+                    className="w-full flex items-center justify-between px-6 py-3 text-left hover:bg-gray-50 transition"
                   >
                     <span className="text-lg font-semibold text-gray-900 pr-4">
                       {faq.question || "Question Here Lorem ipsum dolor sit amet."}
@@ -105,6 +115,13 @@ const [content, setContent] = useState<FAQContent>({
                 No FAQs available yet. Please check back later.
               </p>
             )}
+          </div>
+
+          {/* Last Updated */}
+          <div className="flex justify-end mt-12">
+            <div className="text-sm text-gray-700">
+              Last updated {formatDate(content.lastUpdated)}
+            </div>
           </div>
         </div>
       </main>

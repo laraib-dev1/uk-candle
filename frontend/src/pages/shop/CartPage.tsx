@@ -145,19 +145,21 @@ const rightContent = (
 
   return (
     <>
-      <Navbar />
+      <div className="min-h-screen bg-white flex flex-col">
+        <Navbar />
 
-      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <main className="flex-1 py-20">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-black">
+            {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
+            <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
 
-        {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
+            <TwoColumnLayout left={leftContent} right={rightContent} />
+            <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+          </div>
+        </main>
 
-        <TwoColumnLayout left={leftContent} right={rightContent} />
-        <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
-
+        <Footer />
       </div>
-
-      <Footer />
     </>
   );
 };

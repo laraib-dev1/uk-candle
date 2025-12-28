@@ -94,9 +94,9 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
         </div>
 
         {/* Content Section - Takes lower 1/3 of card */}
-        <div className="flex-1 p-4 flex flex-col justify-start bg-slate-100 rounded-b-lg relative">
+        <div className="px-4 py-2 flex flex-col bg-white rounded-b-lg relative">
           {/* Item Name */}
-          <h3 className="text-sm font-medium text-gray-800 mb-2 line-clamp-2">{name}</h3>
+          <h3 className="text-sm font-medium text-gray-800 mb-1 line-clamp-2">{name}</h3>
           
           {/* Pricing Information with Discount Badge */}
           <div className="flex items-baseline gap-2 justify-between">

@@ -162,6 +162,14 @@ const Shop = () => {
   const handleLoadMore = () => setLimit((prev) => prev + 4);
   const displayedProducts = products.slice(0, limit);
 
+  // Calculate product count for each category
+  const getCategoryProductCount = (categoryName: string) => {
+    if (categoryName === "all") {
+      return allProducts.length;
+    }
+    return allProducts.filter((p) => p.categoryName === categoryName).length;
+  };
+
   if (initialLoad && loading) {
     return <PageLoader message="Loading products..." />;
   }
@@ -188,7 +196,10 @@ const Shop = () => {
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-300">
                 <SelectItem value="all" className="text-black hover:bg-gray-100 focus:bg-gray-100">
-                  All Categories
+                  <div className="grid grid-cols-[1fr_auto] items-center w-full pr-6 gap-4">
+                    <span className="truncate">All Categories</span>
+                    <span className="text-gray-500 text-sm text-right">({getCategoryProductCount("all")})</span>
+                  </div>
                 </SelectItem>
                 {categories.map((category) => (
                   <SelectItem 
@@ -196,7 +207,10 @@ const Shop = () => {
                     value={category.name}
                     className="text-black hover:bg-gray-100 focus:bg-gray-100"
                   >
-                    {category.name}
+                    <div className="grid grid-cols-[1fr_auto] items-center w-full pr-6 gap-4">
+                      <span className="truncate">{category.name}</span>
+                      <span className="text-gray-500 text-sm text-right">({getCategoryProductCount(category.name)})</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

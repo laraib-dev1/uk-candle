@@ -43,6 +43,12 @@ export interface Product {
   metaInfo?: string;
   video1?: string;
   video2?: string;
+  // section enable flags
+  enableImages?: boolean;
+  enableDiscount?: boolean;
+  enableMetaFeatures?: boolean;
+  enableMetaInfo?: boolean;
+  enableVideos?: boolean;
 }
 
 interface ProductModalProps {
@@ -99,11 +105,11 @@ const [removingImages, setRemovingImages] = useState<Record<string, boolean>>({}
 const [currentImageKey, setCurrentImageKey] =
   useState<`image${1|2|3|4|5|6}` | null>(null);
 const [toggles, setToggles] = useState({
-  images: true,
-  discount: true,
-  metaFeatures: true,
-  metaInfo: true,
-  videos: true,
+  images: data?.enableImages !== false,
+  discount: data?.enableDiscount !== false,
+  metaFeatures: data?.enableMetaFeatures !== false,
+  metaInfo: data?.enableMetaInfo !== false,
+  videos: data?.enableVideos !== false,
 });
 
 const toggleSection = (name: keyof typeof toggles) => {
@@ -129,6 +135,11 @@ const toggleSection = (name: keyof typeof toggles) => {
     video1: data?.video1 || "",
     video2: data?.video2 || "",
     imageFiles: {},
+    enableImages: data?.enableImages !== false,
+    enableDiscount: data?.enableDiscount !== false,
+    enableMetaFeatures: data?.enableMetaFeatures !== false,
+    enableMetaInfo: data?.enableMetaInfo !== false,
+    enableVideos: data?.enableVideos !== false,
   });
 type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6";
 
@@ -154,6 +165,18 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
       video1: data?.video1 || "",
       video2: data?.video2 || "",
       imageFiles: {},
+      enableImages: data?.enableImages !== false,
+      enableDiscount: data?.enableDiscount !== false,
+      enableMetaFeatures: data?.enableMetaFeatures !== false,
+      enableMetaInfo: data?.enableMetaInfo !== false,
+      enableVideos: data?.enableVideos !== false,
+    });
+    setToggles({
+      images: data?.enableImages !== false,
+      discount: data?.enableDiscount !== false,
+      metaFeatures: data?.enableMetaFeatures !== false,
+      metaInfo: data?.enableMetaInfo !== false,
+      videos: data?.enableVideos !== false,
     });
     setError({});
   }, [data, open]);
@@ -322,8 +345,8 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
     
     setIsSubmitting(true);
 
-    // Ensure primary image exists in add mode
-    if (mode === "add") {
+    // Ensure primary image exists in add mode (only if images section is enabled)
+    if (mode === "add" && toggles.images) {
       const hasFile1 = !!(form.imageFiles && (form.imageFiles as any).image1);
       const hasUrl1 = !!form.image1;
       if (!hasFile1 && !hasUrl1) {
@@ -333,11 +356,16 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
       }
     }
 
-    // Final payload
+    // Final payload - include toggle states
     const payload: ProductForm = {
       ...form,
       category: categoryId,       // string ID
       metaInfo: form.metaInfo,    // HTML string
+      enableImages: toggles.images,
+      enableDiscount: toggles.discount,
+      enableMetaFeatures: toggles.metaFeatures,
+      enableMetaInfo: toggles.metaInfo,
+      enableVideos: toggles.videos,
     };
 
     console.log("Sending payload:", payload);
@@ -474,18 +502,18 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
             <div className="flex gap-3 mt-2">
               <Input
                 type="number"
-                value={form.discount}
+                value={form.discount || ""}
                 disabled={isView}
-                onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })}
+                onChange={(e) => setForm({ ...form, discount: Number(e.target.value) || 0 })}
                 className="flex-1"
                 placeholder="%"
               />
               <Input
-                value={form.metaInfo || ""}
-                disabled={isView}
-                onChange={(e) => setForm({ ...form, metaInfo: e.target.value })}
+                value={form.price && form.discount ? (form.price * (1 - (form.discount || 0) / 100)).toFixed(2) : ""}
+                disabled={true}
                 placeholder="Sale Rate"
                 className="w-48"
+                readOnly
               />
             </div>
             )}

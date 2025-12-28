@@ -68,7 +68,7 @@ export const createProduct = async (req) => {
     if (Array.isArray(req.body[key])) req.body[key] = req.body[key][0];
   });
 
-  const { name, description, category, price, currency, status, discount, metaFeatures, metaInfo, video1, video2 } = req.body;
+  const { name, description, category, price, currency, status, discount, metaFeatures, metaInfo, video1, video2, enableImages, enableDiscount, enableMetaFeatures, enableMetaInfo, enableVideos } = req.body;
   const files = req.files || {};
 
   let imageUrls = ["/product.png", "/product.png", "/product.png", "/product.png", "/product.png", "/product.png"];
@@ -103,6 +103,11 @@ export const createProduct = async (req) => {
     metaInfo: metaInfo || "",
     video1: video1 || "",
     video2: video2 || "",
+    enableImages: enableImages !== undefined ? enableImages : true,
+    enableDiscount: enableDiscount !== undefined ? enableDiscount : true,
+    enableMetaFeatures: enableMetaFeatures !== undefined ? enableMetaFeatures : true,
+    enableMetaInfo: enableMetaInfo !== undefined ? enableMetaInfo : true,
+    enableVideos: enableVideos !== undefined ? enableVideos : true,
   });
 
   return product;

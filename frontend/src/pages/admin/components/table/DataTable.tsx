@@ -41,7 +41,16 @@ export default function DataTable<T extends { id?: string }>({
 
   const defaultStyles: TableStyles = {
     table: { style: { width: "100%", tableLayout: "auto" } },
-    headCells: { style: { paddingLeft: 8, paddingRight: 8, fontSize: "0.875rem", fontWeight: 600 } },
+    headCells: { 
+      style: { 
+        paddingLeft: 8, 
+        paddingRight: 8, 
+        fontSize: "0.875rem", 
+        fontWeight: 600,
+        backgroundColor: "var(--theme-light)",
+        color: "#ffffff"
+      } 
+    },
     cells: {
       style: {
         paddingLeft: 8,
@@ -56,7 +65,7 @@ export default function DataTable<T extends { id?: string }>({
   };
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto rounded-lg">
       <DataTableComponent
         columns={enhancedColumns}
         data={data}

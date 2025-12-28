@@ -130,6 +130,19 @@ body {
   overflow: visible !important;
 }
 
+/* Rounded corners for react-data-table-component headers */
+.rdt_Table .rdt_TableHead .rdt_TableHeadRow .rdt_TableCol:first-child {
+  border-top-left-radius: 0.5rem;
+}
+
+.rdt_Table .rdt_TableHead .rdt_TableHeadRow .rdt_TableCol:last-child {
+  border-top-right-radius: 0.5rem;
+}
+
+/* Active tab background color */
+button[data-state="active"] {
+  background-color: var(--theme-primary) !important;
+}
 
 /* Ensure Radix dropdown is visible */
 [data-radix-dropdown-menu-content] {

@@ -71,17 +71,19 @@ const AssetsPage: React.FC = () => {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
 
   // Content pages state (Privacy, Terms, FAQs)
-  const [privacyContent, setPrivacyContent] = useState({ title: "", subTitle: "", description: "", loading: false });
-  const [termsContent, setTermsContent] = useState({ title: "", subTitle: "", description: "", loading: false });
-  const [faqsContent, setFaqsContent] = useState<{ faqs: FAQ[]; loading: boolean }>({ faqs: [], loading: false });
+  const [privacyContent, setPrivacyContent] = useState({ title: "", subTitle: "", description: "", lastUpdated: "", loading: false });
+  const [termsContent, setTermsContent] = useState({ title: "", subTitle: "", description: "", lastUpdated: "", loading: false });
+  const [faqsContent, setFaqsContent] = useState<{ faqs: FAQ[]; lastUpdated: string; loading: boolean }>({ faqs: [], lastUpdated: "", loading: false });
   const [addingFAQ, setAddingFAQ] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   
   // Edit mode states
   const [isPrivacyEditing, setIsPrivacyEditing] = useState(false);
   const [isTermsEditing, setIsTermsEditing] = useState(false);
+  const [isFaqsEditing, setIsFaqsEditing] = useState(false);
   const [privacyOriginalContent, setPrivacyOriginalContent] = useState({ title: "", subTitle: "", description: "" });
   const [termsOriginalContent, setTermsOriginalContent] = useState({ title: "", subTitle: "", description: "" });
+  const [faqsOriginalContent, setFaqsOriginalContent] = useState<FAQ[]>([]);
 
   // -------- 1. Load existing banners and content from backend on mount --------
   useEffect(() => {
@@ -116,6 +118,7 @@ const AssetsPage: React.FC = () => {
             title: privacy.title || "",
             subTitle: privacy.subTitle || "",
             description: privacy.description || "",
+            lastUpdated: privacy.lastUpdated || "",
             loading: false
           });
         }
@@ -125,6 +128,7 @@ const AssetsPage: React.FC = () => {
             title: terms.title || "",
             subTitle: terms.subTitle || "",
             description: terms.description || "",
+            lastUpdated: terms.lastUpdated || "",
             loading: false
           });
         }
@@ -132,6 +136,7 @@ const AssetsPage: React.FC = () => {
         if (faqs) {
           setFaqsContent({
             faqs: faqs.faqs || [],
+            lastUpdated: faqs.lastUpdated || "",
             loading: false
           });
         }
@@ -234,6 +239,13 @@ const AssetsPage: React.FC = () => {
     }
   };
 
+  // Format date helper
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Not set";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  };
+
   // Privacy Policy handlers
   const handleEditPrivacy = () => {
     setPrivacyOriginalContent({
@@ -270,6 +282,7 @@ const AssetsPage: React.FC = () => {
           title: privacy.title || "",
           subTitle: privacy.subTitle || "",
           description: privacy.description || "",
+          lastUpdated: privacy.lastUpdated || "",
           loading: false
         });
       }
@@ -318,6 +331,7 @@ const AssetsPage: React.FC = () => {
           title: terms.title || "",
           subTitle: terms.subTitle || "",
           description: terms.description || "",
+          lastUpdated: terms.lastUpdated || "",
           loading: false
         });
       }
@@ -330,7 +344,20 @@ const AssetsPage: React.FC = () => {
     }
   };
 
-  // Save FAQs
+  // FAQs handlers
+  const handleEditFAQs = () => {
+    setFaqsOriginalContent([...faqsContent.faqs]);
+    setIsFaqsEditing(true);
+  };
+
+  const handleDiscardFAQs = () => {
+    setFaqsContent({
+      ...faqsContent,
+      faqs: [...faqsOriginalContent]
+    });
+    setIsFaqsEditing(false);
+  };
+
   const handleSaveFAQs = async () => {
     try {
       setFaqsContent(prev => ({ ...prev, loading: true }));
@@ -340,7 +367,17 @@ const AssetsPage: React.FC = () => {
         description: "",
         faqs: faqsContent.faqs
       });
-      setFaqsContent(prev => ({ ...prev, loading: false }));
+      // Reload content to get the latest data including lastUpdated
+      const contents = await getAllContent();
+      const faqs = contents.find(c => c.type === "faqs");
+      if (faqs) {
+        setFaqsContent({
+          faqs: faqs.faqs || [],
+          lastUpdated: faqs.lastUpdated || "",
+          loading: false
+        });
+      }
+      setIsFaqsEditing(false);
       success("FAQs updated successfully!");
     } catch (err: any) {
       console.error("Failed to save FAQs", err);
@@ -594,6 +631,11 @@ const AssetsPage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: privacyContent.description || "<p>placeholder placeholder Desc Description Desc Description...</p>" }}
                 />
               </div>
+              <div className="flex justify-end">
+                <div className="text-sm text-gray-700">
+                  Last updated {formatDate(privacyContent.lastUpdated)}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="bg-white border rounded-lg p-6 space-y-4">
@@ -677,6 +719,11 @@ const AssetsPage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: termsContent.description || "<p>placeholder placeholder Desc Description Desc Description...</p>" }}
                 />
               </div>
+              <div className="flex justify-end">
+                <div className="text-sm text-gray-700">
+                  Last updated {formatDate(termsContent.lastUpdated)}
+                </div>
+              </div>
             </div>
           ) : (
             <div className="bg-white border rounded-lg p-6 space-y-4">
@@ -723,23 +770,61 @@ const AssetsPage: React.FC = () => {
         <TabsContent value="faqs" className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Frequently Asked Questions</h2>
-            <div className="flex gap-2">
-              <Button variant="outline"
-              className="text-black" onClick={() => setFaqsContent({ faqs: [], loading: false })}>
-                Discard
+            {!isFaqsEditing ? (
+              <Button variant="outline" className="text-black" onClick={handleEditFAQs}>
+                Edit
               </Button>
-              <Button 
-                className="theme-button" 
-                onClick={handleSaveFAQs}
-                loading={faqsContent.loading}
-              >
-                Update
-              </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button variant="outline" className="text-black" onClick={handleDiscardFAQs}>
+                  Discard
+                </Button>
+                <Button 
+                  className="theme-button" 
+                  onClick={handleSaveFAQs}
+                  loading={faqsContent.loading}
+                >
+                  Update
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white border rounded-lg p-6 space-y-4">
-            {faqsContent.faqs.map((faq, index) => (
+          {!isFaqsEditing ? (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              {faqsContent.faqs.length > 0 ? (
+                faqsContent.faqs.map((faq, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">FAQ #{index + 1}</span>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Question</label>
+                      <div className="text-black py-2">{faq.question || "placeholder"}</div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">Answer</label>
+                      <div 
+                        className="content-page text-gray-700 py-2"
+                        dangerouslySetInnerHTML={{ __html: faq.answer || "<p>placeholder</p>" }}
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No FAQs added yet.
+                </p>
+              )}
+              <div className="flex justify-end">
+                <div className="text-sm text-gray-700">
+                  Last updated {formatDate(faqsContent.lastUpdated)}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border rounded-lg p-6 space-y-4">
+              {faqsContent.faqs.map((faq, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">FAQ #{index + 1}</span>
@@ -779,16 +864,17 @@ const AssetsPage: React.FC = () => {
               </div>
             ))}
 
-            <Button variant="outline" onClick={handleAddFAQ} className="w-full text-black" loading={addingFAQ}>
-              + Add FAQ
-            </Button>
+              <Button variant="outline" onClick={handleAddFAQ} className="w-full text-black" loading={addingFAQ}>
+                + Add FAQ
+              </Button>
 
-            {faqsContent.faqs.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No FAQs added yet. Click "+ Add FAQ" to create one.
-              </p>
-            )}
-          </div>
+              {faqsContent.faqs.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No FAQs added yet. Click "+ Add FAQ" to create one.
+                </p>
+              )}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

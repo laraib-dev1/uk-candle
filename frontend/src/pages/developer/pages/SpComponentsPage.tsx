@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, X } from "lucide-react";
+import { Check, X, ShoppingCart, User, Menu, MoreVertical, Eye, Edit, Trash2, Settings, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -8,6 +8,7 @@ export default function SpComponentsPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [visibleSections, setVisibleSections] = useState({
     buttons: true,
+    iconButtons: true,
     inputs: true,
     pickers: true,
     itemCard: true,
@@ -55,6 +56,9 @@ export default function SpComponentsPage() {
           <div className="bg-white border-2 border-blue-200 rounded-lg p-6 space-y-8">
             {/* Buttons Section */}
             <ButtonsShowcase visible={visibleSections.buttons} onToggle={(val) => setVisibleSections({...visibleSections, buttons: val})} />
+            
+            {/* Icon Buttons Section */}
+            <IconButtonsShowcase visible={visibleSections.iconButtons} onToggle={(val) => setVisibleSections({...visibleSections, iconButtons: val})} />
 
             {/* Inputs Section */}
             <InputsShowcase visible={visibleSections.inputs} onToggle={(val) => setVisibleSections({...visibleSections, inputs: val})} />
@@ -84,8 +88,9 @@ export default function SpComponentsPage() {
 
         {/* Buttons Tab */}
         <TabsContent value="buttons" className="mt-6">
-          <div className="bg-white border-2 border-blue-200 rounded-lg p-6">
+          <div className="bg-white border-2 border-blue-200 rounded-lg p-6 space-y-8">
             <ButtonsShowcase visible={visibleSections.buttons} onToggle={(val) => setVisibleSections({...visibleSections, buttons: val})} />
+            <IconButtonsShowcase visible={visibleSections.iconButtons} onToggle={(val) => setVisibleSections({...visibleSections, iconButtons: val})} />
           </div>
         </TabsContent>
 
@@ -124,6 +129,168 @@ export default function SpComponentsPage() {
           </div>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+// Icon Buttons Showcase Component
+function IconButtonsShowcase({ visible, onToggle }: { visible: boolean; onToggle: (val: boolean) => void }) {
+  const [isHovered, setIsHovered] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Icon Buttons</h2>
+          <p className="text-sm text-gray-500">Icon-only buttons used in the project (Cart, User, Menu, Actions, etc.)</p>
+        </div>
+        <input
+          type="checkbox"
+          checked={visible}
+          onChange={(e) => onToggle(e.target.checked)}
+          className="w-5 h-5 cursor-pointer"
+        />
+      </div>
+
+      {visible && (
+        <div className="space-y-6">
+          {/* Navigation Icon Buttons */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Navigation Icons</h3>
+            <div className="flex flex-wrap gap-4">
+              {/* Shopping Cart Icon */}
+              <button
+                className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onMouseEnter={() => setIsHovered("cart")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Shopping Cart"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {isHovered === "cart" && (
+                  <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    3
+                  </span>
+                )}
+              </button>
+
+              {/* User Profile Icon */}
+              <button
+                className="p-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onMouseEnter={() => setIsHovered("user")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="User Profile"
+              >
+                <User className="w-6 h-6" />
+              </button>
+
+              {/* Menu Icon */}
+              <button
+                className="p-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onMouseEnter={() => setIsHovered("menu")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Menu"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+
+              {/* Search Icon */}
+              <button
+                className="p-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onMouseEnter={() => setIsHovered("search")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Search"
+              >
+                <Search className="w-6 h-6" />
+              </button>
+
+              {/* Settings Icon */}
+              <button
+                className="p-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onMouseEnter={() => setIsHovered("settings")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Settings"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Action Icon Buttons (Table Actions) */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Action Icons (Table Actions)</h3>
+            <div className="flex flex-wrap gap-4">
+              {/* More Vertical (3-dot menu) */}
+              <button
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded"
+                onMouseEnter={() => setIsHovered("more")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="More Options"
+              >
+                <MoreVertical size={16} />
+              </button>
+
+              {/* View Icon */}
+              <button
+                className="p-1.5 text-gray-600 hover:text-blue-600 transition-colors rounded hover:bg-blue-50"
+                onMouseEnter={() => setIsHovered("view")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="View"
+              >
+                <Eye size={14} />
+              </button>
+
+              {/* Edit Icon */}
+              <button
+                className="p-1.5 text-gray-600 hover:text-green-600 transition-colors rounded hover:bg-green-50"
+                onMouseEnter={() => setIsHovered("edit")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Edit"
+              >
+                <Edit size={14} />
+              </button>
+
+              {/* Delete Icon */}
+              <button
+                className="p-1.5 text-gray-600 hover:text-red-600 transition-colors rounded hover:bg-red-50"
+                onMouseEnter={() => setIsHovered("delete")}
+                onMouseLeave={() => setIsHovered(null)}
+                title="Delete"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Theme Icon Buttons */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Theme Icon Buttons</h3>
+            <div className="flex flex-wrap gap-4">
+              {/* Primary Theme Icon Button */}
+              <button
+                className="p-2 text-white rounded-lg transition-colors"
+                style={{ backgroundColor: "var(--theme-primary)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                }}
+                title="Theme Primary"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+
+              {/* Outline Icon Button */}
+              <button
+                className="p-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Outline"
+              >
+                <User className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

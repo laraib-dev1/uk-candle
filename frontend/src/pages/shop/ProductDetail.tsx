@@ -40,6 +40,11 @@ interface Product {
   video1?: string;
   video2?: string;
   stock?: number;
+  enableImages?: boolean;
+  enableDiscount?: boolean;
+  enableMetaFeatures?: boolean;
+  enableMetaInfo?: boolean;
+  enableVideos?: boolean;
   [key: string]: any;
 }
 
@@ -435,7 +440,7 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="bg-white text-black min-h-screen">
+      <div className="bg-white py-20 text-black min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-10">
           {/* Product Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -458,7 +463,7 @@ export default function ProductDetail() {
                 <span className="text-2xl font-bold">
                   {discountedPrice} Rs
                 </span>
-                {product.discount && (
+                {product.enableDiscount !== false && product.discount && (
                   <span className="line-through text-gray-400">
                     {product.price} Rs
                   </span>
@@ -526,46 +531,47 @@ export default function ProductDetail() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="description">
+          {((product.enableMetaFeatures !== false && product.metaFeatures) || (product.enableMetaInfo !== false && product.metaInfo) || (product.enableVideos !== false && (product.video1 || product.video2))) && (
+          <Tabs defaultValue={((product.enableMetaFeatures !== false && product.metaFeatures) || (product.enableMetaInfo !== false && product.metaInfo)) ? "description" : "videos"}>
             <TabsList className="text-black">
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="videos">Demo Video</TabsTrigger>
+              {(product.enableMetaFeatures !== false || product.enableMetaInfo !== false) && (
+                <TabsTrigger value="description">Description</TabsTrigger>
+              )}
+              {product.enableVideos !== false && (product.video1 || product.video2) && (
+                <TabsTrigger value="videos">Demo Video</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="description" className="bg-transparent">
               <div className="grid md:grid-cols-2 gap-6 bg-transparent">
-                <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
-                  {product.metaFeatures ? (
+                {product.enableMetaFeatures !== false && product.metaFeatures && (
+                  <div className="bg-transparent meta-features-container">
+                    <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
                     <div
                       className="max-w-none meta-info-content text-black"
                       dangerouslySetInnerHTML={{
                         __html: cleanHtmlContent(product.metaFeatures),
                       }}
                     />
-                  ) : (
-                    <p className="text-gray-500 text-sm bg-transparent">No features listed</p>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
-                  {product.metaInfo ? (
+                {product.enableMetaInfo !== false && product.metaInfo && (
+                  <div className="bg-transparent meta-features-container">
+                    <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
                     <div
                       className="max-w-none meta-info-content text-black"
                       dangerouslySetInnerHTML={{
                         __html: cleanHtmlContent(product.metaInfo),
                       }}
                     />
-                  ) : (
-                    <p className="text-gray-500 text-sm bg-transparent">No additional information available</p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="videos" className="bg-transparent">
-              {product.video1 ? (
+              {product.enableVideos !== false && product.video1 ? (
                 <iframe
                   className="w-full h-80"
                   src={product.video1.replace(
@@ -574,11 +580,12 @@ export default function ProductDetail() {
                   )}
                   allowFullScreen
                 />
-              ) : (
+              ) : product.enableVideos !== false ? (
                 <p>No video available</p>
-              )}
+              ) : null}
             </TabsContent>
           </Tabs>
+          )}
 
           {/* Services */}
           <div className="grid md:grid-cols-4 gap-6 my-12">

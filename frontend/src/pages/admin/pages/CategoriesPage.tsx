@@ -187,7 +187,7 @@ const getColumns = () => {
       </div>
 
       {/* -------- Table -------- */}
-      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
+      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-4">
             <DataTableSkeleton rows={8} />

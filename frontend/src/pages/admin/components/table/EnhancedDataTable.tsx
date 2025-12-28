@@ -68,20 +68,23 @@ export default function EnhancedDataTable<T extends { id?: string; _id?: string 
   return (
     <div className="w-full overflow-x-auto -mx-4 sm:mx-0">
       <div className="inline-block min-w-full align-middle">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse rounded-lg overflow-hidden">
           <thead>
             <tr className="border-b border-gray-200">
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 bg-gray-50 whitespace-nowrap"
-                  style={{ minWidth: col.minWidth, width: col.width }}
+                  className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-white whitespace-nowrap"
+                  style={{ minWidth: col.minWidth, width: col.width, backgroundColor: "var(--theme-light)" }}
                 >
                   {col.name}
                 </th>
               ))}
               {(onView || onEdit || onDelete) && (
-                <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 bg-gray-50 w-16 sm:w-20">
+                <th 
+                  className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-white"
+                  style={{ backgroundColor: "var(--theme-light)", width: "120px", minWidth: "120px", maxWidth: "200px" }}
+                >
                   Actions
                 </th>
               )}
@@ -118,18 +121,18 @@ export default function EnhancedDataTable<T extends { id?: string; _id?: string 
                   {columns.map((col, colIndex) => (
                     <td
                       key={colIndex}
-                      className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm"
-                      style={{ minWidth: col.minWidth, width: col.width }}
+                      className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm overflow-hidden"
+                      style={{ minWidth: col.minWidth, width: col.width, overflow: "hidden", textOverflow: "ellipsis" }}
                     >
                       {renderCell(col, row, actualIndex)}
                     </td>
                   ))}
                   {(onView || onEdit || onDelete) && (
-                    <td className="px-2 sm:px-4 py-2 sm:py-3 relative">
-                      <div className="flex items-center gap-1">
+                    <td className="px-2 sm:px-4 py-2 sm:py-3 relative" style={{ width: "120px", minWidth: "120px", maxWidth: "200px", overflow: "visible" }}>
+                      <div className="flex items-center gap-1 min-w-fit">
                         {/* 3-dot menu icon - always visible */}
                         <button
-                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
                           onMouseEnter={() => setHoveredAction(actualIndex)}
                         >
                           <MoreVertical size={16} className="sm:w-[18px] sm:h-[18px]" />
@@ -137,7 +140,7 @@ export default function EnhancedDataTable<T extends { id?: string; _id?: string 
 
                         {/* Action icons - show on row hover or action hover */}
                         {(isHovered || isActionHovered) && (
-                          <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2">
+                          <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 flex-shrink-0">
                             {onView && (
                               <button
                                 onClick={() => onView(row)}

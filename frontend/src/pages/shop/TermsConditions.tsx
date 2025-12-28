@@ -98,11 +98,9 @@ export default function TermsConditions() {
               />
 
               {/* Last Updated */}
-              <div className="flex justify-center mt-12">
-                <div className="border border-gray-300 rounded-lg px-6 py-3 bg-white">
-                  <div className="text-sm text-gray-700 text-center">
-                    Last updated {formatDate(content.lastUpdated)}
-                  </div>
+              <div className="flex justify-end mt-12">
+                <div className="text-sm text-gray-700">
+                  Last updated {formatDate(content.lastUpdated)}
                 </div>
               </div>
             </div>

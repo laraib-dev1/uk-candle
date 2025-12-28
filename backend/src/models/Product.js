@@ -21,6 +21,13 @@ const ProductSchema = new mongoose.Schema({
   video1: { type: String, default: "" },
   video2: { type: String, default: "" },
 
+  // Section enable flags
+  enableImages: { type: Boolean, default: true },
+  enableDiscount: { type: Boolean, default: true },
+  enableMetaFeatures: { type: Boolean, default: true },
+  enableMetaInfo: { type: Boolean, default: true },
+  enableVideos: { type: Boolean, default: true },
+
 }, { timestamps: true });
 
 export default mongoose.models.Product || mongoose.model("Product", ProductSchema);
