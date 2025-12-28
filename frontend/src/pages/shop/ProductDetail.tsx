@@ -416,23 +416,36 @@ export default function ProductDetail() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={ogDescription} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={window.location.href} />
         <meta property="og:title" content={product.name} />
         <meta property="og:description" content={ogDescription} />
         <meta property="og:image" content={ogImageUrl} />
         <meta property="og:image:secure_url" content={ogImageUrl} />
+        <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={product.name} />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:type" content="product" />
         <meta property="og:site_name" content={companyName} />
+        <meta property="og:locale" content="en_US" />
+        
+        {/* Product specific OG tags */}
         <meta property="product:price:amount" content={product.price.toString()} />
         <meta property="product:price:currency" content="PKR" />
+        {product.categoryName && (
+          <meta property="product:category" content={product.categoryName} />
+        )}
+        
+        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={window.location.href} />
         <meta name="twitter:title" content={product.name} />
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImageUrl} />
         <meta name="twitter:image:alt" content={product.name} />
+        
         {/* Additional meta tags for better compatibility */}
         <meta name="og:image" content={ogImageUrl} />
         <link rel="canonical" href={window.location.href} />
@@ -522,10 +535,10 @@ export default function ProductDetail() {
               </div>
 
               <SocialShare
-                productName={product.name}
+                productName={product.name || "Product"}
                 productUrl={window.location.href}
                 productImage={product.images?.[0]}
-                productDescription={product.description}
+                productDescription={product.description || ""}
               />
             </div>
           </div>
