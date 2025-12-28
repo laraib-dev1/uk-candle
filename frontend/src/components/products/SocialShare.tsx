@@ -45,8 +45,9 @@ export default function SocialShare({
   const encodedTitle = encodeURIComponent(productName);
   const encodedDesc = encodeURIComponent(cleanedDesc);
 
-  // Facebook share URL - Facebook uses OG tags, but we can add hashtag
-  // Note: Facebook's quote parameter is deprecated, it will use OG tags from the page
+  // Facebook share URL - Facebook will crawl the page and use OG tags
+  // The OG tags are set in ProductDetail.tsx via React Helmet
+  // For better crawler support, we can also use the OG endpoint: /api/products/:id/og
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
   // Twitter/X share URL - includes text and URL
@@ -87,11 +88,41 @@ export default function SocialShare({
   const sharedClass =
     "flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-200 hover:scale-110 hover:opacity-80";
 
-  // Instagram share (opens Instagram app or web)
-  const instagramShare = `https://www.instagram.com/`;
+  // Instagram - doesn't support direct sharing URLs, use native share or copy link
+  const handleInstagramShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: productName,
+        text: cleanedDesc || productName,
+        url: productUrl,
+      }).catch((err) => console.error("Share failed:", err));
+    } else {
+      // Fallback: copy link to clipboard
+      navigator.clipboard.writeText(productUrl).then(() => {
+        alert("Link copied! Paste it in Instagram.");
+      }).catch(() => {
+        prompt("Copy this link to share on Instagram:", productUrl);
+      });
+    }
+  };
   
-  // TikTok share
-  const tiktokShare = `https://www.tiktok.com/`;
+  // TikTok - doesn't support direct sharing URLs, use native share or copy link
+  const handleTikTokShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: productName,
+        text: cleanedDesc || productName,
+        url: productUrl,
+      }).catch((err) => console.error("Share failed:", err));
+    } else {
+      // Fallback: copy link to clipboard
+      navigator.clipboard.writeText(productUrl).then(() => {
+        alert("Link copied! Paste it in TikTok.");
+      }).catch(() => {
+        prompt("Copy this link to share on TikTok:", productUrl);
+      });
+    }
+  };
 
   return (
     <div>
@@ -157,12 +188,10 @@ export default function SocialShare({
         </a>
 
         {/* Instagram */}
-        <a
-          href={instagramShare}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleInstagramShare}
           className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)" }}
+          style={{ backgroundColor: "var(--theme-primary)", border: "none", cursor: "pointer" }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "var(--theme-dark)";
           }}
@@ -172,15 +201,13 @@ export default function SocialShare({
           title="Share on Instagram"
         >
           <FaInstagram size={iconSize} color={iconColor} />
-        </a>
+        </button>
 
         {/* TikTok */}
-        <a
-          href={tiktokShare}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleTikTokShare}
           className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)" }}
+          style={{ backgroundColor: "var(--theme-primary)", border: "none", cursor: "pointer" }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "var(--theme-dark)";
           }}
@@ -190,7 +217,7 @@ export default function SocialShare({
           title="Share on TikTok"
         >
           <FaTiktok size={iconSize} color={iconColor} />
-        </a>
+        </button>
       </div>
     </div>
   );
