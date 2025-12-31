@@ -6,11 +6,7 @@ import {
   RotateCcw,
   Headphones,
   Truck,
-  Heart,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
-import { useToast } from "@/components/ui/toast";
 
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -40,11 +36,6 @@ interface Product {
   video1?: string;
   video2?: string;
   stock?: number;
-  enableImages?: boolean;
-  enableDiscount?: boolean;
-  enableMetaFeatures?: boolean;
-  enableMetaInfo?: boolean;
-  enableVideos?: boolean;
   [key: string]: any;
 }
 
@@ -53,15 +44,11 @@ interface Product {
 ======================= */
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
-  const { success, error } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   /* =======================
      Fetch Single Product
@@ -93,17 +80,6 @@ export default function ProductDetail() {
           metaFeatures: data.metaFeatures || "",
           metaInfo: data.metaInfo || "",
         });
-
-        // Check if product is in wishlist
-        if (user) {
-          try {
-            const wishlist = await getUserWishlist();
-            const isWishlisted = wishlist.some((item: any) => item._id === data._id);
-            setIsInWishlist(isWishlisted);
-          } catch (err) {
-            console.warn("Failed to check wishlist:", err);
-          }
-        }
       } catch (err) {
         console.error("PRODUCT FETCH ERROR:", err);
       } finally {
@@ -128,10 +104,7 @@ export default function ProductDetail() {
             p.image1,
             p.image2,
             p.image3,
-            p.image4,
-            p.image5,
-            p.image6,
-          ].filter((img: string) => img && img.trim() !== "" && img !== "/product.png"),
+          ].filter(Boolean),
           categoryName: p.category?.name,
         }));
         setAllProducts(mapped);
@@ -349,10 +322,6 @@ export default function ProductDetail() {
     return <PageLoader message="Loading product..." />;
   }
 
-  if (!product) {
-    return <PageLoader message="Product not found..." />;
-  }
-
   /* =======================
      Derived Data
   ======================= */
@@ -416,36 +385,23 @@ export default function ProductDetail() {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={ogDescription} />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="product" />
-        <meta property="og:url" content={window.location.href} />
         <meta property="og:title" content={product.name} />
         <meta property="og:description" content={ogDescription} />
         <meta property="og:image" content={ogImageUrl} />
         <meta property="og:image:secure_url" content={ogImageUrl} />
-        <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={product.name} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="product" />
         <meta property="og:site_name" content={companyName} />
-        <meta property="og:locale" content="en_US" />
-        
-        {/* Product specific OG tags */}
         <meta property="product:price:amount" content={product.price.toString()} />
         <meta property="product:price:currency" content="PKR" />
-        {product.categoryName && (
-          <meta property="product:category" content={product.categoryName} />
-        )}
-        
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={window.location.href} />
         <meta name="twitter:title" content={product.name} />
         <meta name="twitter:description" content={ogDescription} />
         <meta name="twitter:image" content={ogImageUrl} />
         <meta name="twitter:image:alt" content={product.name} />
-        
         {/* Additional meta tags for better compatibility */}
         <meta name="og:image" content={ogImageUrl} />
         <link rel="canonical" href={window.location.href} />
@@ -453,7 +409,7 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="bg-white py-20 text-black min-h-screen">
+      <div className="bg-white text-black min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-10">
           {/* Product Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -476,7 +432,7 @@ export default function ProductDetail() {
                 <span className="text-2xl font-bold">
                   {discountedPrice} Rs
                 </span>
-                {product.enableDiscount !== false && product.discount && (
+                {product.discount && (
                   <span className="line-through text-gray-400">
                     {product.price} Rs
                   </span>
@@ -487,104 +443,66 @@ export default function ProductDetail() {
                 {product.description}
               </p>
 
-              <div className="flex gap-3 items-center">
-                <AddToCartButton
-                  product={{
-                    id: product._id,
-                    name: product.name,
-                    price: product.price,
-                    discount: product.discount,
-                    image: product.images?.[0],
-                  }}
-                />
-                {user && (
-                  <button
-                    onClick={async () => {
-                      if (wishlistLoading) return;
-                      setWishlistLoading(true);
-                      try {
-                        if (isInWishlist) {
-                          await removeFromWishlist(product._id);
-                          setIsInWishlist(false);
-                          success("Removed from wishlist");
-                        } else {
-                          await addToWishlist(product._id);
-                          setIsInWishlist(true);
-                          success("Added to wishlist");
-                        }
-                      } catch (err: any) {
-                        error(err.message || "Failed to update wishlist");
-                      } finally {
-                        setWishlistLoading(false);
-                      }
-                    }}
-                    disabled={wishlistLoading}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      isInWishlist 
-                        ? 'bg-white theme-text-primary theme-border-primary' 
-                        : 'border-gray-300 hover:border-gray-400 text-gray-600'
-                    } ${wishlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-                  >
-                    <Heart 
-                      size={20} 
-                      className={isInWishlist ? 'fill-current' : ''}
-                    />
-                  </button>
-                )}
-              </div>
+              <AddToCartButton
+                product={{
+                  id: product._id,
+                  name: product.name,
+                  price: product.price,
+                  discount: product.discount,
+                  image: product.images?.[0],
+                }}
+              />
 
               <SocialShare
-                productName={product.name || "Product"}
+                productName={product.name}
                 productUrl={window.location.href}
                 productImage={product.images?.[0]}
-                productDescription={product.description || ""}
+                productDescription={product.description}
               />
             </div>
           </div>
 
           {/* Tabs */}
-          {((product.enableMetaFeatures !== false && product.metaFeatures) || (product.enableMetaInfo !== false && product.metaInfo) || (product.enableVideos !== false && (product.video1 || product.video2))) && (
-          <Tabs defaultValue={((product.enableMetaFeatures !== false && product.metaFeatures) || (product.enableMetaInfo !== false && product.metaInfo)) ? "description" : "videos"}>
+          <Tabs defaultValue="description">
             <TabsList className="text-black">
-              {(product.enableMetaFeatures !== false || product.enableMetaInfo !== false) && (
-                <TabsTrigger value="description">Description</TabsTrigger>
-              )}
-              {product.enableVideos !== false && (product.video1 || product.video2) && (
-                <TabsTrigger value="videos">Demo Video</TabsTrigger>
-              )}
+              <TabsTrigger value="description">Description</TabsTrigger>
+              <TabsTrigger value="videos">Demo Video</TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="bg-transparent">
               <div className="grid md:grid-cols-2 gap-6 bg-transparent">
-                {product.enableMetaFeatures !== false && product.metaFeatures && (
-                  <div className="bg-transparent meta-features-container">
-                    <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
+                <div className="bg-transparent meta-features-container">
+                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
+                  {product.metaFeatures ? (
                     <div
                       className="max-w-none meta-info-content text-black"
                       dangerouslySetInnerHTML={{
                         __html: cleanHtmlContent(product.metaFeatures),
                       }}
                     />
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-gray-500 text-sm bg-transparent">No features listed</p>
+                  )}
+                </div>
 
-                {product.enableMetaInfo !== false && product.metaInfo && (
-                  <div className="bg-transparent meta-features-container">
-                    <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
+                <div className="bg-transparent meta-features-container">
+                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
+                  {product.metaInfo ? (
                     <div
                       className="max-w-none meta-info-content text-black"
                       dangerouslySetInnerHTML={{
                         __html: cleanHtmlContent(product.metaInfo),
                       }}
                     />
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-gray-500 text-sm bg-transparent">No additional information available</p>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
             <TabsContent value="videos" className="bg-transparent">
-              {product.enableVideos !== false && product.video1 ? (
+              {product.video1 ? (
                 <iframe
                   className="w-full h-80"
                   src={product.video1.replace(
@@ -593,12 +511,11 @@ export default function ProductDetail() {
                   )}
                   allowFullScreen
                 />
-              ) : product.enableVideos !== false ? (
+              ) : (
                 <p>No video available</p>
-              ) : null}
+              )}
             </TabsContent>
           </Tabs>
-          )}
 
           {/* Services */}
           <div className="grid md:grid-cols-4 gap-6 my-12">
@@ -618,32 +535,22 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          {similarProducts && similarProducts.length > 0 && (
-            <div className="mt-12">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                Similar Products
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {similarProducts.map((p) => {
-                  // Get the first available image from images array or fallback to image1-6
-                  const productImage = p.images?.[0] || 
-                    [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find((img: string) => img && img.trim() !== "") || 
-                    "/product.png";
-                  
-                  return (
-                    <ProductCard
-                      key={p._id}
-                      id={p._id}
-                      name={p.name || "Product"}
-                      price={p.price || 0}
-                      image={productImage}
-                      offer={p.discount ? `${p.discount}% OFF` : undefined}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <h3 className="text-xl font-semibold mb-4">
+            Similar Products
+          </h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {similarProducts.map((p) => (
+              <ProductCard
+                key={p._id}
+                id={p._id}
+                name={p.name}
+                price={p.price}
+                image={p.images?.[0] || "/product.png"}
+                offer={p.discount ? `${p.discount}% OFF` : undefined}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

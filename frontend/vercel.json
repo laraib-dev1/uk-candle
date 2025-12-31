@@ -1,14 +1,5 @@
 {
   "rewrites": [
-    { 
-      "source": "/product/:id", 
-      "destination": "/api/product/:id"
-    },
     { "source": "/(.*)", "destination": "/" }
-  ],
-  "functions": {
-    "api/product/[id].js": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }

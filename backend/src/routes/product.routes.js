@@ -6,7 +6,6 @@ import {
   getProduct,
   updateProduct,
   deleteProduct,
-  getProductOGTags,
   withHandler
 } from "../controllers/product.controller.js";
 import { uploadMultiple } from "../middleware/upload.js";
@@ -25,8 +24,6 @@ const fields = [
 
 router.post("/", uploadMultiple.fields(fields), withHandler(createProduct));
 router.get("/", withHandler(getProducts));
-// OG tags endpoint for social media crawlers (must be before /:id)
-router.get("/:id/og", getProductOGTags);
 router.get("/:id", withHandler(getProduct));
 router.put("/:id", uploadMultiple.fields(fields), withHandler(updateProduct));
 router.delete("/:id", withHandler(deleteProduct));

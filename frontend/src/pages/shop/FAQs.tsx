@@ -3,7 +3,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import PageLoader from "@/components/ui/PageLoader";
 type FAQItem = {
   question: string;
   answer: string;
@@ -11,13 +10,11 @@ type FAQItem = {
 
 type FAQContent = {
   faqs?: FAQItem[];
-  lastUpdated?: string;
 };
 
 export default function FAQs() {
 const [content, setContent] = useState<FAQContent>({
   faqs: [],
-  lastUpdated: new Date().toISOString(),
 });
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0); // First FAQ expanded by default
@@ -28,7 +25,6 @@ const [content, setContent] = useState<FAQContent>({
         const data = await getContentByType("faqs");
         setContent({
   faqs: data.faqs ?? [],
-  lastUpdated: data.lastUpdated,
 });
         // Expand first FAQ if available
         if (data.faqs && data.faqs.length > 0) {
@@ -43,86 +39,60 @@ const [content, setContent] = useState<FAQContent>({
     load();
   }, []);
 
-  if (loading) return <PageLoader message="Loading FAQs..." />;
-
-  // Format date
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "15 Nov 2023";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  };
+  if (loading) return <div>Loading...</div>;
 
   const toggleFAQ = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white py-20">
       <Navbar />
-      <main className="flex-1 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Title - Centered */}
-          <div className="text-center mb-4">
-            <h1 className="text-3xl md:text-4xl font-bold leading-10" style={{ color: "var(--theme-primary)" }}>
-              Frequently Asked Questions
-            </h1>
-            
-            {/* Subtitle - Centered */}
-            <p className="text-lg text-gray-500 mt-2">
-              Legal page details
-            </p>
-          </div>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-12">
+          Frequently Asked Questions
+        </h1>
 
-          {/* HR Line */}
-          <hr className="my-8 border-t border-gray-300" style={{ borderWidth: "1px" }} />
-
-          {/* FAQs List */}
-          <div className="space-y-4">
-            {content.faqs && content.faqs.length > 0 ? (
-              content.faqs.map((faq, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
+        {/* FAQs List */}
+        <div className="space-y-4">
+          {content.faqs && content.faqs.length > 0 ? (
+            content.faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+              >
+                {/* Question Header */}
+                <button
+                  onClick={() => toggleFAQ(index)}
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition"
                 >
-                  {/* Question Header */}
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    className="w-full flex items-center justify-between px-6 py-3 text-left hover:bg-gray-50 transition"
-                  >
-                    <span className="text-lg font-semibold text-gray-900 pr-4">
-                      {faq.question || "Question Here Lorem ipsum dolor sit amet."}
-                    </span>
-                    {expandedIndex === index ? (
-                      <ChevronDown className="w-5 h-5 text-gray-600 shrink-0" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-gray-600 shrink-0" />
-                    )}
-                  </button>
-
-                  {/* Answer Content */}
-                  {expandedIndex === index && (
-                    <div className="px-6 pb-6 pt-0">
-                      <div
-                        className="max-w-none text-gray-700 content-page"
-                        dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
-                      />
-                    </div>
+                  <span className="text-lg font-semibold text-gray-900 pr-4">
+                    {faq.question || "Question Here Lorem ipsum dolor sit amet."}
+                  </span>
+                  {expandedIndex === index ? (
+                    <ChevronDown className="w-5 h-5 text-gray-600 shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-gray-600 shrink-0" />
                   )}
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-8">
-                No FAQs available yet. Please check back later.
-              </p>
-            )}
-          </div>
+                </button>
 
-          {/* Last Updated */}
-          <div className="flex justify-end mt-12">
-            <div className="text-sm text-gray-700">
-              Last updated {formatDate(content.lastUpdated)}
-            </div>
-          </div>
+                {/* Answer Content */}
+                {expandedIndex === index && (
+                  <div className="px-6 pb-6 pt-0">
+                    <div
+                      className="prose prose-sm max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
+                    />
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center py-8">
+              No FAQs available yet. Please check back later.
+            </p>
+          )}
         </div>
       </main>
       <Footer />

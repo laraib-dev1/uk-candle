@@ -25,8 +25,8 @@ const features = [
 
 const FeatureSection = () => {
   return (
-    <section className="py-12 bg-white text-black text-center">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-center gap-10">
+    <section className="py-10 px-4 bg-white text-black text-center">
+  <div className="flex flex-wrap justify-center gap-10">
     {features.map((feature, i) => (
       <div
         key={i}

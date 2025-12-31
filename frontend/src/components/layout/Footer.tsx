@@ -44,7 +44,7 @@ export default function Footer() {
 
   return (
     <footer className="text-gray-300 mt-12" style={{ backgroundColor: "var(--theme-dark)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row justify-between gap-8">
           {/* Left side: Logo and Footer Sections */}
           <div className="flex flex-col md:flex-row gap-8 flex-1">

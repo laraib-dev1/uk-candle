@@ -93,3 +93,4 @@ npm run dev
 The frontend typically runs on `http://localhost:5173` and the backend on `http://localhost:5000`.
 
 
+

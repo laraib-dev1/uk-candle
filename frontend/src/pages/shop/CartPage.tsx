@@ -9,8 +9,6 @@ import { useCart } from "@/components/products/CartContext";
 
 const CartPage = () => {
     const [openCheckout, setOpenCheckout] = useState(false);
-    const [buttonLoaders, setButtonLoaders] = useState<Record<string, boolean>>({});
-    const [checkoutLoading, setCheckoutLoading] = useState(false);
 const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
 const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 const subtotal = cartItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
@@ -32,59 +30,13 @@ const total = subtotal - discount;
       </div>
 
       <div className="flex items-center gap-3">
-        <button 
-          onClick={() => {
-            const key = `dec-${item.id}`;
-            if (buttonLoaders[key]) return;
-            setButtonLoaders(prev => ({ ...prev, [key]: true }));
-            decreaseQuantity(item.id);
-            setTimeout(() => setButtonLoaders(prev => ({ ...prev, [key]: false })), 300);
-          }} 
-          disabled={buttonLoaders[`dec-${item.id}`]}
-          className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {buttonLoaders[`dec-${item.id}`] ? (
-            <span className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            "−"
-          )}
-        </button>
+        <button onClick={() => decreaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">−</button>
         <span className="text-black text-lg">{item.quantity}</span>
-        <button 
-          onClick={() => {
-            const key = `inc-${item.id}`;
-            if (buttonLoaders[key]) return;
-            setButtonLoaders(prev => ({ ...prev, [key]: true }));
-            increaseQuantity(item.id);
-            setTimeout(() => setButtonLoaders(prev => ({ ...prev, [key]: false })), 300);
-          }} 
-          disabled={buttonLoaders[`inc-${item.id}`]}
-          className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {buttonLoaders[`inc-${item.id}`] ? (
-            <span className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            "+"
-          )}
-        </button>
+        <button onClick={() => increaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">+</button>
       </div>
 
-      <button 
-        onClick={() => {
-          const key = `remove-${item.id}`;
-          if (buttonLoaders[key]) return;
-          setButtonLoaders(prev => ({ ...prev, [key]: true }));
-          removeFromCart(item.id);
-          setTimeout(() => setButtonLoaders(prev => ({ ...prev, [key]: false })), 300);
-        }} 
-        disabled={buttonLoaders[`remove-${item.id}`]}
-        className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-      >
-        {buttonLoaders[`remove-${item.id}`] ? (
-          <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <Trash2 className="w-5 h-5" />
-        )}
+      <button onClick={() => removeFromCart(item.id)} className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition">
+        <Trash2 className="w-5 h-5" />
       </button>
     </div>
   ))}
@@ -113,30 +65,16 @@ const rightContent = (
         </div>
       )}
 
-      <div 
-        className="flex justify-between font-bold text-lg"
-        style={{ color: "var(--theme-primary)" }}
-      >
+      <div className="flex justify-between text-amber-700 font-bold text-lg">
         <span>Total</span>
         <span>${total.toFixed(2)}</span>
       </div>
     </div>
 
     <button
-      onClick={async () => {
-        if (checkoutLoading) return;
-        setCheckoutLoading(true);
-        try {
-          await new Promise(resolve => setTimeout(resolve, 300));
-          setOpenCheckout(true);
-        } finally {
-          setCheckoutLoading(false);
-        }
-      }}
-      disabled={checkoutLoading}
-      className="mt-6 w-full text-white py-3 rounded-lg transition-all flex items-center justify-center gap-2 theme-button disabled:opacity-70 disabled:cursor-not-allowed"
+      onClick={() => setOpenCheckout(true)}
+      className="mt-6 w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition-all flex items-center justify-center gap-2"
     >
-      {checkoutLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
       Go to Checkout →
     </button>
   </div>
@@ -145,21 +83,19 @@ const rightContent = (
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-col">
-        <Navbar />
+      <Navbar />
 
-        <main className="flex-1 py-20">
-          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-black">
-            {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-            <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
+      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-            <TwoColumnLayout left={leftContent} right={rightContent} />
-            <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
-          </div>
-        </main>
+        {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
+        <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
 
-        <Footer />
+        <TwoColumnLayout left={leftContent} right={rightContent} />
+        <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+
       </div>
+
+      <Footer />
     </>
   );
 };

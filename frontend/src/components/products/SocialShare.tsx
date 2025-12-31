@@ -1,5 +1,5 @@
 import React from "react";
-import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaTiktok } from "react-icons/fa6";
 
 interface SocialShareProps {
@@ -15,114 +15,42 @@ export default function SocialShare({
   productImage,
   productDescription,
 }: SocialShareProps) {
-  // Clean description for WhatsApp (remove HTML tags, limit length)
-  const cleanDescription = (desc: string | undefined): string => {
-    if (!desc) return "";
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = desc;
-    let text = tempDiv.textContent || tempDiv.innerText || "";
-    text = text.trim().replace(/\s+/g, " ");
-    // Limit to 200 chars for WhatsApp
-    if (text.length > 200) {
-      text = text.substring(0, 197) + "...";
-    }
-    return text;
-  };
-
-  const cleanedDesc = cleanDescription(productDescription);
-  
-  // Debug: Log the data being used
-  console.log("🔍 SocialShare Data:", {
-    productName,
-    productUrl,
-    productDescription,
-    cleanedDesc,
-    productImage
-  });
-  
-  // Encode URLs and text properly
   const encodedUrl = encodeURIComponent(productUrl);
   const encodedTitle = encodeURIComponent(productName);
-  const encodedDesc = encodeURIComponent(cleanedDesc);
+  const encodedDesc = encodeURIComponent(productDescription || "");
 
-  // Facebook share URL - Facebook will crawl the page and use OG tags
-  // The OG tags are set in ProductDetail.tsx via React Helmet
-  // For better crawler support, we can also use the OG endpoint: /api/products/:id/og
+  // Facebook share URL with OG image
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
-  // Twitter/X share URL - includes text and URL
-  const twitterText = cleanedDesc 
-    ? `${productName} - ${cleanedDesc}`
-    : productName;
-  const twitterShare = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent(twitterText)}`;
-
-  // WhatsApp share - formatted message with product name, description, and URL
-  // Format: Product Name + Description + URL (all in one message)
-  const whatsappMessage = cleanedDesc 
-    ? `Check out this product: ${productName}\n\n${cleanedDesc}\n\nView here: ${productUrl}`
-    : `Check out this product: ${productName}\n\nView here: ${productUrl}`;
-  
-  // Encode the full message for WhatsApp (wa.me format)
-  // WhatsApp requires proper URL encoding
-  const encodedWhatsAppMessage = encodeURIComponent(whatsappMessage);
-  const whatsappShare = `https://wa.me/?text=${encodedWhatsAppMessage}`;
-  
-  // For WhatsApp Web (alternative for desktop) - use api.whatsapp.com for better compatibility
-  const whatsappWebShare = `https://web.whatsapp.com/send?text=${encodedWhatsAppMessage}`;
-  
-  // Debug: Log the generated URLs
-  console.log("🔗 Generated Share URLs:", {
-    facebook: facebookShare,
-    twitter: twitterShare,
-    whatsapp: whatsappShare,
-    whatsappWeb: whatsappWebShare,
-    whatsappMessage: whatsappMessage,
-    productName,
-    productUrl,
-    hasDescription: !!cleanedDesc
-  });
+  // WhatsApp share text + URL
+  const whatsappShare = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
 
   const iconColor = "white";
+  const circleBgColor = "#b88b5f";
   const iconSize = 20;
 
   const sharedClass =
     "flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-200 hover:scale-110 hover:opacity-80";
 
-  // Instagram - doesn't support direct sharing URLs, use native share or copy link
-  const handleInstagramShare = () => {
+  const handleNativeShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: productName,
-        text: cleanedDesc || productName,
-        url: productUrl,
-      }).catch((err) => console.error("Share failed:", err));
+      navigator
+        .share({
+          title: productName,
+          text: productDescription,
+          url: productUrl,
+        })
+        .catch((err) => console.error("Share failed:", err));
     } else {
-      // Fallback: copy link to clipboard
-      navigator.clipboard.writeText(productUrl).then(() => {
-        alert("Link copied! Paste it in Instagram.");
-      }).catch(() => {
-        prompt("Copy this link to share on Instagram:", productUrl);
-      });
+      alert("Your browser does not support sharing.");
     }
   };
+
+  // Instagram share (opens Instagram app or web)
+  const instagramShare = `https://www.instagram.com/`;
   
-  // TikTok - doesn't support direct sharing URLs, use native share or copy link
-  const handleTikTokShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: productName,
-        text: cleanedDesc || productName,
-        url: productUrl,
-      }).catch((err) => console.error("Share failed:", err));
-    } else {
-      // Fallback: copy link to clipboard
-      navigator.clipboard.writeText(productUrl).then(() => {
-        alert("Link copied! Paste it in TikTok.");
-      }).catch(() => {
-        prompt("Copy this link to share on TikTok:", productUrl);
-      });
-    }
-  };
+  // TikTok share
+  const tiktokShare = `https://www.tiktok.com/`;
 
   return (
     <div>
@@ -134,90 +62,32 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-          }}
-          title="Share on Facebook"
-          onClick={(e) => {
-            console.log("📘 Facebook Share Clicked:", {
-              url: facebookShare,
-              productUrl: productUrl,
-              productName: productName
-            });
-          }}
+          style={{ backgroundColor: circleBgColor }}
         >
           <FaFacebookF size={iconSize} color={iconColor} />
         </a>
 
-        {/* WhatsApp */}
+        {/* Instagram */}
         <a
-          href={whatsappShare}
+          href={instagramShare}
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-          }}
-          title={`Share ${productName} on WhatsApp`}
-          onClick={(e) => {
-            console.log("📱 WhatsApp Share Clicked:", {
-              isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-              whatsappShare,
-              whatsappWebShare,
-              message: whatsappMessage
-            });
-            
-            // On desktop, use WhatsApp Web
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (!isMobile) {
-              e.preventDefault();
-              window.open(whatsappWebShare, '_blank', 'width=800,height=600');
-            }
-            // On mobile, let the default href handle it (wa.me will open app)
-          }}
-        >
-          <FaWhatsapp size={iconSize} color={iconColor} />
-        </a>
-
-        {/* Instagram */}
-        <button
-          onClick={handleInstagramShare}
-          className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)", border: "none", cursor: "pointer" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-          }}
-          title="Share on Instagram"
+          style={{ backgroundColor: circleBgColor }}
         >
           <FaInstagram size={iconSize} color={iconColor} />
-        </button>
+        </a>
 
         {/* TikTok */}
-        <button
-          onClick={handleTikTokShare}
+        <a
+          href={tiktokShare}
+          target="_blank"
+          rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary)", border: "none", cursor: "pointer" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-          }}
-          title="Share on TikTok"
+          style={{ backgroundColor: circleBgColor }}
         >
           <FaTiktok size={iconSize} color={iconColor} />
-        </button>
+        </a>
       </div>
     </div>
   );

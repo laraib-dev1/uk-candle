@@ -3,6 +3,9 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { createQuery } from "@/api/query.api";
 import { useToast } from "@/components/ui/toast";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export default function ContactUs() {
   const { success, error } = useToast();
@@ -24,13 +27,20 @@ export default function ContactUs() {
     setLoading(true);
     try {
       await createQuery(formData);
-      success("Your query has been submitted successfully!");
+      success("Your message has been sent successfully!");
       setFormData({ email: "", subject: "", description: "" });
     } catch (err: any) {
-      error(err?.response?.data?.message || "Failed to submit query. Please try again.");
+      error(err.response?.data?.message || "Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
@@ -38,106 +48,70 @@ export default function ContactUs() {
       <Navbar />
       <main className="flex-1 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold mb-8" style={{ color: "var(--theme-primary)" }}>
-          Contact Us
-        </h1>
+          <div className="max-w-2xl mx-auto">
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-4">
+              Contact Us
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Have a question or need assistance? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            </p>
 
-        {/* Main Content Card */}
-        <div className="rounded-xl p-8 md:p-12" style={{ backgroundColor: "var(--theme-accent)" }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Section - Contact Form */}
-            <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--theme-dark)" }}>
-                You have any query!
-              </h2>
-              <p className="text-gray-700 mb-6">Fill the form to send us.</p>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Contact Form */}
+            <div 
+              className="rounded-lg p-8 shadow-md"
+              style={{ backgroundColor: "var(--theme-accent)" }}
+            >
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Email
-                  </label>
-                  <input
+                  <Input
                     type="email"
+                    name="email"
+                    placeholder="Your Email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="Enter here"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)]"
+                    onChange={handleChange}
                     required
+                    className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Subject
-                  </label>
-                  <input
+                  <Input
                     type="text"
+                    name="subject"
+                    placeholder="Subject"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Enter here"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)]"
+                    onChange={handleChange}
                     required
+                    className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Description
-                  </label>
-                  <textarea
+                  <Textarea
+                    name="description"
+                    placeholder="Your Message"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Enter here"
-                    rows={5}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] resize-none"
+                    onChange={handleChange}
                     required
+                    rows={6}
+                    className="w-full"
                   />
                 </div>
 
-                <button
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 rounded-lg text-white font-semibold transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "var(--theme-primary)" }}
-                  onMouseEnter={(e) => {
-                    if (!loading) {
-                      e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!loading) {
-                      e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-                    }
-                  }}
+                  className="w-full theme-button text-white"
                 >
-                  {loading ? "Submitting..." : "Submit"}
-                </button>
+                  {loading ? "Sending..." : "Send Message"}
+                </Button>
               </form>
             </div>
-
-            {/* Right Section - Logo */}
-            <div className="flex items-center justify-center">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-full max-w-md h-auto object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
           </div>
-        </div>
         </div>
       </main>
       <Footer />
     </div>
   );
 }
-
-
-
-
-

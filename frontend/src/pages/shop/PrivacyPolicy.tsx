@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
-import { TableOfContents } from "@/components/ui/TableOfContents";
-import PageLoader from "@/components/ui/PageLoader";
 type PageContent = {
   title: string;
   subTitle: string;
@@ -12,10 +10,9 @@ type PageContent = {
 };
 
 export default function PrivacyPolicy() {
-  const contentRef = useRef<HTMLDivElement>(null);
   const [content, setContent] = useState<PageContent>({
     title: "Privacy Policy",
-    subTitle: "Legal page details",
+    subTitle: "Legal page related Sub Title",
     description: "",
     lastUpdated: new Date().toISOString()
   });
@@ -35,21 +32,7 @@ export default function PrivacyPolicy() {
     load();
   }, []);
 
-  // Add IDs to headings in the content after it's rendered
-  useEffect(() => {
-    if (!contentRef.current || !content.description || loading) return;
-
-    const headings = contentRef.current.querySelectorAll("h1, h2, h3, h4");
-    headings.forEach((heading, index) => {
-      if (!heading.id) {
-        const text = heading.textContent?.trim() || "";
-        const id = `heading-${index}-${text.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-        heading.id = id;
-      }
-    });
-  }, [content.description, loading]);
-
-  if (loading) return <PageLoader message="Loading Privacy Policy..." />;
+  if (loading) return <div>Loading...</div>;
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -59,51 +42,28 @@ export default function PrivacyPolicy() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white py-20">
       <Navbar />
-      <main className="flex-1 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Title - Centered */}
-          <div className="text-center mb-4">
-            <h1 className="text-4xl md:text-5xl font-bold" style={{ color: "var(--theme-primary)" }}>
-              {content.title || "Privacy Policy"}
-            </h1>
-            
-            {/* Subtitle - Centered */}
-            <p className="text-lg text-gray-500 mt-2">
-              {content.subTitle || "Legal page details"}
-            </p>
-          </div>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-4">
+          {content.title || "Privacy Policy"}
+        </h1>
+        
+        {/* Subtitle */}
+        <p className="text-lg text-gray-600 mb-8">
+          {content.subTitle || "Legal page related Sub Title"}
+        </p>
 
-          {/* HR Line - Full Width */}
-          <hr className="my-8 border-t border-gray-300" style={{ borderWidth: "1px" }} />
+        {/* Content */}
+        <div 
+          className="prose prose-lg max-w-none text-gray-700 mb-8"
+          dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
+        />
 
-          {/* Two Column Layout - Table of Contents and Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Table of Contents - Left Sidebar */}
-            <div className="lg:col-span-1">
-              {content.description && (
-                <TableOfContents htmlContent={content.description} contentRef={contentRef} />
-              )}
-            </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              {/* Content - Preserves formatting */}
-              <div 
-                ref={contentRef}
-                className="max-w-none text-gray-700 mb-8 content-page"
-                dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
-              />
-
-              {/* Last Updated */}
-              <div className="flex justify-end mt-12">
-                <div className="text-sm text-gray-700">
-                  Last updated {formatDate(content.lastUpdated)}
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Last Updated */}
+        <div className="text-right text-sm text-gray-500 mt-12">
+          Last updated {formatDate(content.lastUpdated)}
         </div>
       </main>
       <Footer />
