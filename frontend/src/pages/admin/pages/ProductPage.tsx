@@ -9,6 +9,7 @@ import { getProducts, createProduct, updateProduct, deleteProduct as apiDelete }
 import { getCategories } from "@/api/category.api";
 import DeleteModal from "../../../components/admin/product/DeleteModal";
 import PageLoader from "@/components/ui/PageLoader";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 interface Category {
   _id: string;
@@ -201,15 +202,7 @@ const getColumns = () => {
     },
     { 
       name: "Status", 
-      cell: (row: Product) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          row.status === "active" 
-            ? "bg-green-100 text-green-800" 
-            : "bg-gray-100 text-gray-800"
-        }`}>
-          {row.status}
-        </span>
-      ),
+      cell: (row: Product) => <StatusBadge status={row.status} type="product" />,
       minWidth: "100px"
     },
   ];
@@ -249,7 +242,7 @@ const getColumns = () => {
   return (
     <div className="bg-white shadow rounded-lg p-4 md:p-6 overflow-visible">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-3 md:gap-0">
-        <h2 className="text-2xl font-semibold theme-heading">Products</h2>
+        <h2 className="text-2xl font-semibold theme-heading text-black">Products</h2>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Input placeholder="Search" value={search} onChange={e => setSearch(e.target.value)} className="w-full sm:w-64 text-black" />
           <Button className="text-white w-full sm:w-auto theme-button" onClick={openAddModal} loading={openingModal}>

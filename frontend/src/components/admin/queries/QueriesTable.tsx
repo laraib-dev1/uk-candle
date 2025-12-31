@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Trash2, Eye } from "lucide-react";
+import StatusBadge from "@/components/ui/StatusBadge";
+import FilterTabs from "@/components/ui/FilterTabs";
 
 interface Query {
   _id: string;
@@ -143,8 +145,11 @@ export default function QueriesTable() {
             <select
               value={row.status}
               onChange={(e) => handleStatusChange(row._id, e.target.value as "Pending" | "Read" | "Replied")}
-              className={`px-2 py-1 rounded-full text-xs font-medium border-none ${statusColors[row.status] || "bg-gray-100 text-gray-800"}`}
-              style={{ backgroundColor: "inherit", color: "inherit" }}
+              className={`px-3 py-1 rounded-full text-xs font-medium border-none cursor-pointer ${statusColors[row.status] || "bg-gray-100 text-gray-800"}`}
+              style={{ 
+                backgroundColor: row.status === "Pending" ? "#FEF3C7" : row.status === "Read" ? "#DBEAFE" : "#D1FAE5",
+                color: row.status === "Pending" ? "#92400E" : row.status === "Read" ? "#1E40AF" : "#065F46"
+              }}
             >
               <option value="Pending">Pending</option>
               <option value="Read">Read</option>
@@ -224,26 +229,17 @@ export default function QueriesTable() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
-        {(["All", "Pending", "Read", "Replied"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab)}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={
-              selectedTab === tab
-                ? {
-                    backgroundColor: "var(--theme-primary)",
-                    color: "white",
-                    borderBottom: "2px solid var(--theme-primary)",
-                  }
-                : { color: "var(--theme-dark)" }
-            }
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={[
+          { value: "All", label: "All" },
+          { value: "Pending", label: "Pending" },
+          { value: "Read", label: "Read" },
+          { value: "Replied", label: "Replied" },
+        ]}
+        value={selectedTab}
+        onChange={(value) => setSelectedTab(value as any)}
+        className="border-b border-gray-200 pb-2"
+      />
 
       {/* Data Table */}
       <EnhancedDataTable

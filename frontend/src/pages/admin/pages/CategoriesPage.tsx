@@ -103,14 +103,8 @@ const getColumns = () => {
   const allColumns = [
     {
       name: "ID",
-      cell: (_row: Category, index: number) => <span className="text-gray-600">{index + 1}</span>,
+      cell: (_row: Category, index: number) => <span className="text-gray-600">#{index + 1}</span>,
       minWidth: "60px",
-    },
-    {
-      name: "Category",
-      heading: (row: Category) => row.name,
-      subInfo: (row: Category) => `${row.products || 0} products`,
-      minWidth: "200px",
     },
     {
       name: "Icon",
@@ -123,21 +117,27 @@ const getColumns = () => {
       ),
       minWidth: "80px",
     },
+    {
+      name: "Category",
+      heading: (row: Category) => row.name,
+      subInfo: (row: Category) => `${row.products || 0} products`,
+      minWidth: "200px",
+    },
   ];
 
   // Breakpoints: 600px, 800px, 900px, 1000px, 1200px, 2040px
   if (windowWidth < 600) {
     // Very small screens: ID, Category, Actions (hide Icon)
-    return allColumns.filter((_, idx) => [0, 1].includes(idx));
+    return allColumns.filter((_, idx) => [0, 2].includes(idx));
   }
 
   if (windowWidth < 800) {
     // Small screens: ID, Category, Actions (hide Icon)
-    return allColumns.filter((_, idx) => [0, 1].includes(idx));
+    return allColumns.filter((_, idx) => [0, 2].includes(idx));
   }
 
   if (windowWidth < 900) {
-    // Medium-small screens: ID, Category, Icon, Actions
+    // Medium-small screens: ID, Icon, Category, Actions
     return allColumns.filter((_, idx) => [0, 1, 2].includes(idx));
   }
 
@@ -164,7 +164,7 @@ const getColumns = () => {
 
       {/* -------- Header Row -------- */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold theme-heading">Categories</h2>
+        <h2 className="text-2xl font-semibold theme-heading text-black">Categories</h2>
 
         <div className="flex items-center gap-3">
           {/* Search */}

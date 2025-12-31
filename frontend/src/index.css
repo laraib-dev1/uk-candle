@@ -65,3 +65,29 @@ body {
     overflow: visible !important;
   }
 }
+
+/* Theme button and heading styles */
+.theme-button {
+  background-color: var(--theme-primary);
+  color: white;
+  border: none;
+}
+
+.theme-button:hover {
+  opacity: 0.9;
+}
+
+.theme-heading {
+  color: var(--theme-primary);
+}
+
+/* Ensure text visibility in admin panel */
+.admin-panel h1,
+.admin-panel h2,
+.admin-panel h3 {
+  color: #000000;
+}
+
+.admin-panel .theme-heading {
+  color: var(--theme-primary);
+}

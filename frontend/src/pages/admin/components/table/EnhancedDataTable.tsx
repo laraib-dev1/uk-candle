@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit, Trash2, MoreVertical } from "lucide-react";
 
 interface Column<T> {
   name: string;
@@ -8,6 +8,7 @@ interface Column<T> {
   subInfo?: (row: T) => string;
   selector?: (row: T) => string;
   minWidth?: string;
+  maxWidth?: string;
 }
 
 interface EnhancedDataTableProps<T> {
@@ -39,8 +40,8 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
   const hasActions = onView || onEdit || onDelete;
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse rounded-lg overflow-hidden">
+    <div className="w-full overflow-x-auto rounded-lg">
+      <table className="w-full border-collapse" style={{ tableLayout: "auto" }}>
         <thead>
           <tr style={{ backgroundColor: "var(--theme-light)" }}>
             {columns.map((col, idx) => (
@@ -50,6 +51,7 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                 style={{
                   backgroundColor: "var(--theme-light)",
                   minWidth: col.minWidth || "100px",
+                  maxWidth: col.maxWidth || "none",
                 }}
               >
                 {col.name}
@@ -60,9 +62,8 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                 className="text-white px-4 py-3 text-left text-sm font-semibold"
                 style={{
                   backgroundColor: "var(--theme-light)",
-                  width: "120px",
-                  minWidth: "120px",
-                  maxWidth: "200px",
+                  width: "80px",
+                  minWidth: "80px",
                 }}
               >
                 Actions
@@ -94,24 +95,26 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                     className="px-4 py-3 text-sm text-gray-700"
                     style={{
                       minWidth: col.minWidth || "100px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      maxWidth: col.maxWidth || "none",
+                      overflow: col.cell ? "visible" : "hidden",
+                      textOverflow: col.cell ? "clip" : "ellipsis",
+                      whiteSpace: col.cell ? "normal" : "nowrap",
                     }}
+                    title={col.selector ? String(col.selector(row)) : col.heading ? col.heading(row) : ""}
                   >
                     {col.cell ? (
-                      col.cell(row, rowIndex)
+                      <div>{col.cell(row, rowIndex)}</div>
                     ) : col.heading ? (
-                      <div className="flex flex-col">
-                        <span className="font-medium">{col.heading(row)}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-gray-900">{col.heading(row)}</span>
                         {col.subInfo && (
-                          <span className="text-xs text-gray-500 mt-1">
+                          <span className="text-xs text-gray-500">
                             {col.subInfo(row)}
                           </span>
                         )}
                       </div>
                     ) : col.selector ? (
-                      col.selector(row)
+                      <span className="truncate block">{col.selector(row)}</span>
                     ) : (
                       "-"
                     )}
@@ -119,21 +122,26 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                 ))}
                 {hasActions && (
                   <td
-                    className="px-4 py-3"
+                    className="px-2 py-3 align-middle"
                     style={{
-                      minWidth: "120px",
-                      width: "120px",
-                      maxWidth: "200px",
+                      width: hoveredRow === row ? "auto" : "80px",
+                      minWidth: "80px",
                       overflow: "visible",
+                      position: "relative",
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5">
+                      <MoreVertical className="w-5 h-5 text-gray-400 shrink-0" />
                       {hoveredRow === row && (
-                        <>
+                        <div className="flex items-center gap-1 shrink-0">
                           {onView && (
                             <button
-                              onClick={() => onView(row)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onView(row);
+                              }}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                               title="View"
                             >
                               <Eye className="w-4 h-4" />
@@ -141,8 +149,11 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                           )}
                           {onEdit && (
                             <button
-                              onClick={() => onEdit(row)}
-                              className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(row);
+                              }}
+                              className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
@@ -150,14 +161,17 @@ export default function EnhancedDataTable<T extends { id?: string | number }>({
                           )}
                           {onDelete && (
                             <button
-                              onClick={() => onDelete(row)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(row);
+                              }}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                        </>
+                        </div>
                       )}
                     </div>
                   </td>

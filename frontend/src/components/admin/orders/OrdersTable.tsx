@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
-import DataTable from "../../../pages/admin/components/table/DataTable";
+import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { fetchOrders } from "../../../api/order.api";
 import { Input } from "@/components/ui/input";
 import { OrderModal } from "../product/OrderModal";
+import PageLoader from "@/components/ui/PageLoader";
+import StatusBadge from "@/components/ui/StatusBadge";
+import FilterTabs from "@/components/ui/FilterTabs";
 interface Address {
   firstName: string;
   lastName: string;
@@ -107,115 +110,124 @@ useEffect(() => {
 
   const getColumns = () => {
     const allColumns = [
-          { name: "Customer", selector: (row: Order) => row.customerName, sortable: true },
-    {
-  name: "Address",
-  selector: (row: Order) =>
-    row.address
-      ? `${row.address.line1}, ${row.address.area || ""}, ${row.address.city}, ${row.address.province}, ${row.address.postalCode}`
-      : "N/A",
-  sortable: true,
-},
-    { name: "Phone Number", selector: (row: Order) => row.phoneNumber, sortable: true },
-    {
-      name: "Items",
-      selector: (row: Order) => row.items.map(i => `${i.name} x ${i.quantity}`).join(", "),
-      sortable: false,
-    },
-    { name: "Type", selector: (row: Order) => row.type, sortable: true },
-    { name: "Bill", selector: (row: Order) => `$${row.bill}`, sortable: true },
-    { name: "Payment", selector: (row: Order) => row.payment, sortable: true },
-    { name: "Status", selector: (row: Order) => row.status, sortable: true },
-    { name: "Created At", selector: (row: Order) => new Date(row.createdAt).toLocaleString(), sortable: true },
-    {
-  name: "Action",
-  cell: (row: Order) => (
-    <button
-      className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white px-2 py-1 rounded"
-      onClick={() => openView(row)}
-    >
-      View
-    </button>
-  ),
-  sortable: false,
-}
+      {
+        name: "ID",
+        cell: (_row: Order, index: number) => <span className="text-gray-600">#{index + 1}</span>,
+        minWidth: "60px",
+      },
+      {
+        name: "Customer",
+        heading: (row: Order) => row.customerName,
+        subInfo: (row: Order) => {
+          if (!row.address) return "N/A";
+          const parts = [
+            row.address.line1,
+            row.address.area,
+            row.address.city,
+            row.address.province,
+            row.address.postalCode
+          ].filter(Boolean);
+          return parts.join(", ");
+        },
+        minWidth: "200px",
+      },
+      {
+        name: "Items",
+        heading: (row: Order) => row.items.map(i => `${i.name} x ${i.quantity}`).join(", "),
+        subInfo: (row: Order) => row.type,
+        minWidth: "200px",
+      },
+      {
+        name: "Bill",
+        heading: (row: Order) => `$${row.bill}`,
+        subInfo: (row: Order) => row.payment,
+        minWidth: "150px",
+      },
+      {
+        name: "Created At",
+        selector: (row: Order) => new Date(row.createdAt).toLocaleString(),
+        minWidth: "150px",
+      },
+      {
+        name: "Status",
+        cell: (row: Order) => <StatusBadge status={row.status} type="order" />,
+        minWidth: "100px",
+      },
+    ];
 
-  ];
+    if (windowWidth < 640) {
+      // small screens: show only most important (ID, Customer, Bill, Created At, Status)
+      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+    }
 
-     if (windowWidth < 640) {
-    // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
+    if (windowWidth < 800) {
+      // medium-small screens
+      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+    }
 
-  if (windowWidth <786) {
-    // medium screens: show a few more columns
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
-  if (windowWidth < 800) {
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
-  if (windowWidth < 1024) {
-    // small screens: show only most important
-    return allColumns.filter(c => ["Customer", "Bill", "Status", "Action"].includes(c.name));
-  }
+    if (windowWidth < 1024) {
+      // medium screens
+      return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+    }
 
-  if (windowWidth <1250) {
-    // medium screens: show a few more columns
-    return allColumns.filter(c => ["Customer", "Phone Number", "Bill", "Status"].includes(c.name));
-  }
-  // large screens: show all
-  return allColumns;
+    if (windowWidth < 1250) {
+      // large-medium screens
+      return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+    }
+
+    // large screens: show all
+    return allColumns;
   };
 
- return (
-  <div className="w-full">
-    {/* Tabs + Search */}
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
-      {/* Tabs */}
-      <div className="flex gap-2 flex-wrap">
-        <h2 className="text-2xl font-semibold text-[#8B5E3C] mr-4">Orders</h2>
-        {["All", "cancel", "complete", "Returned"].map(tab => (
-          <button
-            key={tab}
-            className={`px-4 py-1 rounded-full border ${
-              selectedTab === tab ? "bg-[#8B5E3C] text-white" : "bg-white text-gray-700 border-gray-300"
-            }`}
-            onClick={() => setSelectedTab(tab as any)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+  if (loading && orders.length === 0) {
+    return <PageLoader message="Loading orders..." />;
+  }
 
-      {/* Search */}
-      <div className="w-full md:w-auto mt-2 md:mt-0">
-        <Input
-          placeholder="Search"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full md:w-64 border-[#C4A484] text-gray-900"
+  return (
+    <div className="w-full">
+      {/* Tabs + Search */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
+        {/* Tabs */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <h2 className="text-2xl font-semibold theme-heading text-black">Orders</h2>
+          <FilterTabs
+            tabs={[
+              { value: "All", label: "All" },
+              { value: "cancel", label: "Cancel" },
+              { value: "complete", label: "Complete" },
+              { value: "Returned", label: "Returned" },
+            ]}
+            value={selectedTab}
+            onChange={(value) => setSelectedTab(value as any)}
+          />
+        </div>
+
+        {/* Search */}
+        <div className="w-full md:w-auto mt-2 md:mt-0">
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full md:w-64 text-black"
+          />
+        </div>
+      </div>
+      <OrderModal
+        order={selectedOrder}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUpdate={loadOrders}
+      />
+      {/* EnhancedDataTable */}
+      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
+        <EnhancedDataTable<Order>
+          columns={getColumns()}
+          data={filteredOrders}
+          onView={openView}
+          pagination
         />
       </div>
     </div>
-<OrderModal
-  order={selectedOrder}
-  open={modalOpen}
-  onClose={() => setModalOpen(false)}
-  onUpdate={loadOrders} // refresh after status update
-/>
-    {/* DataTable */}
-    <DataTable<Order>
-      columns={getColumns()}
-      data={filteredOrders}
-      pagination
-      dense
-      responsive
-      selectable={false}
-      className="shadow-md rounded-lg"
-    />
-
-    {loading && <p className="text-gray-500 mt-2">Loading orders...</p>}
-  </div>
-);
+  );
 
 }
