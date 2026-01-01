@@ -25,8 +25,8 @@ const Hero2 = ({
   };
 
   return (
-    <section className="py-10 bg-gray-200 w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+    <section className="py-10 bg-gray-200">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {fullWidthText ? (
           <div className="flex flex-col justify-center py-10 text-center">
             <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
@@ -56,7 +56,7 @@ const Hero2 = ({
               </div>
             )}
 
-            <div className="flex flex-col justify-center px-2 md:px-0">
+            <div className="flex flex-col justify-center">
               <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
                 {title || "Welcome to Our Store"}
               </h1>

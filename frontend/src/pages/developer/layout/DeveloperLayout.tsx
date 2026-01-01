@@ -36,6 +36,7 @@ export default function DeveloperLayout() {
     { label: "Admin Tabs", icon: LayoutDashboard, path: "/developer/admin-tabs" },
     { label: "Company", icon: Building2, path: "/developer/company" },
     { label: "Web Pages", icon: FileText, path: "/developer/web-pages" },
+    { label: "Profile Pages", icon: FileText, path: "/developer/profile-pages" },
     { label: "Footer", icon: PanelBottom, path: "/developer/footer" },
     { label: "SP Components", icon: Package, path: "/developer/sp-components" },
   ];
@@ -48,9 +49,9 @@ export default function DeveloperLayout() {
 
   // Sidebar content component (reusable for both desktop and mobile)
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
-    <>
+    <div className="flex flex-col h-full">
       {/* Developer Badge */}
-      <div className="px-5 pb-6 border-b border-white/20">
+      <div className="px-5 pb-6 border-b border-white/20 flex-shrink-0">
         <span 
           className="font-bold text-sm tracking-wider"
           style={{ color: "var(--theme-accent)" }}
@@ -60,7 +61,7 @@ export default function DeveloperLayout() {
       </div>
 
       {/* MENU */}
-      <nav className="flex flex-col gap-2 mt-6 px-2">
+      <nav className="flex flex-col gap-2 mt-6 px-2 flex-1 overflow-y-auto">
         {menu.map((item) => {
           const Icon = item.icon;
           const active = loc.pathname === item.path;
@@ -84,7 +85,7 @@ export default function DeveloperLayout() {
       </nav>
 
       {/* BACK TO ADMIN BUTTON (bottom) */}
-      <div className="mt-auto px-2">
+      <div className="mt-auto px-2 flex-shrink-0">
         <button
           onClick={() => {
             handleBackToAdmin();
@@ -96,7 +97,7 @@ export default function DeveloperLayout() {
           Back to Admin
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -128,7 +129,7 @@ export default function DeveloperLayout() {
 
       {/* ============ DESKTOP SIDEBAR ============ */}
       <aside 
-        className="hidden lg:flex w-64 text-white flex-col py-6 shadow-lg"
+        className="hidden lg:flex w-64 text-white flex-col shadow-lg fixed left-0 top-0 h-screen overflow-y-auto"
         style={{ 
           background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
         }}
@@ -137,7 +138,7 @@ export default function DeveloperLayout() {
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 w-full lg:w-auto pt-16 lg:pt-8 p-4 lg:p-8 bg-gray-50">
+      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8 bg-gray-50">
         <React.Suspense fallback={<div>Loading developer page...</div>}>
           <Outlet />
         </React.Suspense>

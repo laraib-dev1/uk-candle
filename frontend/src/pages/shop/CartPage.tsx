@@ -82,13 +82,13 @@ const rightContent = (
 
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-0">
 
         {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-3xl font-semibold mb-10">Purchase List</h2>
+        <h2 className="text-3xl font-semibold mb-10 text-gray-900">Purchase List</h2>
 
         <TwoColumnLayout left={leftContent} right={rightContent} />
         <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
@@ -96,7 +96,7 @@ const rightContent = (
       </div>
 
       <Footer />
-    </>
+    </div>
   );
 };
 

@@ -33,6 +33,7 @@ const DeveloperLayout = React.lazy(() => import("./pages/developer/layout/Develo
 const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabsPage"));
 const CompanyPage = React.lazy(() => import("./pages/developer/pages/CompanyPage"));
 const WebPagesPage = React.lazy(() => import("./pages/developer/pages/WebPagesPage"));
+const ProfilePagesPage = React.lazy(() => import("./pages/developer/pages/ProfilePagesPage"));
 const FooterPage = React.lazy(() => import("./pages/developer/pages/FooterPage"));
 const SpComponentsPage = React.lazy(() => import("./pages/developer/pages/SpComponentsPage"));
 
@@ -127,6 +128,7 @@ export default function App() {
             <Route path="admin-tabs" element={<AdminTabsPage />} />
             <Route path="company" element={<CompanyPage />} />
             <Route path="web-pages" element={<WebPagesPage />} />
+            <Route path="profile-pages" element={<ProfilePagesPage />} />
             <Route path="footer" element={<FooterPage />} />
             <Route path="sp-components" element={<SpComponentsPage />} />
             <Route path="sp-console" element={<SpConsolePage />} />

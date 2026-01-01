@@ -1,8 +1,14 @@
 import React from "react";
 
-const FeatureHero = () => {
+interface FeatureHeroProps {
+  image?: string;
+}
+
+const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
+  const bannerImage = image || "/hero.png";
+  
   return (
-    <section className="bg-white text-black  py-4">
+    <section className="bg-white text-black py-4">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Text content */}
         <div className="max-w-3xl mx-auto mb-6">
@@ -10,7 +16,7 @@ const FeatureHero = () => {
             An alchemy of gold and perfume
           </h2>
           <p className="text-sm md:text-base text-gray-600">
-            The Maison’s iconic fragrance, adorned in gold to celebrate the
+            The Maison's iconic fragrance, adorned in gold to celebrate the
             brilliance of the holidays.
           </p>
         </div>
@@ -18,7 +24,7 @@ const FeatureHero = () => {
         {/* Image */}
         <div className="w-full">
           <img
-            src="/hero.png"
+            src={bannerImage}
             alt="Perfume collection"
             className="w-full max-w-full h-100 object-cover rounded-2xl mx-auto"
           />

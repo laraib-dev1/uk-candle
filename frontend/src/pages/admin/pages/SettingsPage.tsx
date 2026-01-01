@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import { getMe, updateProfile as apiUpdateProfile, changePassword as apiChangePassword, updateAvatar  } from "@/api/auth.api";
+import FilterTabs from "@/components/ui/FilterTabs";
 interface UserType {
   id: string;
   name: string;
@@ -89,18 +90,7 @@ useEffect(() => {
 
     try {
       const data = await getMe(token);
-      // prepend backend URL if avatar exists and doesn't already start with http
-      const avatarUrl = data.user.avatar 
-        ? (data.user.avatar.startsWith('http') 
-            ? data.user.avatar 
-            : `${import.meta.env.VITE_API_URL}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
-        : undefined;
-      
-      const fullUser = {
-        ...data.user,
-        avatar: avatarUrl
-      };
-      setUser(fullUser);
+      setUser(data.user);
       setEditName(data.user.name);
       setEditEmail(data.user.email);
     } catch (err) {
@@ -109,7 +99,7 @@ useEffect(() => {
   };
 
   loadUser();
-}, [navigate]);
+}, []);
 
 
 const updateProfile = async () => {
@@ -156,22 +146,16 @@ const changePassword = async () => {
 
   return (
     <div className="w-full text-black">
-      <h1 className="theme-heading mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold mb-6 theme-heading">Settings</h1>
 
       {/* PROFILE BOX */}
     
 <div className="flex items-center gap-4 mb-6">
    <img
-    key={user?.avatar || "default"}
     src={user?.avatar || "/product.png"} // fetched avatar ya default
-    className="w-20 h-20 rounded-full object-cover border-2 border-[#A8734B]"
+    className="w-20 h-20 rounded-full object-cover border-2"
+    style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
     alt="avatar"
-    onError={(e) => {
-      const target = e.target as HTMLImageElement;
-      if (target.src !== "/product.png" && !target.src.includes("product.png")) {
-        target.src = "/product.png";
-      }
-    }}
   />
   <div>
     <h2 className="text-xl font-semibold">{user?.name}</h2>
@@ -181,24 +165,16 @@ const changePassword = async () => {
 
 
       {/* TABS */}
-      <div className="border-b mb-4 flex gap-8">
-        {["overview", "edit", "password"].map((x) => (
-          <button
-            key={x}
-            onClick={() => setTab(x as any)}
-            className={`pb-2 capitalize ${
-              tab === x
-                ? "border-b-2 theme-border-primary theme-text-primary"
-                : "text-gray-500"
-            }`}
-            style={tab === x ? {
-              borderBottomColor: "var(--theme-primary)",
-              color: "var(--theme-primary)"
-            } : {}}
-          >
-            {x}
-          </button>
-        ))}
+      <div className="mb-4">
+        <FilterTabs
+          tabs={[
+            { id: "overview", label: "Overview" },
+            { id: "edit", label: "Edit" },
+            { id: "password", label: "Password" },
+          ]}
+          activeTab={tab}
+          onTabChange={(tabId) => setTab(tabId as any)}
+        />
       </div>
 
       {/* OVERVIEW */}
@@ -220,7 +196,8 @@ const changePassword = async () => {
      <img
   src={editAvatarPreview || user?.avatar || "/avatar.png"}
   alt="avatar"
-  className="w-20 h-20 rounded-full object-cover border-2 border-[#A8734B] cursor-pointer"
+  className="w-20 h-20 rounded-full object-cover border-2 cursor-pointer"
+  style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
   onClick={() => document.getElementById("avatarInputEdit")?.click()}
 />
 
@@ -250,9 +227,9 @@ const changePassword = async () => {
       />
     </div>
 
-    <Button onClick={saveProfileWithAvatar} className="theme-button" loading={savingProfile}>
-      Save Changes
-    </Button>
+    <Button onClick={saveProfileWithAvatar} className="theme-button text-white">
+  {savingProfile ? "Saving..." : "Save Changes"}
+</Button>
 
     {profileMsg && <p className="text-green-600 mt-2">{profileMsg}</p>}
   </div>
@@ -295,9 +272,9 @@ const changePassword = async () => {
             </div>
           </div>
 
-          <Button onClick={changePassword} className="theme-button" loading={changingPassword}>
-            Update Password
-          </Button>
+          <Button onClick={changePassword} className="theme-button text-white">
+  {changingPassword ? "Updating..." : "Update Password"}
+</Button>
 {passwordMsg && <p className="text-green-600 mt-2">{passwordMsg}</p>}
 
         </div>

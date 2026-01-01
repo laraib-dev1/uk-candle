@@ -20,6 +20,7 @@ import {
 import { createQuery } from "@/api/query.api";
 import { createReview } from "@/api/review.api";
 import { getProducts } from "@/api/product.api";
+import { getEnabledProfilePages, getProfilePageBySlug } from "@/api/profilepage.api";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
@@ -36,10 +37,11 @@ import {
   X,
   Eye,
   EyeOff,
+  FileText,
 } from "lucide-react";
 import type { UserProfile as UserProfileType, Address, Order } from "@/api/user.api";
 
-type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "queries" | "reviews";
+type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "queries" | "reviews" | string;
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -51,6 +53,7 @@ export default function UserProfile() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlist, setWishlist] = useState<any[]>([]);
+  const [profilePages, setProfilePages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,19 +62,12 @@ export default function UserProfile() {
       return;
     }
     loadData();
-    
-    // Set up interval to refresh orders every 30 seconds to catch status updates from admin
-    const interval = setInterval(() => {
-      loadData();
-    }, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
   }, [authUser, navigate]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [profileData, addressesData, ordersData, wishlistData] = await Promise.all([
+      const [profileData, addressesData, ordersData, wishlistData, profilePagesData] = await Promise.all([
         getUserProfile().catch((err) => {
           console.error("Failed to load profile:", err);
           return null;
@@ -98,6 +94,10 @@ export default function UserProfile() {
           console.error("Failed to load wishlist:", err);
           return [];
         }),
+        getEnabledProfilePages().catch((err) => {
+          console.error("Failed to load profile pages:", err);
+          return [];
+        }),
       ]);
       
       if (profileData) setProfile(profileData);
@@ -105,6 +105,19 @@ export default function UserProfile() {
       setAddresses(Array.isArray(addressesData) ? addressesData : []);
       setOrders(Array.isArray(ordersData) ? ordersData : []);
       setWishlist(Array.isArray(wishlistData) ? wishlistData : []);
+      
+      // Handle profile pages data
+      console.log("Profile pages API response:", profilePagesData);
+      if (Array.isArray(profilePagesData)) {
+        setProfilePages(profilePagesData);
+        console.log(`Loaded ${profilePagesData.length} enabled profile pages`);
+      } else if (profilePagesData && Array.isArray(profilePagesData.data)) {
+        setProfilePages(profilePagesData.data);
+        console.log(`Loaded ${profilePagesData.data.length} enabled profile pages`);
+      } else {
+        console.warn("Invalid profile pages data format:", profilePagesData);
+        setProfilePages([]);
+      }
     } catch (err: any) {
       console.error("Error loading data:", err);
       error(err.message || "Failed to load data");
@@ -113,7 +126,8 @@ export default function UserProfile() {
     }
   };
 
-  const tabs = [
+  // Base tabs
+  const baseTabs = [
     { id: "dashboard" as TabType, label: "Dashboard", icon: User },
     { id: "profile" as TabType, label: "Profile", icon: User },
     { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
@@ -122,6 +136,39 @@ export default function UserProfile() {
     { id: "queries" as TabType, label: "Support", icon: MessageSquare },
     { id: "reviews" as TabType, label: "Reviews", icon: Star },
   ];
+
+  // Add profile pages as tabs - only enabled pages
+  const profilePageTabs = profilePages
+    .filter((page: any) => page.enabled === true)
+    .map((page: any) => ({
+      id: `profile-page-${page._id}` as TabType,
+      label: page.title,
+      icon: FileText,
+      isProfilePage: true,
+      pageData: page,
+    }));
+
+  const tabs = [...baseTabs, ...profilePageTabs];
+  
+  // Debug: Log tabs when profile pages change
+  useEffect(() => {
+    console.log("=== Profile Pages Debug ===");
+    console.log("Total profile pages from API:", profilePages.length);
+    console.log("Enabled profile pages:", profilePages.filter((p: any) => p.enabled === true).length);
+    if (profilePages.length > 0) {
+      profilePages.forEach((page: any, index: number) => {
+        console.log(`Page ${index + 1}:`, {
+          title: page.title,
+          id: page._id,
+          enabled: page.enabled,
+          slug: page.slug
+        });
+      });
+    } else {
+      console.log("No profile pages found. Create and enable them in SP Panel → Profile Pages.");
+    }
+    console.log("Total tabs (including profile pages):", tabs.length);
+  }, [profilePages]);
 
   if (loading) {
     return (
@@ -156,9 +203,10 @@ export default function UserProfile() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                       activeTab === tab.id
-                        ? "theme-bg-light theme-text-primary"
+                        ? "text-white font-semibold"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
+                    style={activeTab === tab.id ? { backgroundColor: "var(--theme-primary)" } : {}}
                   >
                     <Icon size={18} />
                     <span>{tab.label}</span>
@@ -177,6 +225,31 @@ export default function UserProfile() {
             {activeTab === "wishlist" && <WishlistTab wishlist={wishlist} onUpdate={loadData} />}
             {activeTab === "queries" && <QueriesTab />}
             {activeTab === "reviews" && <ReviewsTab orders={orders} />}
+            {/* Profile Pages */}
+            {activeTab.startsWith("profile-page-") && (() => {
+              const pageId = activeTab.replace("profile-page-", "");
+              const page = profilePages.find((p: any) => p._id === pageId);
+              console.log("Rendering profile page:", { pageId, page, allPages: profilePages });
+              if (!page) {
+                return (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Profile page not found.</p>
+                  </div>
+                );
+              }
+              return (
+                <div>
+                  <h2 className="text-2xl font-bold mb-6 theme-heading">{page.title}</h2>
+                  {page.subInfo && (
+                    <p className="text-gray-600 mb-4">{page.subInfo}</p>
+                  )}
+                  <div 
+                    className="prose prose-lg max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: page.content || "<p>No content available.</p>" }}
+                  />
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

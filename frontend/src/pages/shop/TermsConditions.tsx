@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
+import { TableOfContents } from "@/components/ui/TableOfContents";
+
 type PageContent = {
   title: string;
   subTitle: string;
@@ -10,14 +12,14 @@ type PageContent = {
 };
 
 export default function TermsConditions() {
-const [content, setContent] = useState<PageContent>({
-  title: "Terms & Conditions",
-  subTitle: "Legal page related Sub Title",
-  description: "",
-  lastUpdated: new Date().toISOString(),
-});
-
+  const [content, setContent] = useState<PageContent>({
+    title: "Terms & Conditions",
+    subTitle: "Legal page related Sub Title",
+    description: "",
+    lastUpdated: new Date().toISOString(),
+  });
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -43,28 +45,39 @@ const [content, setContent] = useState<PageContent>({
   };
 
   return (
-    <div className="min-h-screen bg-white py-20">
+    <div className="min-h-screen bg-white py-20 pb-0">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-4">
-          {content.title || "Terms & Conditions"}
-        </h1>
-        
-        {/* Subtitle */}
-        <p className="text-lg text-gray-600 mb-8">
-          {content.subTitle || "Legal page related Sub Title"}
-        </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Table of Contents - Left Sidebar */}
+          <div className="lg:w-64 flex-shrink-0">
+            <TableOfContents htmlContent={content.description} contentRef={contentRef} />
+          </div>
 
-        {/* Content */}
-        <div 
-          className="prose prose-lg max-w-none text-gray-700 mb-8"
-          dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
-        />
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4">
+              {content.title || "Terms & Conditions"}
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-lg text-gray-600 mb-8">
+              {content.subTitle || "Legal page related Sub Title"}
+            </p>
 
-        {/* Last Updated */}
-        <div className="text-right text-sm text-gray-500 mt-12">
-          Last updated {formatDate(content.lastUpdated)}
+            {/* Content */}
+            <div 
+              ref={contentRef}
+              className="prose prose-lg max-w-none text-gray-700 mb-8 relative"
+              dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
+            />
+
+            {/* Last Updated - Bottom Right */}
+            <div className="text-right text-sm text-gray-500 mt-12">
+              Updated: {formatDate(content.lastUpdated)}
+            </div>
+          </div>
         </div>
       </main>
       <Footer />

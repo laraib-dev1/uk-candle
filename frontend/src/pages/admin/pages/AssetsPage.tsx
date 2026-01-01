@@ -1,197 +1,215 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RichTextEditor } from "@mantine/rte";
+import { getBanners, updateBanner, type Banner, type BannerSlot } from "@/api/banner.api";
+import { getAllContent, updateContent, getContentByType, type ContentPage, type ContentType } from "@/api/content.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { getAllContent, updateContent, type ContentPage, type FAQ } from "@/api/content.api";
-import { getBanners, updateBanner, type Banner, type BannerSlot } from "@/api/banner.api";
 import { useToast } from "@/components/ui/toast";
-import PageLoader from "@/components/ui/PageLoader";
+import FilterTabs from "@/components/ui/FilterTabs";
 import ImageCropperModal from "@/components/admin/product/ImageCropperModal";
-import { Upload, X } from "lucide-react";
+
+type TabType = "banners" | "privacy" | "terms" | "faq";
 
 export default function AssetsPage() {
   const { success, error } = useToast();
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("banners");
   
-  // Content states
-  const [privacyContent, setPrivacyContent] = useState<ContentPage>({
-    type: "privacy",
-    title: "Privacy Policy",
-    subTitle: "",
-    description: "",
-    lastUpdated: "",
-  });
+  // Edit mode states
+  const [editingBannerSlot, setEditingBannerSlot] = useState<BannerSlot | null>(null);
+  const [isEditingPrivacy, setIsEditingPrivacy] = useState(false);
+  const [isEditingTerms, setIsEditingTerms] = useState(false);
+  const [isEditingFAQ, setIsEditingFAQ] = useState(false);
   
-  const [termsContent, setTermsContent] = useState<ContentPage>({
-    type: "terms",
-    title: "Terms & Conditions",
-    subTitle: "",
-    description: "",
-    lastUpdated: "",
-  });
-  
-  const [faqsContent, setFaqsContent] = useState<ContentPage>({
-    type: "faqs",
-    title: "Frequently Asked Questions",
-    subTitle: "",
-    description: "",
-    faqs: [],
-    lastUpdated: "",
-  });
-
-  // Banner states
+  // Banners state
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [editingBanner, setEditingBanner] = useState<BannerSlot | null>(null);
-  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
-  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
-  const [bannerTargetUrl, setBannerTargetUrl] = useState("");
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [selectedFileForCrop, setSelectedFileForCrop] = useState<File | null>(null);
-  const [savingBanner, setSavingBanner] = useState(false);
+  const [bannerLoading, setBannerLoading] = useState(false);
+  const [bannerFormData, setBannerFormData] = useState<Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }>>({
+    "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
+  });
+  const [bannerOriginalData, setBannerOriginalData] = useState<Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }>>({
+    "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
+  });
+  const [showImageCropper, setShowImageCropper] = useState(false);
+  const [currentBannerSlot, setCurrentBannerSlot] = useState<BannerSlot | null>(null);
+  const [currentImageFile, setCurrentImageFile] = useState<File | null>(null);
+  
+  // Content state - original and working copies
+  const [privacyContent, setPrivacyContent] = useState<ContentPage | null>(null);
+  const [privacyContentOriginal, setPrivacyContentOriginal] = useState<ContentPage | null>(null);
+  
+  const [termsContent, setTermsContent] = useState<ContentPage | null>(null);
+  const [termsContentOriginal, setTermsContentOriginal] = useState<ContentPage | null>(null);
+  
+  const [faqContent, setFaqContent] = useState<ContentPage | null>(null);
+  const [faqContentOriginal, setFaqContentOriginal] = useState<ContentPage | null>(null);
+  
+  const [contentLoading, setContentLoading] = useState(false);
+  const [savingContent, setSavingContent] = useState(false);
+  
+  // FAQ state
+  const [newFAQ, setNewFAQ] = useState({ question: "", answer: "" });
+  const [editingFAQIndex, setEditingFAQIndex] = useState<number | null>(null);
 
-  // Editing states
-  const [isPrivacyEditing, setIsPrivacyEditing] = useState(false);
-  const [isTermsEditing, setIsTermsEditing] = useState(false);
-  const [isFaqsEditing, setIsFaqsEditing] = useState(false);
-
-  // Original content for discard
-  const [privacyOriginal, setPrivacyOriginal] = useState<ContentPage | null>(null);
-  const [termsOriginal, setTermsOriginal] = useState<ContentPage | null>(null);
-  const [faqsOriginal, setFaqsOriginal] = useState<ContentPage | null>(null);
-
+  // Load banners
   useEffect(() => {
-    loadAll();
-  }, []);
+    if (activeTab === "banners") {
+      loadBanners();
+    }
+  }, [activeTab]);
 
-  const loadAll = async () => {
+  // Load content
+  useEffect(() => {
+    if (activeTab === "privacy" || activeTab === "terms" || activeTab === "faq") {
+      loadContent();
+    }
+  }, [activeTab]);
+
+  const loadBanners = async () => {
+    setBannerLoading(true);
     try {
-      setLoading(true);
-      const [allContent, allBanners] = await Promise.all([
-        getAllContent().catch(() => []),
-        getBanners().catch(() => [])
-      ]);
-      
-      const privacy = allContent.find((c) => c.type === "privacy");
-      const terms = allContent.find((c) => c.type === "terms");
-      const faqs = allContent.find((c) => c.type === "faqs");
-
-      if (privacy) {
-        setPrivacyContent(privacy);
-      }
-      if (terms) {
-        setTermsContent(terms);
-      }
-      if (faqs) {
-        setFaqsContent(faqs);
-      }
-
-      setBanners(allBanners);
+      const data = await getBanners();
+      setBanners(data);
+      // Initialize form data with existing banners
+      const initialData: Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }> = {
+        "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
+        "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
+        "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+        "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
+      };
+      data.forEach((banner) => {
+        if (banner.slot in initialData) {
+          initialData[banner.slot as BannerSlot] = {
+            targetUrl: banner.targetUrl || "",
+            imageFile: null,
+            imagePreview: banner.imageUrl,
+          };
+        }
+      });
+      setBannerFormData(initialData);
+      setBannerOriginalData(JSON.parse(JSON.stringify(initialData)));
     } catch (err) {
-      console.error("Failed to load assets", err);
-      error("Failed to load assets");
+      console.error("Failed to load banners:", err);
+      error("Failed to load banners");
     } finally {
-      setLoading(false);
+      setBannerLoading(false);
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Not updated";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  };
-
-  // Banner handlers
-  const handleBannerFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    setSelectedFileForCrop(file);
-    setCropModalOpen(true);
-  };
-
-  const getBannerAspectRatio = (slot: BannerSlot): number => {
-    // hero-main: full background banner - 16:9
-    if (slot === "hero-main") return 16 / 9;
-    // hero-secondary: side image banner - 1.6:1
-    if (slot === "hero-secondary") return 1.6;
-    // hero-tertiary: wide banner - 16:9
-    if (slot === "hero-tertiary") return 16 / 9;
-    // shop-main: wide banner - 16:9
-    if (slot === "shop-main") return 16 / 9;
-    return 16 / 9; // default
-  };
-
-  const getCurrentBannerAspect = () => {
-    if (!editingBanner) return 16 / 9;
-    return getBannerAspectRatio(editingBanner);
-  };
-
-  const handleCropDone = (blob: Blob) => {
-    const file = new File([blob], "banner.jpg", { type: "image/jpeg" });
-    setBannerImageFile(file);
-    setBannerImagePreview(URL.createObjectURL(blob));
-    setCropModalOpen(false);
-  };
-
-  const handleEditBanner = (slot: BannerSlot) => {
-    const banner = banners.find((b) => b.slot === slot);
-    setEditingBanner(slot);
-    setBannerTargetUrl(banner?.targetUrl || "");
-    setBannerImageFile(null);
-    setBannerImagePreview(banner?.imageUrl || null);
-  };
-
-  const handleCancelBanner = () => {
-    setEditingBanner(null);
-    setBannerTargetUrl("");
-    setBannerImageFile(null);
-    setBannerImagePreview(null);
-  };
-
-  const handleSaveBanner = async () => {
-    if (!editingBanner) return;
-    
+  const loadContent = async () => {
+    setContentLoading(true);
     try {
-      setSavingBanner(true);
-      await updateBanner(editingBanner, {
-        targetUrl: bannerTargetUrl,
-        file: bannerImageFile,
+      if (activeTab === "privacy") {
+        const data = await getContentByType("privacy");
+        setPrivacyContent(data);
+        setPrivacyContentOriginal(JSON.parse(JSON.stringify(data)));
+      } else if (activeTab === "terms") {
+        const data = await getContentByType("terms");
+        setTermsContent(data);
+        setTermsContentOriginal(JSON.parse(JSON.stringify(data)));
+      } else if (activeTab === "faq") {
+        const data = await getContentByType("faqs");
+        setFaqContent(data);
+        setFaqContentOriginal(JSON.parse(JSON.stringify(data)));
+      }
+    } catch (err) {
+      console.error("Failed to load content:", err);
+      error("Failed to load content");
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  const handleBannerImageSelect = (file: File, slot: BannerSlot) => {
+    setCurrentBannerSlot(slot);
+    setCurrentImageFile(file);
+    setShowImageCropper(true);
+  };
+
+  const handleImageCrop = (croppedFile: File) => {
+    if (!currentBannerSlot) return;
+    const preview = URL.createObjectURL(croppedFile);
+    setBannerFormData({
+      ...bannerFormData,
+      [currentBannerSlot]: {
+        ...bannerFormData[currentBannerSlot],
+        imageFile: croppedFile,
+        imagePreview: preview,
+      },
+    });
+    setShowImageCropper(false);
+    setCurrentBannerSlot(null);
+  };
+
+  const startEditBanner = (slot: BannerSlot) => {
+    const banner = banners.find((b) => b.slot === slot);
+    setBannerFormData({
+      ...bannerFormData,
+      [slot]: {
+        targetUrl: banner?.targetUrl || "",
+        imageFile: null,
+        imagePreview: banner?.imageUrl || null,
+      },
+    });
+    setBannerOriginalData({
+      ...bannerOriginalData,
+      [slot]: {
+        targetUrl: banner?.targetUrl || "",
+        imageFile: null,
+        imagePreview: banner?.imageUrl || null,
+      },
+    });
+    setEditingBannerSlot(slot);
+  };
+
+  const discardBanner = (slot: BannerSlot) => {
+    setBannerFormData({
+      ...bannerFormData,
+      [slot]: { ...bannerOriginalData[slot] },
+    });
+    setEditingBannerSlot(null);
+  };
+
+  const saveBanner = async (slot: BannerSlot) => {
+    try {
+      await updateBanner(slot, {
+        targetUrl: bannerFormData[slot].targetUrl,
+        file: bannerFormData[slot].imageFile,
       });
       success("Banner updated successfully!");
-      handleCancelBanner();
-      loadAll();
+      setEditingBannerSlot(null);
+      setBannerFormData({
+        ...bannerFormData,
+        [slot]: {
+          ...bannerFormData[slot],
+          imageFile: null,
+        },
+      });
+      loadBanners();
     } catch (err: any) {
       error(err.response?.data?.message || "Failed to update banner");
-    } finally {
-      setSavingBanner(false);
     }
   };
 
-  const getBannerSlotLabel = (slot: BannerSlot): string => {
-    const labels: Record<BannerSlot, string> = {
-      "hero-main": "Hero Main",
-      "hero-secondary": "Hero Secondary",
-      "hero-tertiary": "Hero Tertiary",
-      "shop-main": "Shop Main",
-    };
-    return labels[slot] || slot;
+  const startEditPrivacy = () => {
+    setIsEditingPrivacy(true);
   };
 
-  // Privacy handlers
-  const handleEditPrivacy = () => {
-    setPrivacyOriginal({ ...privacyContent });
-    setIsPrivacyEditing(true);
-  };
-
-  const handleDiscardPrivacy = () => {
-    if (privacyOriginal) {
-      setPrivacyContent(privacyOriginal);
+  const discardPrivacy = () => {
+    if (privacyContentOriginal) {
+      setPrivacyContent(JSON.parse(JSON.stringify(privacyContentOriginal)));
     }
-    setIsPrivacyEditing(false);
-    setPrivacyOriginal(null);
+    setIsEditingPrivacy(false);
   };
 
-  const handleSavePrivacy = async () => {
+  const updatePrivacy = async () => {
+    if (!privacyContent) return;
+    setSavingContent(true);
     try {
       await updateContent("privacy", {
         title: privacyContent.title,
@@ -199,29 +217,29 @@ export default function AssetsPage() {
         description: privacyContent.description,
       });
       success("Privacy Policy updated successfully!");
-      setIsPrivacyEditing(false);
-      setPrivacyOriginal(null);
-      loadAll();
+      setIsEditingPrivacy(false);
+      loadContent();
     } catch (err: any) {
-      error(err.response?.data?.message || "Failed to update Privacy Policy");
+      error(err.response?.data?.message || "Failed to update privacy policy");
+    } finally {
+      setSavingContent(false);
     }
   };
 
-  // Terms handlers
-  const handleEditTerms = () => {
-    setTermsOriginal({ ...termsContent });
-    setIsTermsEditing(true);
+  const startEditTerms = () => {
+    setIsEditingTerms(true);
   };
 
-  const handleDiscardTerms = () => {
-    if (termsOriginal) {
-      setTermsContent(termsOriginal);
+  const discardTerms = () => {
+    if (termsContentOriginal) {
+      setTermsContent(JSON.parse(JSON.stringify(termsContentOriginal)));
     }
-    setIsTermsEditing(false);
-    setTermsOriginal(null);
+    setIsEditingTerms(false);
   };
 
-  const handleSaveTerms = async () => {
+  const updateTerms = async () => {
+    if (!termsContent) return;
+    setSavingContent(true);
     try {
       await updateContent("terms", {
         title: termsContent.title,
@@ -229,387 +247,685 @@ export default function AssetsPage() {
         description: termsContent.description,
       });
       success("Terms & Conditions updated successfully!");
-      setIsTermsEditing(false);
-      setTermsOriginal(null);
-      loadAll();
+      setIsEditingTerms(false);
+      loadContent();
     } catch (err: any) {
-      error(err.response?.data?.message || "Failed to update Terms & Conditions");
+      error(err.response?.data?.message || "Failed to update terms & conditions");
+    } finally {
+      setSavingContent(false);
     }
   };
 
-  // FAQs handlers
-  const handleEditFaqs = () => {
-    setFaqsOriginal({ ...faqsContent });
-    setIsFaqsEditing(true);
+  const startEditFAQ = () => {
+    setIsEditingFAQ(true);
   };
 
-  const handleDiscardFaqs = () => {
-    if (faqsOriginal) {
-      setFaqsContent(faqsOriginal);
+  const discardFAQ = () => {
+    if (faqContentOriginal) {
+      setFaqContent(JSON.parse(JSON.stringify(faqContentOriginal)));
     }
-    setIsFaqsEditing(false);
-    setFaqsOriginal(null);
+    setNewFAQ({ question: "", answer: "" });
+    setEditingFAQIndex(null);
+    setIsEditingFAQ(false);
   };
 
-  const handleSaveFaqs = async () => {
+  const updateFAQ = async () => {
+    if (!faqContent) return;
+    setSavingContent(true);
     try {
       await updateContent("faqs", {
-        title: faqsContent.title,
-        subTitle: faqsContent.subTitle,
-        description: faqsContent.description,
-        faqs: faqsContent.faqs || [],
+        title: faqContent.title,
+        subTitle: faqContent.subTitle,
+        description: faqContent.description,
+        faqs: faqContent.faqs || [],
       });
-      success("FAQs updated successfully!");
-      setIsFaqsEditing(false);
-      setFaqsOriginal(null);
-      loadAll();
+      success("FAQ updated successfully!");
+      setIsEditingFAQ(false);
+      setNewFAQ({ question: "", answer: "" });
+      setEditingFAQIndex(null);
+      loadContent();
     } catch (err: any) {
-      error(err.response?.data?.message || "Failed to update FAQs");
+      error(err.response?.data?.message || "Failed to update FAQ");
+    } finally {
+      setSavingContent(false);
     }
   };
 
   const addFAQ = () => {
-    setFaqsContent({
-      ...faqsContent,
-      faqs: [...(faqsContent.faqs || []), { question: "", answer: "" }],
+    if (!newFAQ.question || !newFAQ.answer) {
+      error("Please fill in both question and answer");
+      return;
+    }
+    
+    if (!faqContent) return;
+    
+    const updatedFAQs = [...(faqContent.faqs || []), newFAQ];
+    setFaqContent({ ...faqContent, faqs: updatedFAQs });
+    setNewFAQ({ question: "", answer: "" });
+  };
+
+  const updateFAQItem = (index: number) => {
+    if (!faqContent) return;
+    
+    const updatedFAQs = [...(faqContent.faqs || [])];
+    updatedFAQs[index] = newFAQ;
+    setFaqContent({ ...faqContent, faqs: updatedFAQs });
+    setEditingFAQIndex(null);
+    setNewFAQ({ question: "", answer: "" });
+  };
+
+  const deleteFAQ = (index: number) => {
+    if (!faqContent) return;
+    
+    const updatedFAQs = faqContent.faqs?.filter((_, i) => i !== index) || [];
+    setFaqContent({ ...faqContent, faqs: updatedFAQs });
+  };
+
+  const startEditFAQItem = (index: number) => {
+    if (!faqContent?.faqs) return;
+    setNewFAQ(faqContent.faqs[index]);
+    setEditingFAQIndex(index);
+  };
+
+  const bannerSlots: { slot: BannerSlot; label: string }[] = [
+    { slot: "hero-main", label: "Hero Main" },
+    { slot: "hero-secondary", label: "Hero Secondary" },
+    { slot: "hero-tertiary", label: "Hero Tertiary" },
+    { slot: "shop-main", label: "Shop Main" },
+  ];
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Not updated";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
-  const removeFAQ = (index: number) => {
-    const newFaqs = [...(faqsContent.faqs || [])];
-    newFaqs.splice(index, 1);
-    setFaqsContent({ ...faqsContent, faqs: newFaqs });
-  };
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold theme-heading">Assets</h1>
+      </div>
 
-  const updateFAQ = (index: number, field: "question" | "answer", value: string) => {
-    const newFaqs = [...(faqsContent.faqs || [])];
-    newFaqs[index] = { ...newFaqs[index], [field]: value };
-    setFaqsContent({ ...faqsContent, faqs: newFaqs });
-  };
+      {/* Tabs */}
+      <div className="mb-6">
+        <FilterTabs
+          tabs={[
+            { id: "banners", label: "Banners" },
+            { id: "privacy", label: "Privacy Policy" },
+            { id: "terms", label: "Terms & Conditions" },
+            { id: "faq", label: "FAQ" },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(tabId) => setActiveTab(tabId as TabType)}
+        />
+      </div>
 
-  if (loading) {
-    return <PageLoader message="Loading assets..." />;
-  }
-
-  const landingPageBanners: BannerSlot[] = ["hero-main", "hero-secondary", "hero-tertiary"];
-  const shopPageBanners: BannerSlot[] = ["shop-main"];
-
-  const renderBannerCard = (slot: BannerSlot) => {
-    const banner = banners.find((b) => b.slot === slot);
-    const isEditing = editingBanner === slot;
-
-    return (
-      <div key={slot} className="bg-white rounded-lg border border-gray-200 p-6 text-black">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-black">{getBannerSlotLabel(slot)}</h2>
-          {!isEditing ? (
-            <Button onClick={() => handleEditBanner(slot)} className="theme-button text-black">
-              {banner ? "Edit" : "Add Banner"}
-            </Button>
+      {/* Banners Tab */}
+      {activeTab === "banners" && (
+        <div className="space-y-6">
+          {bannerLoading ? (
+            <p>Loading banners...</p>
           ) : (
-            <div className="flex gap-2">
-              <Button onClick={handleCancelBanner} variant="outline" className="text-black">
-                Cancel
-              </Button>
-              <Button onClick={handleSaveBanner} className="theme-button text-black" disabled={savingBanner}>
-                {savingBanner ? "Saving..." : "Save"}
-              </Button>
-            </div>
+            bannerSlots.map(({ slot, label }) => {
+              const banner = banners.find((b) => b.slot === slot);
+              const isEditing = editingBannerSlot === slot;
+              const formData = bannerFormData[slot];
+              const imageUrl = formData.imagePreview || banner?.imageUrl;
+
+              return (
+                <div key={slot} className="bg-white p-6 rounded-lg border border-gray-200 relative">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">{label}</h3>
+                    {!isEditing && (
+                      <Button
+                        onClick={() => startEditBanner(slot)}
+                        className="theme-button text-white"
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {!isEditing ? (
+                    <div className="space-y-4">
+                      {imageUrl && (
+                        <div>
+                          {banner?.targetUrl ? (
+                            <a
+                              href={banner.targetUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block cursor-pointer"
+                            >
+                              <img
+                                src={imageUrl}
+                                alt={label}
+                                className="w-full h-64 object-cover rounded border hover:opacity-90 transition-opacity"
+                              />
+                            </a>
+                          ) : (
+                            <img
+                              src={imageUrl}
+                              alt={label}
+                              className="w-full h-64 object-cover rounded border"
+                            />
+                          )}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          <strong>Target URL:</strong> {banner?.targetUrl || "Not set"}
+                        </p>
+                      </div>
+                      {banner?.updatedAt && (
+                        <div className="text-right">
+                          <span className="text-sm text-gray-500">
+                            Updated: {formatDate(banner.updatedAt)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Banner Image</label>
+                        {formData.imagePreview ? (
+                          <div className="relative">
+                            <img
+                              src={formData.imagePreview}
+                              alt="Preview"
+                              className="w-full h-64 object-cover rounded border"
+                            />
+                            <button
+                              onClick={() => {
+                                setBannerFormData({
+                                  ...bannerFormData,
+                                  [slot]: {
+                                    ...formData,
+                                    imagePreview: banner?.imageUrl || null,
+                                    imageFile: null,
+                                  },
+                                });
+                              }}
+                              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                  handleBannerImageSelect(e.target.files[0], slot);
+                                }
+                              }}
+                              className="block"
+                            />
+                            {banner?.imageUrl && (
+                              <p className="text-sm text-gray-500 mt-2">
+                                Current image will be kept if no new image is uploaded
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Target URL</label>
+                        <Input
+                          value={formData.targetUrl}
+                          onChange={(e) =>
+                            setBannerFormData({
+                              ...bannerFormData,
+                              [slot]: {
+                                ...formData,
+                                targetUrl: e.target.value,
+                              },
+                            })
+                          }
+                          placeholder="https://example.com"
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => saveBanner(slot)}
+                          className="theme-button text-white"
+                        >
+                          Update
+                        </Button>
+                        <Button
+                          onClick={() => discardBanner(slot)}
+                          variant="outline"
+                        >
+                          Discard
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
+      )}
 
-        {isEditing ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-black">Banner Image</label>
-              <div className="flex items-center gap-4">
-                {bannerImagePreview && (
-                  <div className="relative">
-                    <img
-                      src={bannerImagePreview}
-                      alt="Banner preview"
-                      className="w-48 h-32 object-cover rounded-lg border border-gray-300"
-                    />
-                    <button
-                      onClick={() => {
-                        setBannerImagePreview(null);
-                        setBannerImageFile(null);
-                      }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBannerFileSelect}
-                    className="hidden"
-                    id={`banner-file-${slot}`}
-                  />
-                  <label
-                    htmlFor={`banner-file-${slot}`}
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-black"
+      {/* Privacy Policy Tab */}
+      {activeTab === "privacy" && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 relative">
+          {contentLoading ? (
+            <p>Loading...</p>
+          ) : privacyContent ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Privacy Policy</h2>
+                {!isEditingPrivacy && (
+                  <Button
+                    onClick={startEditPrivacy}
+                    className="theme-button text-white"
                   >
-                    <Upload className="w-4 h-4" />
-                    {bannerImagePreview ? "Change Image" : "Upload Image"}
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-black">Target URL (optional)</label>
-              <Input
-                placeholder="https://example.com or /shop"
-                value={bannerTargetUrl}
-                onChange={(e) => setBannerTargetUrl(e.target.value)}
-                className="text-black"
-              />
-            </div>
-          </div>
-        ) : (
-          <div>
-            {banner?.imageUrl ? (
-              <div>
-                <img
-                  src={banner.imageUrl}
-                  alt={getBannerSlotLabel(slot)}
-                  className="w-full h-auto object-cover rounded-lg border border-gray-300"
-                />
-                {banner.targetUrl && (
-                  <p className="mt-2 text-sm text-black">
-                    Target URL: <a href={banner.targetUrl} className="text-blue-600 hover:underline">{banner.targetUrl}</a>
-                  </p>
+                    Edit
+                  </Button>
                 )}
               </div>
-            ) : (
-              <p className="text-black italic">No banner set for this slot</p>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
 
-  return (
-    <div className="p-6 text-black">
-      <h1 className="text-2xl font-bold theme-heading mb-6 text-black">Assets Panel</h1>
-
-      <Tabs defaultValue="banners" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="banners" className="text-black">Banners</TabsTrigger>
-          <TabsTrigger value="privacy" className="text-black">Privacy Policy</TabsTrigger>
-          <TabsTrigger value="terms" className="text-black">Terms & Conditions</TabsTrigger>
-          <TabsTrigger value="faqs" className="text-black">FAQs</TabsTrigger>
-        </TabsList>
-
-        {/* Banners Tab */}
-        <TabsContent value="banners" className="space-y-8 mt-6">
-          {/* Landing Page Banners */}
-          <div>
-            <h2 className="text-xl font-bold text-black mb-4">Landing Page Banners</h2>
-            <div className="space-y-6">
-              {landingPageBanners.map((slot) => renderBannerCard(slot))}
-            </div>
-          </div>
-
-          {/* Shop Page Banners */}
-          <div>
-            <h2 className="text-xl font-bold text-black mb-4">Shop Page Banners</h2>
-            <div className="space-y-6">
-              {shopPageBanners.map((slot) => renderBannerCard(slot))}
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Privacy Policy Tab */}
-        <TabsContent value="privacy" className="mt-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-black">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-black">Privacy Policy</h2>
-              {!isPrivacyEditing ? (
-                <Button onClick={handleEditPrivacy} className="theme-button text-white">
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button onClick={handleDiscardPrivacy} variant="outline">
-                    Discard
-                  </Button>
-                  <Button onClick={handleSavePrivacy} className="theme-button text-white">
-                    Update
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {isPrivacyEditing ? (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Title"
-                  value={privacyContent.title}
-                  onChange={(e) => setPrivacyContent({ ...privacyContent, title: e.target.value })}
-                />
-                <Input
-                  placeholder="Subtitle"
-                  value={privacyContent.subTitle}
-                  onChange={(e) => setPrivacyContent({ ...privacyContent, subTitle: e.target.value })}
-                />
-                <RichTextEditor
-                  value={privacyContent.description}
-                  onChange={(value) => setPrivacyContent({ ...privacyContent, description: value })}
-                  className="w-full bg-white text-gray-900"
-                />
-              </div>
-            ) : (
-              <div className="text-black">
-                <div dangerouslySetInnerHTML={{ __html: privacyContent.description }} />
-                <div className="flex justify-end mt-4 text-sm text-black">
-                  Last updated {formatDate(privacyContent.lastUpdated)}
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* Terms & Conditions Tab */}
-        <TabsContent value="terms" className="mt-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-black">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-black">Terms & Conditions</h2>
-              {!isTermsEditing ? (
-                <Button onClick={handleEditTerms} className="theme-button text-white">
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button onClick={handleDiscardTerms} variant="outline">
-                    Discard
-                  </Button>
-                  <Button onClick={handleSaveTerms} className="theme-button text-white">
-                    Update
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {isTermsEditing ? (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Title"
-                  value={termsContent.title}
-                  onChange={(e) => setTermsContent({ ...termsContent, title: e.target.value })}
-                />
-                <Input
-                  placeholder="Subtitle"
-                  value={termsContent.subTitle}
-                  onChange={(e) => setTermsContent({ ...termsContent, subTitle: e.target.value })}
-                />
-                <RichTextEditor
-                  value={termsContent.description}
-                  onChange={(value) => setTermsContent({ ...termsContent, description: value })}
-                  className="w-full bg-white text-gray-900"
-                />
-              </div>
-            ) : (
-              <div className="text-black">
-                <div dangerouslySetInnerHTML={{ __html: termsContent.description }} />
-                <div className="flex justify-end mt-4 text-sm text-black">
-                  Last updated {formatDate(termsContent.lastUpdated)}
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* FAQs Tab */}
-        <TabsContent value="faqs" className="mt-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-black">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-black">Frequently Asked Questions</h2>
-              {!isFaqsEditing ? (
-                <Button onClick={handleEditFaqs} className="theme-button text-white">
-                  Edit
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button onClick={handleDiscardFaqs} variant="outline">
-                    Discard
-                  </Button>
-                  <Button onClick={handleSaveFaqs} className="theme-button text-white">
-                    Update
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {isFaqsEditing ? (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Title"
-                  value={faqsContent.title}
-                  onChange={(e) => setFaqsContent({ ...faqsContent, title: e.target.value })}
-                />
-                <Input
-                  placeholder="Subtitle"
-                  value={faqsContent.subTitle}
-                  onChange={(e) => setFaqsContent({ ...faqsContent, subTitle: e.target.value })}
-                />
-                <div className="space-y-4">
-                  {(faqsContent.faqs || []).map((faq, index) => (
-                    <div key={index} className="border p-4 rounded-lg space-y-2">
-                      <Input
-                        placeholder="Question"
-                        value={faq.question}
-                        onChange={(e) => updateFAQ(index, "question", e.target.value)}
-                      />
-                      <RichTextEditor
-                        value={faq.answer}
-                        onChange={(value) => updateFAQ(index, "answer", value)}
-                        className="w-full bg-white text-gray-900"
-                      />
-                      <Button
-                        onClick={() => removeFAQ(index)}
-                        variant="outline"
-                        className="text-red-600"
-                      >
-                        Remove
-                      </Button>
+              {!isEditingPrivacy ? (
+                <div className="space-y-4 pb-8">
+                  <div>
+                    <h3 className="font-semibold">{privacyContent.title}</h3>
+                    <p className="text-gray-600">{privacyContent.subTitle}</p>
+                  </div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: privacyContent.description }}
+                    className="prose max-w-none"
+                  />
+                  {privacyContent.lastUpdated && (
+                    <div className="text-right absolute bottom-4 right-6">
+                      <span className="text-sm text-gray-500">
+                        Updated: {formatDate(privacyContent.lastUpdated)}
+                      </span>
                     </div>
-                  ))}
-                  <Button onClick={addFAQ} variant="outline">
-                    + Add FAQ
-                  </Button>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="text-black">
+              ) : (
                 <div className="space-y-4">
-                  {(faqsContent.faqs || []).map((faq, index) => (
-                    <div key={index} className="border-b pb-4">
-                      <h3 className="font-semibold mb-2 text-black">{faq.question}</h3>
-                      <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
-                    </div>
-                  ))}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Title</label>
+                    <Input
+                      value={privacyContent.title}
+                      onChange={(e) =>
+                        setPrivacyContent({ ...privacyContent, title: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Subtitle</label>
+                    <Input
+                      value={privacyContent.subTitle}
+                      onChange={(e) =>
+                        setPrivacyContent({ ...privacyContent, subTitle: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Content</label>
+                    <RichTextEditor
+                      value={privacyContent.description}
+                      onChange={(value) =>
+                        setPrivacyContent({ ...privacyContent, description: value })
+                      }
+                      className="w-full bg-white text-gray-900"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={updatePrivacy}
+                      className="theme-button text-white"
+                      disabled={savingContent}
+                    >
+                      {savingContent ? "Updating..." : "Update"}
+                    </Button>
+                    <Button
+                      onClick={discardPrivacy}
+                      variant="outline"
+                      disabled={savingContent}
+                    >
+                      Discard
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex justify-end mt-4 text-sm text-black">
-                  Last updated {formatDate(faqsContent.lastUpdated)}
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+              )}
+            </div>
+          ) : (
+            <p>Loading...</p>
+          )}
+        </div>
+      )}
 
-      <ImageCropperModal
-        open={cropModalOpen}
-        onClose={() => setCropModalOpen(false)}
-        file={selectedFileForCrop}
-        onCropDone={handleCropDone}
-        aspect={getCurrentBannerAspect()}
-      />
+      {/* Terms & Conditions Tab */}
+      {activeTab === "terms" && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 relative">
+          {contentLoading ? (
+            <p>Loading...</p>
+          ) : termsContent ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Terms & Conditions</h2>
+                {!isEditingTerms && (
+                  <Button
+                    onClick={startEditTerms}
+                    className="theme-button text-white"
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {!isEditingTerms ? (
+                <div className="space-y-4 pb-8">
+                  <div>
+                    <h3 className="font-semibold">{termsContent.title}</h3>
+                    <p className="text-gray-600">{termsContent.subTitle}</p>
+                  </div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: termsContent.description }}
+                    className="prose max-w-none"
+                  />
+                  {termsContent.lastUpdated && (
+                    <div className="text-right absolute bottom-4 right-6">
+                      <span className="text-sm text-gray-500">
+                        Updated: {formatDate(termsContent.lastUpdated)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Title</label>
+                    <Input
+                      value={termsContent.title}
+                      onChange={(e) =>
+                        setTermsContent({ ...termsContent, title: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Subtitle</label>
+                    <Input
+                      value={termsContent.subTitle}
+                      onChange={(e) =>
+                        setTermsContent({ ...termsContent, subTitle: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Content</label>
+                    <RichTextEditor
+                      value={termsContent.description}
+                      onChange={(value) =>
+                        setTermsContent({ ...termsContent, description: value })
+                      }
+                      className="w-full bg-white text-gray-900"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={updateTerms}
+                      className="theme-button text-white"
+                      disabled={savingContent}
+                    >
+                      {savingContent ? "Updating..." : "Update"}
+                    </Button>
+                    <Button
+                      onClick={discardTerms}
+                      variant="outline"
+                      disabled={savingContent}
+                    >
+                      Discard
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p>Loading...</p>
+          )}
+        </div>
+      )}
+
+      {/* FAQ Tab */}
+      {activeTab === "faq" && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 relative">
+          {contentLoading ? (
+            <p>Loading...</p>
+          ) : faqContent ? (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">FAQ</h2>
+                {!isEditingFAQ && (
+                  <Button
+                    onClick={startEditFAQ}
+                    className="theme-button text-white"
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {!isEditingFAQ ? (
+                <div className="space-y-4 pb-8">
+                  <div>
+                    <h3 className="font-semibold">{faqContent.title}</h3>
+                    <p className="text-gray-600">{faqContent.subTitle}</p>
+                  </div>
+
+                  {/* FAQs List */}
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">FAQs ({faqContent.faqs?.length || 0})</h3>
+                    <div className="space-y-4">
+                      {faqContent.faqs && faqContent.faqs.length > 0 ? (
+                        faqContent.faqs.map((faq, index) => (
+                          <div
+                            key={index}
+                            className="p-4 border border-gray-200 rounded-lg"
+                          >
+                            <h4 className="font-medium mb-2">{faq.question}</h4>
+                            <div
+                              dangerouslySetInnerHTML={{ __html: faq.answer }}
+                              className="text-sm text-gray-600"
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No FAQs added yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {faqContent.lastUpdated && (
+                    <div className="text-right absolute bottom-4 right-6">
+                      <span className="text-sm text-gray-500">
+                        Updated: {formatDate(faqContent.lastUpdated)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Title</label>
+                    <Input
+                      value={faqContent.title}
+                      onChange={(e) =>
+                        setFaqContent({ ...faqContent, title: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Subtitle</label>
+                    <Input
+                      value={faqContent.subTitle}
+                      onChange={(e) =>
+                        setFaqContent({ ...faqContent, subTitle: e.target.value })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Add/Edit FAQ Form */}
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">
+                      {editingFAQIndex !== null ? "Edit FAQ" : "Add New FAQ"}
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Question</label>
+                        <Input
+                          value={newFAQ.question}
+                          onChange={(e) =>
+                            setNewFAQ({ ...newFAQ, question: e.target.value })
+                          }
+                          placeholder="Enter question"
+                          className="w-full"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Answer</label>
+                        <RichTextEditor
+                          value={newFAQ.answer}
+                          onChange={(value) =>
+                            setNewFAQ({ ...newFAQ, answer: value })
+                          }
+                          className="w-full bg-white text-gray-900"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() =>
+                            editingFAQIndex !== null ? updateFAQItem(editingFAQIndex) : addFAQ()
+                          }
+                          className="theme-button text-white"
+                        >
+                          {editingFAQIndex !== null ? "Update FAQ" : "Add FAQ"}
+                        </Button>
+                        {editingFAQIndex !== null && (
+                          <Button
+                            onClick={() => {
+                              setEditingFAQIndex(null);
+                              setNewFAQ({ question: "", answer: "" });
+                            }}
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FAQs List */}
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-4">FAQs ({faqContent.faqs?.length || 0})</h3>
+                    <div className="space-y-4">
+                      {faqContent.faqs && faqContent.faqs.length > 0 ? (
+                        faqContent.faqs.map((faq, index) => (
+                          <div
+                            key={index}
+                            className="p-4 border border-gray-200 rounded-lg"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium">{faq.question}</h4>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => startEditFAQItem(index)}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  onClick={() => deleteFAQ(index)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                            <div
+                              dangerouslySetInnerHTML={{ __html: faq.answer }}
+                              className="text-sm text-gray-600"
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No FAQs added yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={updateFAQ}
+                      className="theme-button text-white"
+                      disabled={savingContent}
+                    >
+                      {savingContent ? "Updating..." : "Update"}
+                    </Button>
+                    <Button
+                      onClick={discardFAQ}
+                      variant="outline"
+                      disabled={savingContent}
+                    >
+                      Discard
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p>Loading...</p>
+          )}
+        </div>
+      )}
+
+      {/* Image Cropper Modal */}
+      {showImageCropper && currentBannerSlot && currentImageFile && (
+        <ImageCropperModal
+          open={showImageCropper}
+          onClose={() => {
+            setShowImageCropper(false);
+            setCurrentBannerSlot(null);
+            setCurrentImageFile(null);
+          }}
+          imageFile={currentImageFile}
+          onCrop={handleImageCrop}
+          aspectRatio={16 / 9}
+        />
+      )}
     </div>
   );
 }

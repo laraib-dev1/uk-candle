@@ -112,7 +112,7 @@ export default function () {
             variant="full-background"
           />
         )}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
           {loading ? (
             <ProductGridSkeleton count={5} />
@@ -144,13 +144,12 @@ export default function () {
 />
 
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-           {/* HERO #3: FeatureHero image banner */}
-           <FeatureHero />
+        {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
+        <section className="py-10">
+           <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {loading ? (
             <ProductGridSkeleton count={15} />
           ) : (
@@ -185,27 +184,32 @@ export default function () {
             </>
           )}
         </section>
+        {/* Offer Section - Commented Out */}
         {/* <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <OfferSection />
         </section> */}
-        {/* HERO #2: Full-width banner - uses 'hero-secondary' banner */}
-        <Hero2
-          title="Discover new scents"
-          subtitle="A selection of fragrances to brighten your mood."
-          image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
-          imagePosition="right"
-        />
+         {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
+         <section className="py-10">
+           <Hero2
+             title="Discover new scents"
+             subtitle="A selection of fragrances to brighten your mood."
+             image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
+             imagePosition="right"
+           />
+         </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AtYourService />
         </section>
-        {/* Full-width banner - Discover your natural glow */}
-        <Hero
+        {/* Banner at bottom of services section - aligned with products */}
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <Hero
           title="Discover your natural glow"
           subtitle="Pure essentials for body and mind."
           image="/hero.png"
           imagePosition="left"
-        />
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          />
+        </section>
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <FeatureSection />
         </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

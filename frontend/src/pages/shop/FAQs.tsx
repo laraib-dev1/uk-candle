@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { ChevronDown, ChevronRight } from "lucide-react";
+
 type FAQItem = {
   question: string;
   answer: string;
@@ -10,26 +11,24 @@ type FAQItem = {
 
 type FAQContent = {
   faqs?: FAQItem[];
+  lastUpdated?: string;
 };
 
 export default function FAQs() {
-const [content, setContent] = useState<FAQContent>({
-  faqs: [],
-});
+  const [content, setContent] = useState<FAQContent>({
+    faqs: [],
+  });
   const [loading, setLoading] = useState(true);
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(0); // First FAQ expanded by default
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null); // All collapsed by default
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await getContentByType("faqs");
         setContent({
-  faqs: data.faqs ?? [],
-});
-        // Expand first FAQ if available
-        if (data.faqs && data.faqs.length > 0) {
-          setExpandedIndex(0);
-        }
+          faqs: data.faqs ?? [],
+          lastUpdated: data.lastUpdated,
+        });
       } catch (err) {
         console.error("Failed to load FAQs", err);
       } finally {
@@ -45,12 +44,19 @@ const [content, setContent] = useState<FAQContent>({
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
+  // Format date
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "15 Nov 2023";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  };
+
   return (
-    <div className="min-h-screen bg-white py-20">
+    <div className="min-h-screen bg-white py-20 pb-0">
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold text-[#A8734B] mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-12">
           Frequently Asked Questions
         </h1>
 
@@ -94,6 +100,13 @@ const [content, setContent] = useState<FAQContent>({
             </p>
           )}
         </div>
+
+        {/* Last Updated - Bottom Right */}
+        {content.lastUpdated && (
+          <div className="text-right text-sm text-gray-500 mt-12">
+            Updated: {formatDate(content.lastUpdated)}
+          </div>
+        )}
       </main>
       <Footer />
     </div>

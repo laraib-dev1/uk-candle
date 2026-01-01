@@ -1,320 +1,129 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
-import { getQueries, updateQueryStatus, deleteQuery } from "../../../api/query.api";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { Trash2, Eye } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FilterTabs from "@/components/ui/FilterTabs";
 
 interface Query {
-  _id: string;
   id?: string;
+  name: string;
   email: string;
-  subject: string;
-  description: string;
-  status: "Pending" | "Read" | "Replied";
+  message: string;
+  status: string;
   createdAt: string;
 }
 
 export default function QueriesTable() {
-  const { success, error } = useToast();
   const [queries, setQueries] = useState<Query[]>([]);
   const [filteredQueries, setFilteredQueries] = useState<Query[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedTab, setSelectedTab] = useState<"All" | "Pending" | "Read" | "Replied">("All");
-  const [selectedQuery, setSelectedQuery] = useState<Query | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
-
-  const loadQueries = async () => {
-    setLoading(true);
-    try {
-      const data = await getQueries();
-      const mapped = data.map((q: Query) => ({ ...q, id: q._id }));
-      setQueries(mapped);
-      setFilteredQueries(mapped);
-    } catch (err) {
-      console.error("Error fetching queries:", err);
-      error("Failed to load queries");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadQueries();
-  }, []);
-
-  // Track window resize
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [selectedTab, setSelectedTab] = useState<"All" | "read" | "pending" | "replied">("All");
 
   // Filter queries by tab and search
-  useEffect(() => {
+  React.useEffect(() => {
     let data = [...queries];
 
     // Filter by tab
     if (selectedTab !== "All") {
-      data = data.filter(query => query.status === selectedTab);
+      data = data.filter(query => query.status.toLowerCase() === selectedTab.toLowerCase());
     }
 
     // Filter by search
     if (search.trim() !== "") {
       const s = search.toLowerCase();
       data = data.filter(query => 
+        query.name.toLowerCase().includes(s) ||
         query.email.toLowerCase().includes(s) ||
-        query.subject.toLowerCase().includes(s) ||
-        query.description.toLowerCase().includes(s)
+        query.message.toLowerCase().includes(s)
       );
     }
 
     setFilteredQueries(data);
   }, [queries, selectedTab, search]);
 
-  const handleStatusChange = async (id: string, newStatus: "Pending" | "Read" | "Replied") => {
-    try {
-      await updateQueryStatus(id, newStatus);
-      success("Query status updated successfully");
-      loadQueries();
-    } catch (err: any) {
-      error(err?.response?.data?.message || "Failed to update status");
-    }
-  };
-
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
-  const handleDelete = (id: string) => {
-    setDeleteConfirm(id);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteConfirm) return;
-    
-    try {
-      await deleteQuery(deleteConfirm);
-      success("Query deleted successfully");
-      setDeleteConfirm(null);
-      loadQueries();
-    } catch (err: any) {
-      error(err?.response?.data?.message || "Failed to delete query");
-      setDeleteConfirm(null);
-    }
-  };
-
-  const openView = (query: Query) => {
-    setSelectedQuery(query);
-    setShowModal(true);
-  };
-
   const getColumns = () => {
-    const allColumns = [
+    return [
       {
-        name: "Email",
-        heading: (row: Query) => row.email,
-        subInfo: (row: Query) => new Date(row.createdAt).toLocaleDateString(),
+        name: "SR",
+        cell: (_row: Query, index: number) => <span className="text-gray-600">{index + 1}</span>,
+        minWidth: "60px",
+      },
+      {
+        name: "Name",
+        heading: (row: Query) => row.name,
+        subInfo: (row: Query) => row.email,
         minWidth: "200px",
       },
       {
-        name: "Subject",
-        selector: (row: Query) => row.subject,
-        minWidth: "250px",
-      },
-      {
-        name: "Description",
-        selector: (row: Query) => row.description.length > 50 
-          ? `${row.description.substring(0, 50)}...` 
-          : row.description,
+        name: "Message",
+        cell: (row: Query) => (
+          <div className="py-1">
+            <div className="text-sm text-gray-900 line-clamp-2" title={row.message}>
+              {row.message.length > 50 ? row.message.substring(0, 50) + "...." : row.message}
+            </div>
+          </div>
+        ),
         minWidth: "300px",
       },
       {
         name: "Status",
-        cell: (row: Query) => {
-          const statusColors: Record<string, string> = {
-            Pending: "bg-yellow-100 text-yellow-800",
-            Read: "bg-blue-100 text-blue-800",
-            Replied: "bg-green-100 text-green-800",
-          };
-          return (
-            <select
-              value={row.status}
-              onChange={(e) => handleStatusChange(row._id, e.target.value as "Pending" | "Read" | "Replied")}
-              className={`px-3 py-1 rounded-full text-xs font-medium border-none cursor-pointer ${statusColors[row.status] || "bg-gray-100 text-gray-800"}`}
-              style={{ 
-                backgroundColor: row.status === "Pending" ? "#FEF3C7" : row.status === "Read" ? "#DBEAFE" : "#D1FAE5",
-                color: row.status === "Pending" ? "#92400E" : row.status === "Read" ? "#1E40AF" : "#065F46"
-              }}
-            >
-              <option value="Pending">Pending</option>
-              <option value="Read">Read</option>
-              <option value="Replied">Replied</option>
-            </select>
-          );
-        },
-        minWidth: "120px",
-      },
-      {
-        name: "Actions",
-        cell: (row: Query) => (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => openView(row)}
-              className="p-1 text-blue-600 hover:text-blue-800"
-              title="View Details"
-            >
-              <Eye size={18} />
-            </button>
-            <button
-              onClick={() => handleDelete(row._id)}
-              className="p-1 text-red-600 hover:text-red-800"
-              title="Delete"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        ),
+        cell: (row: Query) => <StatusBadge status={row.status} type="query" />,
         minWidth: "100px",
       },
+      {
+        name: "Created At",
+        cell: (row: Query) => new Date(row.createdAt).toLocaleDateString(),
+        minWidth: "120px",
+      },
     ];
-
-    // Breakpoints: 600px, 800px, 900px, 1000px, 1200px, 2040px
-    if (windowWidth < 600) {
-      return allColumns.filter((_, idx) => [0, 2, 3, 4].includes(idx));
-    }
-
-    if (windowWidth < 800) {
-      return allColumns.filter((_, idx) => [0, 1, 3, 4].includes(idx));
-    }
-
-    if (windowWidth < 1000) {
-      return allColumns.filter((_, idx) => [0, 1, 3, 4].includes(idx));
-    }
-
-    return allColumns;
   };
 
-  if (loading) {
-    return <DataTableSkeleton />;
-  }
-
   return (
-    <div className="space-y-4">
-      <ConfirmDialog
-        open={deleteConfirm !== null}
-        title="Delete Query"
-        message="Are you sure you want to delete this query? This action cannot be undone."
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteConfirm(null)}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold theme-heading">Queries</h1>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+    <div className="w-full">
+      {/* Tabs + Search */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
+        {/* Tabs */}
+        <div className="flex gap-4 items-center flex-wrap">
+          <h2 className="text-2xl font-semibold theme-heading">Queries</h2>
+          <FilterTabs
+            tabs={[
+              { id: "All", label: "All" },
+              { id: "read", label: "Read" },
+              { id: "pending", label: "Pending" },
+              { id: "replied", label: "Replied" },
+            ]}
+            activeTab={selectedTab}
+            onTabChange={(tabId) => setSelectedTab(tabId as any)}
+          />
+        </div>
+
+        {/* Search */}
+        <div className="w-full md:w-auto mt-2 md:mt-0">
           <Input
-            type="text"
-            placeholder="Search queries..."
+            placeholder="Search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64"
+            onChange={e => setSearch(e.target.value)}
+            className="w-full md:w-64 border-[#C4A484] text-gray-900"
           />
         </div>
       </div>
 
-      {/* Tabs */}
-      <FilterTabs
-        tabs={[
-          { value: "All", label: "All" },
-          { value: "Pending", label: "Pending" },
-          { value: "Read", label: "Read" },
-          { value: "Replied", label: "Replied" },
-        ]}
-        value={selectedTab}
-        onChange={(value) => setSelectedTab(value as any)}
-        className="border-b border-gray-200 pb-2"
-      />
-
-      {/* Data Table */}
-      <EnhancedDataTable
-        data={filteredQueries}
-        columns={getColumns()}
-      />
-
-      {/* View Modal */}
-      {showModal && selectedQuery && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold theme-heading">Query Details</h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Email</label>
-                  <p className="text-gray-900">{selectedQuery.email}</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Subject</label>
-                  <p className="text-gray-900">{selectedQuery.subject}</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Description</label>
-                  <p className="text-gray-900 whitespace-pre-wrap">{selectedQuery.description}</p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Status</label>
-                  <select
-                    value={selectedQuery.status}
-                    onChange={(e) => {
-                      handleStatusChange(selectedQuery._id, e.target.value as "Pending" | "Read" | "Replied");
-                      setSelectedQuery({ ...selectedQuery, status: e.target.value as "Pending" | "Read" | "Replied" });
-                    }}
-                    className="mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Read">Read</option>
-                    <option value="Replied">Replied</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Date</label>
-                  <p className="text-gray-900">
-                    {new Date(selectedQuery.createdAt).toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
+      {/* DataTable */}
+      <div className="bg-white shadow rounded-lg border border-gray-200">
+        {loading ? (
+          <div className="p-4">
+            <DataTableSkeleton rows={8} />
           </div>
-        </div>
-      )}
+        ) : (
+          <EnhancedDataTable<Query>
+            columns={getColumns()}
+            data={filteredQueries}
+            pagination
+          />
+        )}
+      </div>
     </div>
   );
 }
-

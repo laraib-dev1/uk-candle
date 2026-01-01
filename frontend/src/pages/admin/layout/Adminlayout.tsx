@@ -132,9 +132,9 @@ export default function AdminLayout() {
 
   // Sidebar content component (reusable for both desktop and mobile)
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
-    <>
+    <div className="flex flex-col h-full">
       {/* Profile Box */}
-      <div className="flex items-center gap-3 px-5 pb-6 border-b border-white/20">
+      <div className="flex items-center gap-3 px-5 pb-6 border-b border-white/20 flex-shrink-0">
         <img
           key={user?.avatar || "default"}
           src={user?.avatar || "/avatar.png"}
@@ -157,7 +157,7 @@ export default function AdminLayout() {
       </div>
 
       {/* MENU */}
-      <nav className="flex flex-col gap-2 mt-6 px-2">
+      <nav className="flex flex-col gap-2 mt-6 px-2 flex-1 overflow-y-auto">
         {menu.map((item) => {
           const Icon = item.icon;
           const active = loc.pathname.startsWith(item.path);
@@ -181,7 +181,7 @@ export default function AdminLayout() {
       </nav>
 
       {/* SP CONSOLE & LOGOUT BUTTONS (bottom) */}
-      <div className="mt-auto px-2 space-y-2">
+      <div className="mt-auto px-2 space-y-2 flex-shrink-0">
         <Link
           to="/admin/sp-console"
           onClick={onLinkClick}
@@ -206,7 +206,7 @@ export default function AdminLayout() {
           Log out
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -230,15 +230,13 @@ export default function AdminLayout() {
             background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
           }}
         >
-          <div className="flex flex-col h-full py-6">
-            <SidebarContent onLinkClick={() => setSidebarOpen(false)} />
-          </div>
+          <SidebarContent onLinkClick={() => setSidebarOpen(false)} />
         </SheetContent>
       </Sheet>
 
       {/* ============ DESKTOP SIDEBAR ============ */}
       <aside 
-        className="hidden lg:flex w-64 text-white flex-col py-6 shadow-lg"
+        className="hidden lg:flex w-64 text-white flex-col py-6 shadow-lg fixed left-0 top-0 h-screen overflow-y-auto"
         style={{ 
           background: `linear-gradient(to bottom, var(--theme-dark), var(--theme-primary))`
         }}
@@ -247,7 +245,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 w-full lg:w-auto pt-16 lg:pt-8 p-4 lg:p-8">
+      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8">
          <React.Suspense fallback={<div>Loading admin page...</div>}>
       <Outlet />
     </React.Suspense>

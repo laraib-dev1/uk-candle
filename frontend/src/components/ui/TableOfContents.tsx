@@ -119,18 +119,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
       const tree = buildTree(headingData);
       setTocItems(tree);
 
-      // Expand all items by default
-      const allIds = new Set<string>();
-      const collectIds = (items: TOCItem[]) => {
-        items.forEach(item => {
-          allIds.add(item.id);
-          if (item.children.length > 0) {
-            collectIds(item.children);
-          }
-        });
-      };
-      collectIds(tree);
-      setExpandedItems(allIds);
+      // Start with all items collapsed by default
+      setExpandedItems(new Set());
       } catch (error) {
         console.error("Error generating table of contents:", error);
         setTocItems([]);

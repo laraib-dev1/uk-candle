@@ -79,15 +79,19 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
                 disabled={wishlistLoading}
                 className={`absolute top-3 right-3 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 ${
                   isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
-                } ${wishlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
                 title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                 style={isInWishlist ? { color: 'var(--theme-primary)' } : {}}
               >
-                <Heart 
-                  size={24} 
-                  className={isInWishlist ? 'fill-current' : 'fill-white/20'}
-                  strokeWidth={2.5}
-                />
+                {wishlistLoading ? (
+                  <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Heart 
+                    size={24} 
+                    className={isInWishlist ? 'fill-current' : 'fill-white/20'}
+                    strokeWidth={2.5}
+                  />
+                )}
               </button>
             )}
           </div>

@@ -15,6 +15,7 @@ export interface Banner {
   slot: BannerSlot | string;
   imageUrl: string;
   targetUrl: string;
+  updatedAt?: string;
 }
 
 const mapImage = (b: any): Banner => {
@@ -29,6 +30,7 @@ const mapImage = (b: any): Banner => {
     slot: b.slot,
     imageUrl: getFull(b.imageUrl),
     targetUrl: b.targetUrl || "",
+    updatedAt: b.updatedAt,
   };
 };
 
@@ -55,6 +57,9 @@ export const updateBanner = async (
 
   return mapImage(res.data.data);
 };
+
+
+
 
 
 

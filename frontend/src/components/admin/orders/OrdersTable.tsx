@@ -3,7 +3,7 @@ import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDat
 import { fetchOrders } from "../../../api/order.api";
 import { Input } from "@/components/ui/input";
 import { OrderModal } from "../product/OrderModal";
-import PageLoader from "@/components/ui/PageLoader";
+import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FilterTabs from "@/components/ui/FilterTabs";
 interface Address {
@@ -111,23 +111,31 @@ useEffect(() => {
   const getColumns = () => {
     const allColumns = [
       {
-        name: "ID",
-        cell: (_row: Order, index: number) => <span className="text-gray-600">#{index + 1}</span>,
+        name: "SR",
+        cell: (_row: Order, index: number) => <span className="text-gray-600">{index + 1}</span>,
         minWidth: "60px",
       },
       {
         name: "Customer",
         heading: (row: Order) => row.customerName,
-        subInfo: (row: Order) => {
-          if (!row.address) return "N/A";
-          const parts = [
-            row.address.line1,
-            row.address.area,
-            row.address.city,
-            row.address.province,
-            row.address.postalCode
-          ].filter(Boolean);
-          return parts.join(", ");
+        subInfo: (row: Order) => row.phoneNumber,
+        minWidth: "150px",
+      },
+      {
+        name: "Address",
+        cell: (row: Order) => {
+          const address = row.address
+            ? `${row.address.line1}, ${row.address.area || ""}, ${row.address.city}, ${row.address.province}`
+            : "N/A";
+          const words = address.split(" ");
+          const truncated = words.length > 4 ? words.slice(0, 4).join(" ") + "...." : address;
+          return (
+            <div className="py-1">
+              <div className="text-sm text-gray-900 line-clamp-2" title={address}>
+                {truncated}
+              </div>
+            </div>
+          );
         },
         minWidth: "200px",
       },
@@ -141,93 +149,99 @@ useEffect(() => {
         name: "Bill",
         heading: (row: Order) => `$${row.bill}`,
         subInfo: (row: Order) => row.payment,
-        minWidth: "150px",
-      },
-      {
-        name: "Created At",
-        selector: (row: Order) => new Date(row.createdAt).toLocaleString(),
-        minWidth: "150px",
+        minWidth: "120px",
       },
       {
         name: "Status",
         cell: (row: Order) => <StatusBadge status={row.status} type="order" />,
         minWidth: "100px",
       },
+      {
+        name: "Created At",
+        cell: (row: Order) => new Date(row.createdAt).toLocaleDateString(),
+        minWidth: "120px",
+      },
     ];
 
     if (windowWidth < 640) {
-      // small screens: show only most important (ID, Customer, Bill, Created At, Status)
-      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+      // small screens: show only most important
+      return allColumns.filter((_, idx) => [0, 1, 4, 5].includes(idx));
     }
 
+    if (windowWidth < 786) {
+      // medium screens: show a few more columns
+      return allColumns.filter((_, idx) => [0, 1, 4, 5].includes(idx));
+    }
+    
     if (windowWidth < 800) {
-      // medium-small screens
-      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
+      return allColumns.filter((_, idx) => [0, 1, 4, 5].includes(idx));
     }
-
+    
     if (windowWidth < 1024) {
-      // medium screens
-      return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
+      // small screens: show only most important
+      return allColumns.filter((_, idx) => [0, 1, 3, 4, 5].includes(idx));
     }
 
     if (windowWidth < 1250) {
-      // large-medium screens
+      // medium screens: show a few more columns
       return allColumns.filter((_, idx) => [0, 1, 2, 3, 4, 5].includes(idx));
     }
-
+    
     // large screens: show all
     return allColumns;
   };
 
-  if (loading && orders.length === 0) {
-    return <PageLoader message="Loading orders..." />;
-  }
-
-  return (
-    <div className="w-full">
-      {/* Tabs + Search */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
-        {/* Tabs */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <h2 className="text-2xl font-semibold theme-heading text-black">Orders</h2>
-          <FilterTabs
-            tabs={[
-              { value: "All", label: "All" },
-              { value: "cancel", label: "Cancel" },
-              { value: "complete", label: "Complete" },
-              { value: "Returned", label: "Returned" },
-            ]}
-            value={selectedTab}
-            onChange={(value) => setSelectedTab(value as any)}
-          />
-        </div>
-
-        {/* Search */}
-        <div className="w-full md:w-auto mt-2 md:mt-0">
-          <Input
-            placeholder="Search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full md:w-64 text-black"
-          />
-        </div>
+ return (
+  <div className="w-full">
+    {/* Tabs + Search */}
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-2">
+      {/* Tabs */}
+      <div className="flex gap-4 items-center flex-wrap">
+        <h2 className="text-2xl font-semibold theme-heading">Orders</h2>
+        <FilterTabs
+          tabs={[
+            { id: "All", label: "All" },
+            { id: "cancel", label: "Cancel" },
+            { id: "complete", label: "Complete" },
+            { id: "Returned", label: "Returned" },
+          ]}
+          activeTab={selectedTab}
+          onTabChange={(tabId) => setSelectedTab(tabId as any)}
+        />
       </div>
-      <OrderModal
-        order={selectedOrder}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onUpdate={loadOrders}
-      />
-      {/* EnhancedDataTable */}
-      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
+
+      {/* Search */}
+      <div className="w-full md:w-auto mt-2 md:mt-0">
+        <Input
+          placeholder="Search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full md:w-64 border-[#C4A484] text-gray-900"
+        />
+      </div>
+    </div>
+<OrderModal
+  order={selectedOrder}
+  open={modalOpen}
+  onClose={() => setModalOpen(false)}
+  onUpdate={loadOrders} // refresh after status update
+/>
+    {/* DataTable */}
+    <div className="bg-white shadow rounded-lg border border-gray-200">
+      {loading ? (
+        <div className="p-4">
+          <DataTableSkeleton rows={8} />
+        </div>
+      ) : (
         <EnhancedDataTable<Order>
           columns={getColumns()}
           data={filteredOrders}
           onView={openView}
           pagination
         />
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 
 }

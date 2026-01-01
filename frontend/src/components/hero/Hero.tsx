@@ -50,8 +50,8 @@ const handleShopMore = () => {
 
   // LEFT / RIGHT IMAGE VERSION
   return (
-    <section className="relative bg-gray-50 w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-16">
+    <section className="relative bg-gray-50">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-16">
 
         {/* Text */}
         <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"}`}>
