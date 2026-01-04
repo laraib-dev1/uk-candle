@@ -158,23 +158,31 @@ const handleSubmit = async () => {
           <div>
             <label className="text-sm font-medium">Icon (1:1) *</label>
             {isView ? (
-              form.icon && (
-                <img
-                  src={form.icon}
-                  alt="icon"
-                  className="w-24 h-24 object-cover rounded"
-                />
-              )
+              <img
+                src={(form.icon && form.icon.trim() !== "") ? form.icon : "/category.png"}
+                alt="icon"
+                className="w-24 h-24 object-cover rounded"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== window.location.origin + "/category.png") {
+                    target.src = "/category.png";
+                  }
+                }}
+              />
             ) : (
               <>
                 <input type="file" accept="image/*" onChange={handleFileSelect} />
-                {form.icon && (
-                  <img
-                    src={form.icon}
-                    alt="preview"
-                    className="w-24 h-24 object-cover rounded mt-2"
-                  />
-                )}
+                <img
+                  src={(form.icon && form.icon.trim() !== "") ? form.icon : "/category.png"}
+                  alt="preview"
+                  className="w-24 h-24 object-cover rounded mt-2"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== window.location.origin + "/category.png") {
+                      target.src = "/category.png";
+                    }
+                  }}
+                />
               </>
             )}
             {error.icon && <p className="text-red-500 text-sm">{error.icon}</p>}

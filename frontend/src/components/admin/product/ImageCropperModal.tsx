@@ -116,7 +116,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       <DialogContent className="max-w-4xl bg-white p-0 overflow-hidden flex flex-col [&>button]:hidden" style={{ height: "80vh", maxHeight: "90vh" }}>
         <DialogHeader className="px-6 py-4 theme-bg-primary shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg text-white font-semibold">Adjust the image</DialogTitle>
+            <DialogTitle className="text-lg text-black font-semibold">Adjust the image</DialogTitle>
             <button
               onClick={onClose}
               className="rounded-sm opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
@@ -133,14 +133,16 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
             <div className="absolute top-4 left-4 z-10 flex flex-row gap-2">
               <button
                 onClick={handleZoomIn}
-                className="w-10 h-10 rounded-full theme-bg-primary shadow-md flex items-center justify-center hover:opacity-90 transition-opacity"
+                className="w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "var(--theme-primary)" }}
                 aria-label="Zoom in"
               >
                 <Plus className="h-5 w-5 text-white" />
               </button>
               <button
                 onClick={handleZoomOut}
-                className="w-10 h-10 rounded-full theme-bg-primary shadow-md flex items-center justify-center hover:opacity-90 transition-opacity"
+                className="w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "var(--theme-primary)" }}
                 aria-label="Zoom out"
               >
                 <Minus className="h-5 w-5 text-white" />

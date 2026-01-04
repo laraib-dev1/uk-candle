@@ -346,22 +346,23 @@ export default function AssetsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold theme-heading">Assets</h1>
+        {/* Tabs */}
+        <div className="flex gap-4 items-center flex-wrap">
+          <h1 className="text-2xl font-semibold theme-heading">Assets</h1>
+          <FilterTabs
+            tabs={[
+              { id: "banners", label: "Banners" },
+              { id: "privacy", label: "Privacy Policy" },
+              { id: "terms", label: "Terms & Conditions" },
+              { id: "faq", label: "FAQ" },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(tabId) => setActiveTab(tabId as any)}
+          />
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-6">
-        <FilterTabs
-          tabs={[
-            { id: "banners", label: "Banners" },
-            { id: "privacy", label: "Privacy Policy" },
-            { id: "terms", label: "Terms & Conditions" },
-            { id: "faq", label: "FAQ" },
-          ]}
-          activeTab={activeTab}
-          onTabChange={(tabId) => setActiveTab(tabId as TabType)}
-        />
-      </div>
+      {/* Content */}
 
       {/* Banners Tab */}
       {activeTab === "banners" && (

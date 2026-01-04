@@ -17,6 +17,7 @@ import Login from "./pages/auth/Login";
 import Access from "./pages/auth/Access";
 import Forgot from "./pages/auth/Forgot";
 import AdminRoute from "./components/AdminRoute";
+import PageLoader from "./components/ui/PageLoader";
 // lazy or normal — choose whichever you prefer
 const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
 const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
@@ -42,7 +43,7 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<PageLoader message="GraceByAnu" />}>
       <Routes>
              {/* ---------- SHOP ROUTES ---------- */}
       <Route path="/" element={<Landing />} />
@@ -91,7 +92,7 @@ export default function App() {
   path="/admin/*"
   element={
     <AdminRoute>
-      <Suspense fallback={<div>Loading admin...</div>}>
+      <Suspense fallback={<PageLoader message="GraceByAnu" />}>
         <AdminLayout />
       </Suspense>
     </AdminRoute>
@@ -118,7 +119,7 @@ export default function App() {
             path="/developer/*"
             element={
               <AdminRoute>
-                <Suspense fallback={<div>Loading developer...</div>}>
+                <Suspense fallback={<PageLoader message="GraceByAnu" />}>
                   <DeveloperLayout />
                 </Suspense>
               </AdminRoute>

@@ -4,7 +4,7 @@ import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { getAllReviews, deleteReview } from "../../../api/review.api";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { Star, Trash2 } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface Review {
   _id: string;
@@ -104,19 +104,6 @@ export default function ReviewsTable() {
         ),
         minWidth: "300px",
       },
-      {
-        name: "Actions",
-        cell: (row: Review) => (
-          <button
-            onClick={() => handleDelete(row._id)}
-            className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete review"
-          >
-            <Trash2 size={18} />
-          </button>
-        ),
-        minWidth: "100px",
-      },
     ];
   };
 
@@ -135,7 +122,7 @@ export default function ReviewsTable() {
         <h2 className="text-2xl font-semibold theme-heading">Reviews</h2>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg border border-gray-200">
+      <div className="bg-white shadow-md rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-4">
             <DataTableSkeleton rows={8} />
@@ -144,6 +131,7 @@ export default function ReviewsTable() {
           <EnhancedDataTable<Review>
             columns={getColumns()}
             data={reviews}
+            onDelete={(row) => handleDelete(row._id)}
             pagination
           />
         )}

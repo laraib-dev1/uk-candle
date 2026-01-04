@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { TableOfContents } from "@/components/ui/TableOfContents";
+import PageLoader from "@/components/ui/PageLoader";
 
 type PageContent = {
   title: string;
@@ -35,7 +36,7 @@ export default function PrivacyPolicy() {
     load();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <PageLoader message="GraceByAnu" />;
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -70,6 +71,9 @@ export default function PrivacyPolicy() {
             <div 
               ref={contentRef}
               className="prose prose-lg max-w-none text-gray-700 mb-8 relative"
+              style={{ 
+                textAlign: 'inherit'
+              }}
               dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
             />
 

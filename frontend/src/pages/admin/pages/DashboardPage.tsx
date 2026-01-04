@@ -98,7 +98,7 @@ export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-6">
       {/* Dashboard Title */}
-      <h1 className="theme-heading text-2xl font-bold mb-4">Dashboard</h1>
+      <h1 className="text-2xl font-semibold theme-heading mb-4">Dashboard</h1>
 
       {/* Stats Cards - 2x4 Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

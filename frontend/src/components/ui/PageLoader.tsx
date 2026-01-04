@@ -1,23 +1,25 @@
 import React from "react";
+import "./PageLoader.css";
 
 interface PageLoaderProps {
   message?: string;
 }
 
-export default function PageLoader({ message = "Loading..." }: PageLoaderProps) {
+export default function PageLoader({ message = "GraceByAnu" }: PageLoaderProps) {
+  // Split message into individual letters
+  const letters = message.split("");
+
   return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-gray-200 rounded-full"></div>
-          <div 
-            className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-[var(--theme-primary)] rounded-full animate-spin"
-            style={{ borderTopColor: "var(--theme-primary)" }}
-          ></div>
+    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+      <div className="loader-wrapper">
+        <div className="loader"></div>
+        <div className="loader-text">
+          {letters.map((letter, index) => (
+            <span key={index} className="loader-letter">
+              {letter === " " ? "\u00A0" : letter}
+            </span>
+          ))}
         </div>
-        {message && (
-          <p className="text-gray-600 font-medium animate-pulse">{message}</p>
-        )}
       </div>
     </div>
   );

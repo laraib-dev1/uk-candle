@@ -110,9 +110,15 @@ const getColumns = () => {
       name: "Icon",
       cell: (row: Category) => (
         <img 
-          src={row.icon || "/default-category.png"} 
+          src={row.icon && row.icon.trim() !== "" ? row.icon : "/category.png"} 
           alt={row.name} 
           className="w-10 h-10 rounded-full object-cover border border-gray-200" 
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (target.src !== window.location.origin + "/category.png") {
+              target.src = "/category.png";
+            }
+          }}
         />
       ),
       minWidth: "80px",
@@ -187,7 +193,7 @@ const getColumns = () => {
       </div>
 
       {/* -------- Table -------- */}
-      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-visible">
+      <div className="bg-white shadow rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-4">
             <DataTableSkeleton rows={8} />

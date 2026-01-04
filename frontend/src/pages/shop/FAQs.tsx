@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import PageLoader from "@/components/ui/PageLoader";
 
 type FAQItem = {
   question: string;
@@ -38,7 +39,7 @@ export default function FAQs() {
     load();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <PageLoader message="GraceByAnu" />;
 
   const toggleFAQ = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -61,7 +62,7 @@ export default function FAQs() {
         </h1>
 
         {/* FAQs List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {content.faqs && content.faqs.length > 0 ? (
             content.faqs.map((faq, index) => (
               <div
@@ -71,23 +72,23 @@ export default function FAQs() {
                 {/* Question Header */}
                 <button
                   onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition"
                 >
-                  <span className="text-lg font-semibold text-gray-900 pr-4">
+                  <span className="text-base font-semibold text-gray-900 pr-4">
                     {faq.question || "Question Here Lorem ipsum dolor sit amet."}
                   </span>
                   {expandedIndex === index ? (
-                    <ChevronDown className="w-5 h-5 text-gray-600 shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-gray-600 shrink-0" />
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-600 shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-gray-600 shrink-0" />
                   )}
                 </button>
 
                 {/* Answer Content */}
                 {expandedIndex === index && (
-                  <div className="px-6 pb-6 pt-0">
+                  <div className="px-4 pb-4 pt-0">
                     <div
-                      className="prose prose-sm max-w-none text-gray-700"
+                      className="prose prose-sm max-w-none text-gray-700 text-sm"
                       dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
                     />
                   </div>

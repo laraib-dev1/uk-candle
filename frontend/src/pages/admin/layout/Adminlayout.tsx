@@ -246,7 +246,7 @@ export default function AdminLayout() {
 
       {/* ============ MAIN CONTENT ============ */}
       <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8">
-         <React.Suspense fallback={<div>Loading admin page...</div>}>
+         <React.Suspense fallback={<PageLoader message="GraceByAnu" />}>
       <Outlet />
     </React.Suspense>
       </main>

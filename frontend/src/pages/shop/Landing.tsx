@@ -139,7 +139,7 @@ export default function () {
            <CategorySection
   categories={categories.map(cat => ({
     title: cat.name,
-    image: cat.icon || "/category.png"
+    image: (cat.icon && cat.icon.trim() !== "") ? cat.icon : "/category.png"
   }))}
 />
 

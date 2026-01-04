@@ -251,7 +251,7 @@ const getColumns = () => {
         </div>
       </div>
 
-    <div className="w-full overflow-x-auto bg-white rounded-lg border border-gray-200">
+    <div className="w-full overflow-x-auto bg-white rounded-lg border border-gray-200 overflow-hidden">
       {loading ? (
         <div className="p-4">
           <DataTableSkeleton rows={8} />

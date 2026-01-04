@@ -146,7 +146,7 @@ const changePassword = async () => {
 
   return (
     <div className="w-full text-black">
-      <h1 className="text-2xl font-bold mb-6 theme-heading">Settings</h1>
+      <h1 className="text-2xl font-semibold theme-heading mb-6">Settings</h1>
 
       {/* PROFILE BOX */}
     

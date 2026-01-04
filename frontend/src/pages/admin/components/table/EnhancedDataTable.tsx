@@ -177,6 +177,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
       style: {
         width: "100%",
         tableLayout: "auto",
+        borderRadius: "0.5rem",
       },
     },
     headCells: {
@@ -185,8 +186,8 @@ export default function EnhancedDataTable<T extends { id?: string }>({
         paddingRight: "12px",
         fontSize: "0.875rem",
         fontWeight: 600,
-        color: "#374151",
-        backgroundColor: "#f9fafb",
+        color: "#ffffff",
+        backgroundColor: "var(--theme-primary, #8B5E3C)",
       },
     },
     cells: {
@@ -213,6 +214,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
         highlightOnHover
         responsive
         customStyles={customStyles}
+        className="rounded-lg overflow-hidden"
       />
     </div>
   );
