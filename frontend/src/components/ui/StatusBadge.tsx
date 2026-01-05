@@ -1,6 +1,6 @@
 import React from "react";
 
-type OrderStatus = "cancel" | "pending" | "completed" | "complete" | "returned" | "Returned";
+type OrderStatus = "cancel" | "cancelled" | "pending" | "completed" | "complete" | "returned" | "Returned";
 type ProductStatus = "active" | "inactive";
 type QueryStatus = "read" | "pending" | "replied";
 

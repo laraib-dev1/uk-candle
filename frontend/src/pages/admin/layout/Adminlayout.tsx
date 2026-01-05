@@ -246,14 +246,15 @@ export default function AdminLayout() {
                 transition: "all 300ms ease-out",
               }}
             >
-              <Icon 
-                size={18} 
+              <div
                 className="relative z-10"
                 style={{
                   transform: active ? "scale(1.15)" : "scale(1)",
                   transition: "transform 300ms ease-out",
                 }}
-              />
+              >
+                <Icon size={18} />
+              </div>
               <span className="relative z-10" style={{ transition: "all 300ms ease-out" }}>{item.label}</span>
               {/* Left border indicator for active tab */}
               {active && (

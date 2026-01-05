@@ -61,8 +61,8 @@ export default function EnhancedDataTable<T extends { id?: string }>({
       const originalCell = col.cell;
       return {
         ...col,
-        cell: (row: T, index?: number) => {
-          const content = originalCell(row, index);
+        cell: (row: T, rowIndex?: number, column?: any, id?: string | number) => {
+          const content = originalCell(row, rowIndex ?? 0, column, id ?? '');
           if (typeof content === 'string' || typeof content === 'number') {
             return (
               <div className="truncate" title={String(content)}>
@@ -176,7 +176,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
     table: {
       style: {
         width: "100%",
-        tableLayout: "auto",
+        tableLayout: "auto" as const,
         borderRadius: "0.5rem",
       },
     },

@@ -128,10 +128,10 @@ export default function ReviewsTable() {
             <DataTableSkeleton rows={8} />
           </div>
         ) : (
-          <EnhancedDataTable<Review>
+          <EnhancedDataTable<Review & { id?: string }>
             columns={getColumns()}
-            data={reviews}
-            onDelete={(row) => handleDelete(row._id)}
+            data={reviews.map(r => ({ ...r, id: r._id }))}
+            onDelete={(row) => handleDelete((row as any)._id || row.id || '')}
             pagination
           />
         )}

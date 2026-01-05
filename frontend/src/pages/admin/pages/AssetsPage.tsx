@@ -922,9 +922,12 @@ export default function AssetsPage() {
             setCurrentBannerSlot(null);
             setCurrentImageFile(null);
           }}
-          imageFile={currentImageFile}
-          onCrop={handleImageCrop}
-          aspectRatio={16 / 9}
+          file={currentImageFile}
+          onCropDone={async (croppedBlob: Blob) => {
+            const croppedFile = new File([croppedBlob], currentImageFile.name, { type: croppedBlob.type });
+            handleImageCrop(croppedFile);
+          }}
+          aspect={16 / 9}
         />
       )}
     </div>

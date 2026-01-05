@@ -322,6 +322,10 @@ export default function ProductDetail() {
     return <PageLoader message="Loading product..." />;
   }
 
+  if (!product) {
+    return <PageLoader message="Loading product..." />;
+  }
+
   /* =======================
      Derived Data
   ======================= */
