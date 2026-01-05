@@ -55,6 +55,9 @@ export default function UserProfile() {
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [profilePages, setProfilePages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Force re-read from localStorage when component updates
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     // Wait for auth to finish loading before checking
@@ -144,9 +147,6 @@ export default function UserProfile() {
       setLoading(false);
     }
   };
-
-  // Force re-read from localStorage when component updates
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Base tabs with enabled state from localStorage - load synchronously
   const [baseTabsState, setBaseTabsState] = useState<Record<string, boolean>>(() => {
