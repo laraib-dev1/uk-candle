@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   noFocusRing?: boolean;
@@ -35,7 +36,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
       )}
     >
       {loading && (
-        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+        <CircularLoader size={16} color="white" />
       )}
       {children}
     </button>

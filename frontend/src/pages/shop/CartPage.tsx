@@ -24,7 +24,7 @@ const total = subtotal - discount;
       <div className="flex items-center gap-4">
         <img src={item.image || "/product.png"} className="w-20 h-20 object-cover rounded-lg" />
         <div>
-          <h3 className="font-semibold text-gray-800">{item.name}</h3>
+          <h3 className="font-semibold theme-heading">{item.name}</h3>
           <p className="text-lg font-bold">${item.price}</p>
         </div>
       </div>
@@ -45,7 +45,7 @@ const total = subtotal - discount;
 
 const rightContent = (
   <div className="p-6 bg-white text-black rounded-xl shadow-sm border">
-    <h2 className="font-semibold mb-4 text-lg">Order Summary</h2>
+    <h2 className="font-semibold mb-4 text-lg theme-heading">Order Summary</h2>
 
     <div className="space-y-3 text-gray-700 text-sm">
       <div className="flex justify-between">
@@ -88,7 +88,7 @@ const rightContent = (
       <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-0">
 
         {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-3xl font-semibold mb-10 text-gray-900">Purchase List</h2>
+        <h2 className="text-3xl font-semibold mb-10 theme-heading">Purchase List</h2>
 
         <TwoColumnLayout left={leftContent} right={rightContent} />
         <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />

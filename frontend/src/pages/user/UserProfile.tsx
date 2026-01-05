@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -45,7 +45,7 @@ type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, logout, loading: authLoading } = useAuth();
   const { success, error } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   
@@ -57,12 +57,18 @@ export default function UserProfile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    if (authLoading) {
+      return;
+    }
+    
     if (!authUser) {
       navigate("/login");
       return;
     }
+    
     loadData();
-  }, [authUser, navigate]);
+  }, [authUser, authLoading, navigate]);
 
   const loadData = async () => {
     try {
@@ -118,6 +124,19 @@ export default function UserProfile() {
         console.warn("Invalid profile pages data format:", profilePagesData);
         setProfilePages([]);
       }
+      
+      // Refresh base tabs state from localStorage after data load
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          setBaseTabsState(state);
+          setRefreshTrigger(prev => prev + 1); // Force re-calculation
+          console.log('Refreshed base tabs state after data load:', state);
+        }
+      } catch (e) {
+        console.error('Failed to refresh base tabs state:', e);
+      }
     } catch (err: any) {
       console.error("Error loading data:", err);
       error(err.message || "Failed to load data");
@@ -126,16 +145,165 @@ export default function UserProfile() {
     }
   };
 
-  // Base tabs
-  const baseTabs = [
-    { id: "dashboard" as TabType, label: "Dashboard", icon: User },
-    { id: "profile" as TabType, label: "Profile", icon: User },
-    { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
-    { id: "orders" as TabType, label: "Orders", icon: Package },
-    { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
-    { id: "queries" as TabType, label: "Support", icon: MessageSquare },
-    { id: "reviews" as TabType, label: "Reviews", icon: Star },
-  ];
+  // Force re-read from localStorage when component updates
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Base tabs with enabled state from localStorage - load synchronously
+  const [baseTabsState, setBaseTabsState] = useState<Record<string, boolean>>(() => {
+    // Load from localStorage immediately on component initialization
+    try {
+      const saved = localStorage.getItem('baseProfileTabsState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        console.log('=== Initial Load from localStorage ===');
+        console.log('Raw localStorage value:', saved);
+        console.log('Parsed state:', state);
+        console.log('State keys:', Object.keys(state));
+        console.log('State values:', Object.values(state));
+        console.log('=====================================');
+        return state;
+      } else {
+        console.log('No baseProfileTabsState found in localStorage');
+      }
+    } catch (e) {
+      console.error('Failed to load base tabs state:', e);
+    }
+    return {};
+  });
+  
+  // Listen for storage changes and custom events
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'baseProfileTabsState') {
+        try {
+          if (e.newValue) {
+            const state = JSON.parse(e.newValue);
+            setBaseTabsState(state);
+            setRefreshTrigger(prev => prev + 1);
+            console.log('Base tabs state updated from storage event:', state);
+          }
+        } catch (e) {
+          console.error('Failed to parse storage change:', e);
+        }
+      }
+    };
+    
+    const handleCustomEvent = (e: CustomEvent) => {
+      if (e.detail) {
+        setBaseTabsState(e.detail);
+        setRefreshTrigger(prev => prev + 1);
+        console.log('Base tabs state updated from custom event:', e.detail);
+      }
+    };
+    
+    const handleVisibilityChange = () => {
+      // When page becomes visible, check localStorage again and force refresh
+      if (!document.hidden) {
+        try {
+          const saved = localStorage.getItem('baseProfileTabsState');
+          if (saved) {
+            const state = JSON.parse(saved);
+            setBaseTabsState(state);
+            setRefreshTrigger(prev => prev + 1); // Force re-calculation
+            console.log('Base tabs state refreshed on visibility change:', state);
+          }
+        } catch (e) {
+          console.error('Failed to refresh base tabs state:', e);
+        }
+      }
+    };
+    
+    // Also add a periodic check to sync with localStorage (every 2 seconds when visible)
+    const intervalId = setInterval(() => {
+      if (!document.hidden) {
+        try {
+          const saved = localStorage.getItem('baseProfileTabsState');
+          if (saved) {
+            const state = JSON.parse(saved);
+            // Only update if state actually changed
+            const currentStateStr = JSON.stringify(baseTabsState);
+            const newStateStr = JSON.stringify(state);
+            if (currentStateStr !== newStateStr) {
+              setBaseTabsState(state);
+              setRefreshTrigger(prev => prev + 1);
+              console.log('Base tabs state synced from localStorage:', state);
+            }
+          }
+        } catch (e) {
+          // Silent fail for interval
+        }
+      }
+    }, 2000);
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(intervalId);
+    };
+  }, [baseTabsState]); // Add baseTabsState as dependency to avoid stale closure
+  
+  // Base tabs - filtered based on enabled state from localStorage
+  const baseTabs = useMemo(() => {
+    // Always read fresh from localStorage
+    let currentState: Record<string, boolean> = {};
+    try {
+      const saved = localStorage.getItem('baseProfileTabsState');
+      if (saved) {
+        currentState = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to read localStorage in useMemo:', e);
+    }
+    
+    const allBaseTabs = [
+      { id: "dashboard" as TabType, label: "Dashboard", icon: User },
+      { id: "profile" as TabType, label: "Profile", icon: User },
+      { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
+      { id: "orders" as TabType, label: "Orders", icon: Package },
+      { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
+      { id: "queries" as TabType, label: "Support", icon: MessageSquare },
+      { id: "reviews" as TabType, label: "Reviews", icon: Star },
+    ];
+    
+    // Filter base tabs based on enabled state (default to enabled if not set)
+    const filtered = allBaseTabs.filter(tab => {
+      // Check if this tab is disabled in localStorage
+      // IMPORTANT: Only filter out if explicitly set to false
+      const tabState = currentState[tab.id];
+      const isDisabled = tabState === false;
+      const enabled = !isDisabled; // If explicitly false, disable it, otherwise enable
+      
+      console.log(`Tab "${tab.id}": tabState=${tabState}, type=${typeof tabState}, isDisabled=${isDisabled}, enabled=${enabled}, willShow=${enabled}`);
+      
+      if (tab.id === 'addresses') {
+        console.log('>>> ADDRESSES TAB DEBUG:', {
+          tabState,
+          currentState,
+          isDisabled,
+          enabled,
+          willInclude: enabled
+        });
+      }
+      
+      return enabled;
+    });
+    
+    console.log('=== Base Tabs Filtering ===');
+    console.log('Refresh trigger:', refreshTrigger);
+    console.log('localStorage value:', localStorage.getItem('baseProfileTabsState'));
+    console.log('Parsed state:', currentState);
+    console.log('All base tabs:', allBaseTabs.map(t => t.id));
+    console.log('Filtered base tabs:', filtered.map(t => t.id));
+    console.log('Missing from filtered:', allBaseTabs.filter(t => !filtered.find(f => f.id === t.id)).map(t => t.id));
+    console.log('===========================');
+    
+    return filtered;
+  }, [baseTabsState, refreshTrigger]);
 
   // Add profile pages as tabs - only enabled pages
   const profilePageTabs = profilePages
@@ -150,11 +318,22 @@ export default function UserProfile() {
 
   const tabs = [...baseTabs, ...profilePageTabs];
   
+  // Check if active tab is still available, if not redirect to dashboard
+  useEffect(() => {
+    const isActiveTabAvailable = tabs.some(tab => tab.id === activeTab);
+    if (!isActiveTabAvailable && tabs.length > 0) {
+      console.log(`Active tab "${activeTab}" is not available, redirecting to dashboard`);
+      setActiveTab("dashboard");
+    }
+  }, [tabs, activeTab]);
+  
   // Debug: Log tabs when profile pages change
   useEffect(() => {
     console.log("=== Profile Pages Debug ===");
     console.log("Total profile pages from API:", profilePages.length);
     console.log("Enabled profile pages:", profilePages.filter((p: any) => p.enabled === true).length);
+    console.log("Base tabs state:", baseTabsState);
+    console.log("Available tabs:", tabs.map(t => t.id));
     if (profilePages.length > 0) {
       profilePages.forEach((page: any, index: number) => {
         console.log(`Page ${index + 1}:`, {
@@ -265,7 +444,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
   
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Dashboard</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">Dashboard</h2>
       
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -405,7 +584,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Profile Settings</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">Profile Settings</h2>
       
       {/* Profile Info */}
       <div className="mb-8">
@@ -665,7 +844,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
         cancelText="Cancel"
       />
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Saved Addresses</h2>
+        <h2 className="text-2xl font-bold theme-heading">Saved Addresses</h2>
         <button
           onClick={() => setShowAddForm(true)}
           className="theme-button flex items-center gap-2 px-4 py-2 rounded-lg"
@@ -956,7 +1135,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">My Orders</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">My Orders</h2>
       {orders.length === 0 ? (
         <p className="text-gray-600">No orders yet</p>
       ) : (
@@ -1119,7 +1298,7 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">My Wishlist</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">My Wishlist</h2>
       {wishlist.length === 0 ? (
         <p className="text-gray-600">Your wishlist is empty</p>
       ) : (
@@ -1230,7 +1409,7 @@ function QueriesTab() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Support & Help</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">Support & Help</h2>
       <div className="space-y-4">
         <div className="border rounded-lg p-6">
           <h3 className="font-semibold mb-2 text-gray-900">Need Help?</h3>
@@ -1379,7 +1558,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">My Reviews</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading">My Reviews</h2>
       {completedOrders.length === 0 ? (
         <p className="text-gray-600">You haven't completed any orders yet. Reviews are available after order completion.</p>
       ) : (

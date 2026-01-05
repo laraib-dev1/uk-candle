@@ -426,7 +426,7 @@ export default function ProductDetail() {
                 {product.categoryName}
               </span>
 
-              <h1 className="text-3xl font-bold">{product.name}</h1>
+              <h1 className="text-3xl font-bold theme-heading">{product.name}</h1>
 
               <div className="flex gap-3 items-center">
                 <span className="text-2xl font-bold">
@@ -472,7 +472,7 @@ export default function ProductDetail() {
             <TabsContent value="description" className="bg-transparent">
               <div className="grid md:grid-cols-2 gap-6 bg-transparent">
                 <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Features</h3>
+                  <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Features</h3>
                   {product.metaFeatures ? (
                     <div
                       className="max-w-none meta-info-content text-black"
@@ -486,7 +486,7 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 text-black">Meta Info</h3>
+                  <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Info</h3>
                   {product.metaInfo ? (
                     <div
                       className="max-w-none meta-info-content text-black"
@@ -535,7 +535,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-xl font-semibold mb-4">
+          <h3 className="text-xl font-semibold mb-4 theme-heading">
             Similar Products
           </h3>
 

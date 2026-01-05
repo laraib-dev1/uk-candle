@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Plus, X, Edit } from "lucide-react";
+import { User, Plus, X, Edit, LayoutDashboard, Package, MapPin, Heart, MessageSquare, Star } from "lucide-react";
 import {
   getProfilePages,
   createProfilePage,
@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageLoader from "@/components/ui/PageLoader";
+import CircularLoader from "@/components/ui/CircularLoader";
 import { RichTextEditor } from "@mantine/rte";
 
 interface ProfilePage {
@@ -24,9 +25,39 @@ interface ProfilePage {
   content: string;
 }
 
+// Base profile tabs that are always available on the site
+const baseProfileTabs = [
+  { _id: "dashboard", title: "Dashboard", slug: "/profile?tab=dashboard", icon: "LayoutDashboard", enabled: true, subInfo: "User dashboard overview", order: 1, content: "" },
+  { _id: "profile", title: "Profile", slug: "/profile?tab=profile", icon: "User", enabled: true, subInfo: "User profile settings", order: 2, content: "" },
+  { _id: "addresses", title: "Addresses", slug: "/profile?tab=addresses", icon: "MapPin", enabled: true, subInfo: "Manage delivery addresses", order: 3, content: "" },
+  { _id: "orders", title: "Orders", slug: "/profile?tab=orders", icon: "Package", enabled: true, subInfo: "Order history", order: 4, content: "" },
+  { _id: "wishlist", title: "Wishlist", slug: "/profile?tab=wishlist", icon: "Heart", enabled: true, subInfo: "Saved products", order: 5, content: "" },
+  { _id: "queries", title: "Support", slug: "/profile?tab=queries", icon: "MessageSquare", enabled: true, subInfo: "Support & help", order: 6, content: "" },
+  { _id: "reviews", title: "Reviews", slug: "/profile?tab=reviews", icon: "Star", enabled: true, subInfo: "Product reviews", order: 7, content: "" },
+];
+
 export default function ProfilePagesPage() {
   const { success, error } = useToast();
-  const [pages, setPages] = useState<ProfilePage[]>([]);
+  const [pages, setPages] = useState<ProfilePage[]>(() => {
+    // Initialize with base tabs and load enabled state from localStorage
+    const tabs = JSON.parse(JSON.stringify(baseProfileTabs));
+    try {
+      const saved = localStorage.getItem('baseProfileTabsState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        // Apply saved state to base tabs
+        tabs.forEach((tab: ProfilePage) => {
+          if (state[tab._id] !== undefined) {
+            tab.enabled = state[tab._id];
+          }
+        });
+        console.log('Loaded base tabs initial state from localStorage:', state);
+      }
+    } catch (e) {
+      console.error('Failed to load base tabs initial state:', e);
+    }
+    return tabs;
+  });
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -51,23 +82,77 @@ export default function ProfilePagesPage() {
   const loadPages = async () => {
     setLoading(true);
     try {
-      const data = await getProfilePages();
-      console.log("Profile pages API response:", data);
-      if (Array.isArray(data)) {
-        setPages(data);
-        console.log(`Loaded ${data.length} profile pages`);
-      } else if (data && Array.isArray(data.data)) {
-        // Handle case where response is wrapped in data property
-        setPages(data.data);
-        console.log(`Loaded ${data.data.length} profile pages`);
-      } else {
-        console.error("Invalid data format:", data);
-        setPages([]);
+      // Load base tabs enabled state from localStorage first
+      let baseTabsState: Record<string, boolean> = {};
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        if (saved) {
+          baseTabsState = JSON.parse(saved);
+          console.log("Loaded base tabs state from localStorage:", baseTabsState);
+        }
+      } catch (e) {
+        console.error('Failed to load base tabs state:', e);
       }
-    } catch (error: any) {
-      console.error("Failed to load profile pages:", error);
-      error(error.response?.data?.message || error.message || "Failed to load profile pages");
-      setPages([]);
+      
+      // Always start with base tabs and apply saved state
+      let allPages: ProfilePage[] = JSON.parse(JSON.stringify(baseProfileTabs));
+      // Apply saved enabled state to base tabs
+      allPages.forEach((page) => {
+        if (baseTabsState[page._id] !== undefined) {
+          page.enabled = baseTabsState[page._id];
+        }
+      });
+      console.log("Profile pages - Base tabs count:", baseProfileTabs.length);
+      
+      // Try to load custom profile pages from API
+      try {
+        const data = await getProfilePages();
+        console.log("Profile pages API response:", data);
+        
+        let customPages: ProfilePage[] = [];
+        if (Array.isArray(data)) {
+          customPages = data;
+        } else if (data && Array.isArray(data.data)) {
+          customPages = data.data;
+        }
+        
+        // Add custom pages to base tabs
+        if (Array.isArray(customPages) && customPages.length > 0) {
+          allPages = [...allPages, ...customPages];
+          console.log(`Added ${customPages.length} custom profile pages`);
+        } else {
+          console.log("No custom profile pages found, using base tabs only");
+        }
+      } catch (apiErr) {
+        console.warn("Could not load custom profile pages from API:", apiErr);
+      }
+      
+      // Sort by order
+      allPages.sort((a, b) => (a.order || 0) - (b.order || 0));
+      setPages(allPages);
+      console.log(`Total profile pages: ${allPages.length}`);
+    } catch (err: any) {
+      console.error("Failed to load profile pages:", err);
+      error(err.response?.data?.message || err.message || "Failed to load profile pages");
+      
+      // Fallback to base tabs with saved state
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        if (saved) {
+          const baseTabsState = JSON.parse(saved);
+          const fallbackPages = JSON.parse(JSON.stringify(baseProfileTabs));
+          fallbackPages.forEach((page: ProfilePage) => {
+            if (baseTabsState[page._id] !== undefined) {
+              page.enabled = baseTabsState[page._id];
+            }
+          });
+          setPages(fallbackPages);
+        } else {
+          setPages(JSON.parse(JSON.stringify(baseProfileTabs)));
+        }
+      } catch (e) {
+        setPages(JSON.parse(JSON.stringify(baseProfileTabs)));
+      }
     } finally {
       setLoading(false);
     }
@@ -75,12 +160,103 @@ export default function ProfilePagesPage() {
 
   const togglePage = async (id: string, enabled: boolean) => {
     if (toggleLoading[id]) return;
+    
+    // Check if it's a base tab
+    const isBaseTab = baseProfileTabs.some(tab => tab._id === id);
+    
+    if (isBaseTab) {
+      // For base tabs, update local state and save to localStorage
+      const newEnabled = !enabled;
+      setPages(prevPages => 
+        prevPages.map(page => 
+          page._id === id ? { ...page, enabled: newEnabled } : page
+        )
+      );
+      
+      // Save base tabs enabled state to localStorage
+      try {
+        let baseTabsState: Record<string, boolean> = {};
+        const existing = localStorage.getItem('baseProfileTabsState');
+        if (existing) {
+          try {
+            baseTabsState = JSON.parse(existing);
+          } catch (parseErr) {
+            console.warn('Failed to parse existing state, starting fresh');
+            baseTabsState = {};
+          }
+        }
+        
+        baseTabsState[id] = newEnabled;
+        const stateString = JSON.stringify(baseTabsState);
+        localStorage.setItem('baseProfileTabsState', stateString);
+        
+        // Verify it was saved
+        const verify = localStorage.getItem('baseProfileTabsState');
+        console.log('=== Saved base tab state ===');
+        console.log('Tab ID:', id);
+        console.log('New enabled state:', newEnabled);
+        console.log('Full state object:', baseTabsState);
+        console.log('localStorage key: baseProfileTabsState');
+        console.log('localStorage value (saved):', stateString);
+        console.log('localStorage value (verified):', verify);
+        console.log('Verification match:', stateString === verify);
+        
+        // Double check with direct localStorage access
+        const doubleCheck = localStorage.getItem('baseProfileTabsState');
+        console.log('Double check localStorage:', doubleCheck);
+        if (doubleCheck) {
+          try {
+            const parsed = JSON.parse(doubleCheck);
+            console.log('Double check parsed:', parsed);
+            console.log(`Addresses in parsed: ${parsed['addresses']} (type: ${typeof parsed['addresses']})`);
+          } catch (e) {
+            console.error('Failed to parse double check:', e);
+          }
+        }
+        console.log('===========================');
+        
+        // Trigger custom event for same-window updates (storage event only fires cross-tab)
+        window.dispatchEvent(new CustomEvent('baseProfileTabsStateChanged', {
+          detail: baseTabsState
+        }));
+        
+        // Also trigger storage event for other tabs/windows
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'baseProfileTabsState',
+          newValue: stateString,
+          storageArea: localStorage
+        }));
+      } catch (e) {
+        console.error('Failed to save base tab state:', e);
+        error('Failed to save tab state. Please try again.');
+      }
+      
+      success(`Base tab ${newEnabled ? 'enabled' : 'disabled'} successfully`);
+      return;
+    }
+    
+    // For custom pages, update via API
     setToggleLoading(prev => ({ ...prev, [id]: true }));
     try {
+      // Update the page via API
       await updateProfilePage(id, { enabled: !enabled });
+      
+      // Update local state immediately for better UX
+      setPages(prevPages => 
+        prevPages.map(page => 
+          page._id === id ? { ...page, enabled: !enabled } : page
+        )
+      );
+      
+      success(`Profile page ${!enabled ? 'enabled' : 'disabled'} successfully`);
+      
+      // Reload to sync with server
       await loadPages();
-    } catch (error) {
-      console.error("Failed to toggle page:", error);
+    } catch (err: any) {
+      console.error("Failed to toggle page:", err);
+      error(err.response?.data?.message || err.message || "Failed to toggle profile page");
+      // Reload to revert any local changes
+      await loadPages();
     } finally {
       setToggleLoading(prev => ({ ...prev, [id]: false }));
     }
@@ -155,8 +331,8 @@ export default function ProfilePagesPage() {
       setDeleteConfirm(null);
       await loadPages();
       success("Profile page deleted successfully!");
-    } catch (error) {
-      console.error("Failed to delete profile page:", error);
+    } catch (err: any) {
+      console.error("Failed to delete profile page:", err);
       error("Failed to delete profile page");
       setDeleteConfirm(null);
     } finally {
@@ -278,12 +454,6 @@ export default function ProfilePagesPage() {
                           setPages(updatedPages);
                         }}
                         className="w-full bg-white text-gray-900"
-                        toolbar={[
-                          ['bold', 'italic', 'underline', 'strike', 'link'],
-                          ['h1', 'h2', 'h3'],
-                          ['unorderedList', 'orderedList'],
-                          ['alignLeft', 'alignRight', 'alignCenter', 'justify'],
-                        ]}
                       />
                     </div>
                     <div className="flex gap-2">
@@ -314,23 +484,46 @@ export default function ProfilePagesPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                      {!baseProfileTabs.some(tab => tab._id === page._id) && (
+                        <button
+                          onClick={() => setEditingPageId(page._id)}
+                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </button>
+                      )}
+                      {/* Toggle Switch - Works for all pages */}
                       <button
-                        onClick={() => setEditingPageId(page._id)}
-                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => togglePage(page._id, page.enabled)}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('🔵 Toggle button clicked!');
+                          console.log('Page ID:', page._id);
+                          console.log('Current enabled:', page.enabled);
+                          console.log('Will toggle to:', !page.enabled);
+                          togglePage(page._id, page.enabled);
+                          
+                          // Immediately verify localStorage after toggle
+                          setTimeout(() => {
+                            const saved = localStorage.getItem('baseProfileTabsState');
+                            console.log('🔍 localStorage after toggle:', saved);
+                          }, 100);
+                        }}
                         disabled={toggleLoading[page._id]}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                           page.enabled ? "" : "bg-gray-300"
                         }`}
                         style={page.enabled ? { backgroundColor: "var(--theme-primary)" } : {}}
+                        title={baseProfileTabs.some(tab => tab._id === page._id) ? "Toggle visibility (base tabs always active on site)" : page.enabled ? "Disable on site" : "Enable on site"}
                       >
                         {toggleLoading[page._id] ? (
-                          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <CircularLoader 
+                            size={12} 
+                            color="white"
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                          />
                         ) : (
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -339,18 +532,20 @@ export default function ProfilePagesPage() {
                           />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleDelete(page._id)}
-                        disabled={deleteLoading[page._id]}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete"
-                      >
-                        {deleteLoading[page._id] ? (
-                          <span className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <X size={18} />
-                        )}
-                      </button>
+                      {!baseProfileTabs.some(tab => tab._id === page._id) && (
+                        <button
+                          onClick={() => handleDelete(page._id)}
+                          disabled={deleteLoading[page._id]}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Delete"
+                        >
+                          {deleteLoading[page._id] ? (
+                            <CircularLoader size={16} color="rgb(239 68 68)" />
+                          ) : (
+                            <X size={18} />
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -468,12 +663,6 @@ export default function ProfilePagesPage() {
                   value={newPage.content}
                   onChange={(value) => setNewPage({ ...newPage, content: value })}
                   className="w-full bg-white text-gray-900"
-                  toolbar={[
-                    ['bold', 'italic', 'underline', 'strike', 'link'],
-                    ['h1', 'h2', 'h3'],
-                    ['unorderedList', 'orderedList'],
-                    ['alignLeft', 'alignRight', 'alignCenter', 'justify'],
-                  ]}
                 />
               </div>
 
@@ -500,7 +689,7 @@ export default function ProfilePagesPage() {
                   disabled={isLoading}
                   className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button flex items-center justify-center gap-2"
                 >
-                  {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                  {isLoading && <CircularLoader size={16} color="white" />}
                   Add Page
                 </button>
               </div>

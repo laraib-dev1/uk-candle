@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/components/products/CartContext";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 type Props = {
   product: {
@@ -51,7 +52,7 @@ export default function AddToCartButton({ product }: Props) {
     >
       {loading ? (
         <>
-          <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <CircularLoader size={20} color="white" />
           Processing...
         </>
       ) : (

@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import StatusBadge from "@/components/ui/StatusBadge";
+import ProductCard from "@/components/products/ProductCard";
 
 // Component categories with examples
 const componentCategories = [
@@ -18,15 +19,32 @@ const componentCategories = [
     components: [
       {
         name: "Outline Button",
-        example: <Button variant="outline">Add</Button>,
+        example: (
+          <button className="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            Add
+          </button>
+        ),
       },
       {
         name: "Grey Fill Button",
-        example: <Button variant="secondary" className="bg-gray-500 hover:bg-gray-600">Add</Button>,
+        example: (
+          <button className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
+            Add
+          </button>
+        ),
       },
       {
         name: "Primary Button",
-        example: <Button className="theme-button">Add</Button>,
+        example: (
+          <button 
+            className="px-5 py-2 text-white rounded-lg transition-colors theme-button"
+            style={{ backgroundColor: "var(--theme-primary)" }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--theme-dark)"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--theme-primary)"}
+          >
+            Add
+          </button>
+        ),
       },
       {
         name: "Button with Icon",
@@ -140,17 +158,14 @@ const componentCategories = [
       {
         name: "Product Card",
         example: (
-          <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-            <div className="aspect-square bg-gray-200 rounded-lg mb-3 flex items-center justify-center">
-              <ImageIcon className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Product Name</h3>
-            <p className="text-sm text-gray-600 mb-2">Product description goes here</p>
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-bold theme-text-primary">$99.99</span>
-              <Button size="sm" className="theme-button">Add to Cart</Button>
-            </div>
-          </Card>
+          <div className="w-full max-w-[200px]">
+            <ProductCard
+              id="demo-1"
+              name="Sample Product"
+              price={99.99}
+              image="/product.png"
+            />
+          </div>
         ),
       },
       {
@@ -169,6 +184,33 @@ const componentCategories = [
             <p className="text-gray-700">Card content goes here...</p>
           </Card>
         ),
+      },
+    ],
+  },
+  {
+    id: "text",
+    name: "Text",
+    description: "Headings, Paragraphs, Labels",
+    components: [
+      {
+        name: "Heading 1",
+        example: <h1 className="text-4xl font-bold theme-heading">Heading 1</h1>,
+      },
+      {
+        name: "Heading 2",
+        example: <h2 className="text-3xl font-bold theme-heading">Heading 2</h2>,
+      },
+      {
+        name: "Heading 3",
+        example: <h3 className="text-2xl font-semibold theme-heading">Heading 3</h3>,
+      },
+      {
+        name: "Paragraph",
+        example: <p className="text-gray-700">This is a paragraph text with default styling.</p>,
+      },
+      {
+        name: "Label",
+        example: <Label className="text-sm font-medium">Form Label</Label>,
       },
     ],
   },
@@ -275,9 +317,9 @@ const spStandards = {
 export default function SpComponentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["buttons", "inputs"])); // Default expanded
 
-  const categories = ["All", ...componentCategories.map(c => c.name)];
+  const categories = ["All", "Buttons", "Inputs", "Text", "Sidebar Tabs", "Options Menu", "Categories", "Product"];
 
   const filteredCategories = componentCategories.filter(category => {
     const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -300,39 +342,91 @@ export default function SpComponentsPage() {
     <div className="max-w-7xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold theme-heading">SP Components</h1>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Package size={18} />
-          <span>{componentCategories.length} Categories</span>
-        </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <Input
-            type="text"
-            placeholder="Search components..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
-        >
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+      {/* Category Tabs */}
+      <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              selectedCategory === cat
+                ? "text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+            style={
+              selectedCategory === cat
+                ? { backgroundColor: "var(--theme-primary)" }
+                : {}
+            }
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
-      {/* SP Standards Kit */}
-      <Card className="mb-8 p-6" style={{ backgroundColor: "rgba(var(--theme-primary-rgb), 0.1)" }}>
+      {/* Components List */}
+      <div className="space-y-6 mb-8">
+        {componentCategories.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+            No components available.
+          </div>
+        ) : filteredCategories.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+            No components found matching your search.
+          </div>
+        ) : (
+          filteredCategories.map((category) => {
+            const isExpanded = expandedCategories.has(category.id);
+            return (
+              <Card key={category.id} className="overflow-hidden border border-gray-200">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                  <div className="flex-1">
+                    <h2 className="font-semibold theme-heading">{category.name}</h2>
+                    <p className="text-xs text-gray-500 mt-1">{category.description}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleCategory(category.id)}
+                    className={`w-5 h-5 flex items-center justify-center border-2 rounded transition-colors ${
+                      isExpanded 
+                        ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]" 
+                        : "border-gray-300 bg-white"
+                    }`}
+                  >
+                    {isExpanded ? (
+                      <Check className="w-3 h-3 text-white" />
+                    ) : null}
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="p-6 bg-white">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {category.components.map((component, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <h3 className="text-sm font-medium text-gray-700 mb-3">{component.name}</h3>
+                          <div className="flex items-start justify-center">
+                            {component.example}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })
+        )}
+      </div>
+
+      {/* SP Standards Kit - Moved to Last */}
+      <div className="mt-8 p-6 rounded-xl border" style={{ 
+        backgroundColor: "var(--theme-light, #f5f5f5)", 
+        borderColor: "var(--theme-light)" 
+      }}>
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm border-2" style={{ borderColor: "var(--theme-primary)" }}>
             <Package className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
           </div>
           <div className="flex-1">
@@ -341,76 +435,28 @@ export default function SpComponentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="font-semibold text-gray-700 mb-1">Sizes:</p>
-                <p className="text-gray-600">{spStandards.sizes}</p>
+                <p className="text-gray-600">+ {spStandards.sizes}</p>
               </div>
               <div>
                 <p className="font-semibold text-gray-700 mb-1">Radius:</p>
-                <p className="text-gray-600">{spStandards.radius}</p>
+                <p className="text-gray-600">+ {spStandards.radius}</p>
               </div>
               <div>
                 <p className="font-semibold text-gray-700 mb-1">Inputs:</p>
-                <p className="text-gray-600">H: {spStandards.inputs.height}</p>
-                <p className="text-gray-600">W: {spStandards.inputs.width}</p>
+                <p className="text-gray-600">H {spStandards.inputs.height}</p>
+                <p className="text-gray-600">W {spStandards.inputs.width}</p>
                 <p className="text-gray-600">{spStandards.inputs.states}</p>
               </div>
               <div>
                 <p className="font-semibold text-gray-700 mb-1">Buttons:</p>
-                <p className="text-gray-600">W: {spStandards.buttons.width}</p>
+                <p className="text-gray-600">+ {spStandards.buttons.width}</p>
                 <p className="text-gray-600">{spStandards.buttons.styles}</p>
-                <p className="text-gray-600">R: {spStandards.buttons.radius}</p>
-                <p className="text-gray-600">{spStandards.buttons.text}</p>
+                <p className="text-gray-600">Rounded {spStandards.buttons.radius}</p>
+                <p className="text-gray-600">Text size 16 color white</p>
               </div>
             </div>
           </div>
         </div>
-      </Card>
-
-      {/* Components List */}
-      <div className="space-y-6">
-        {filteredCategories.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
-            No components found matching your search.
-          </div>
-        ) : (
-          filteredCategories.map((category) => {
-            const isExpanded = expandedCategories.has(category.id);
-            return (
-              <Card key={category.id} className="overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => toggleCategory(category.id)}
-                      className="w-5 h-5 flex items-center justify-center border border-gray-300 rounded"
-                    >
-                      {isExpanded ? (
-                        <Check className="w-4 h-4 text-gray-600" />
-                      ) : (
-                        <div className="w-3 h-3" />
-                      )}
-                    </button>
-                    <div>
-                      <h2 className="font-semibold theme-heading">{category.name}</h2>
-                      <p className="text-xs text-gray-500 mt-1">{category.description}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="p-6 space-y-6">
-                    {category.components.map((component, index) => (
-                      <div key={index} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
-                        <h3 className="text-sm font-medium text-gray-700 mb-3">{component.name}</h3>
-                        <div className="flex items-start gap-4">
-                          {component.example}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            );
-          })
-        )}
       </div>
     </div>
   );

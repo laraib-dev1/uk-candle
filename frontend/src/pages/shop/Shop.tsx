@@ -9,6 +9,8 @@ import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
+import { getCategories } from "@/api/category.api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageLoader from "@/components/ui/PageLoader";
 
 // API product type
@@ -40,8 +42,16 @@ interface Product {
   currency?: string;
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  icon?: string;
+}
+
 const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [limit, setLimit] = useState(8);
@@ -56,6 +66,7 @@ const Shop = () => {
   useEffect(() => {
     fetchProducts();
     fetchBanners();
+    fetchCategories();
   }, [selectedCategory]);
 
   const fetchProducts = async () => {
@@ -77,9 +88,9 @@ const Shop = () => {
   description: p.description,
   currency: p.currency,
 }));
-console.log("Products API:", res);
-console.log("Mapped Products:", mapped);
 
+      // Store all products
+      setAllProducts(mapped);
 
       if (selectedCategory) {
         // only show products of selected category
@@ -93,6 +104,15 @@ console.log("Mapped Products:", mapped);
     } finally {
       setLoading(false);
       setInitialLoad(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (err) {
+      console.error("Failed to load categories:", err);
     }
   };
 
@@ -123,16 +143,51 @@ console.log("Mapped Products:", mapped);
           {/* Shop banner – if admin configured one, use it, otherwise use default image */}
           <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
 
-          <div className="flex justify-between items-center mt-10 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <div className="flex justify-between items-center mt-10 mb-6 gap-4">
+            <h2 className="text-2xl font-bold theme-heading">
               Products
             </h2>
-            <DynamicButton 
-              label="All" 
-              variant="filled" 
-              shape="pill" 
-              onClick={() => navigate("/shop")}
-            />
+            <div className="flex items-center gap-3">
+              <Select
+                value={selectedCategory || "all"}
+                onValueChange={(value) => {
+                  if (value === "all") {
+                    navigate("/shop");
+                  } else {
+                    navigate(`/shop?category=${encodeURIComponent(value)}`);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent side="bottom" align="end">
+                  <SelectItem value="all">
+                    <div className="flex items-center justify-between w-full">
+                      <span>All</span>
+                      <span className="ml-4 text-xs text-gray-500">
+                        ({allProducts.length})
+                      </span>
+                    </div>
+                  </SelectItem>
+                  {categories.map((category) => {
+                    const count = allProducts.filter(
+                      (p) => p.categoryName === category.name
+                    ).length;
+                    return (
+                      <SelectItem key={category._id} value={category.name}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{category.name}</span>
+                          <span className="ml-4 text-xs text-gray-500">
+                            ({count})
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {loading && !initialLoad ? (

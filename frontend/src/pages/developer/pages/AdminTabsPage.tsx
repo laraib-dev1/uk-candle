@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageLoader from "@/components/ui/PageLoader";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 interface AdminTab {
   _id: string;
@@ -191,7 +192,11 @@ export default function AdminTabsPage() {
                   style={tab.enabled ? { backgroundColor: "var(--theme-primary)" } : {}}
                 >
                   {toggleLoading[tab._id] ? (
-                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <CircularLoader 
+                      size={12} 
+                      color="white"
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                    />
                   ) : (
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -343,7 +348,7 @@ export default function AdminTabsPage() {
                   disabled={isLoading}
                   className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button flex items-center justify-center gap-2"
                 >
-                  {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                  {isLoading && <CircularLoader size={16} color="white" />}
                   Add Tab
                 </button>
               </div>

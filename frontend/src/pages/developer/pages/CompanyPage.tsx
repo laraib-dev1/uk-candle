@@ -4,6 +4,7 @@ import { getCompany, updateCompany } from "@/api/company.api";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/ui/toast";
 import PageLoader from "@/components/ui/PageLoader";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", url: "", order: i }));
 
@@ -376,7 +377,7 @@ export default function CompanyPage() {
               }
             }}
           >
-            {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+            {isLoading && <CircularLoader size={16} color="white" />}
             <Edit size={18} />
             Update
           </button>

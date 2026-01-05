@@ -4,6 +4,7 @@ import { getFooter, updateFooter } from "@/api/footer.api";
 import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
 import { useToast } from "@/components/ui/toast";
 import PageLoader from "@/components/ui/PageLoader";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 interface FooterLink {
   label: string;
@@ -278,7 +279,7 @@ export default function FooterPage() {
           disabled={isLoading}
           className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
         >
-          {isLoading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+          {isLoading && <CircularLoader size={16} color="white" />}
           <Save size={18} />
           Save Changes
         </button>

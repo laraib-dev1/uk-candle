@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { addToWishlist, removeFromWishlist } from "@/api/user.api";
 import { useToast } from "@/components/ui/toast";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 type Props = {
   id: string | number;
@@ -84,7 +85,11 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
                 style={isInWishlist ? { color: 'var(--theme-primary)' } : {}}
               >
                 {wishlistLoading ? (
-                  <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <CircularLoader 
+                    size={24} 
+                    color={isInWishlist ? 'var(--theme-primary)' : 'white'}
+                    className="drop-shadow-lg"
+                  />
                 ) : (
                   <Heart 
                     size={24} 

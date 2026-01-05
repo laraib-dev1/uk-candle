@@ -11,6 +11,50 @@ import { Elements } from "@stripe/react-stripe-js";
 import "./index.css";
 import { AuthProvider } from "./hooks/useAuth";
 import { ToastProvider } from "./components/ui/toast";
+
+// Suppress console warnings from third-party libraries in development
+if (import.meta.env.DEV) {
+  const originalWarn = console.warn;
+  const originalError = console.error;
+  
+  console.warn = (...args) => {
+    const message = args[0]?.toString() || '';
+    // Filter out known third-party library warnings
+    if (
+      message.includes('minWidth') ||
+      message.includes('allowOverflow') ||
+      message.includes('button') && message.includes('non-boolean') ||
+      message.includes('non-boolean attribute') ||
+      message.includes('unknown prop') ||
+      message.includes('styled-components') ||
+      message.includes('recharts') ||
+      message.includes('Stripe.js integration over HTTP') ||
+      message.includes('React does not recognize') ||
+      message.includes('Received `true` for a non-boolean')
+    ) {
+      return; // Suppress these warnings
+    }
+    originalWarn.apply(console, args);
+  };
+  
+  console.error = (...args) => {
+    const message = args[0]?.toString() || '';
+    // Filter out known third-party library errors that are actually warnings
+    if (
+      message.includes('minWidth') ||
+      message.includes('allowOverflow') ||
+      message.includes('button') && message.includes('non-boolean') ||
+      message.includes('non-boolean attribute') ||
+      message.includes('unknown prop') ||
+      message.includes('React does not recognize') ||
+      message.includes('Received `true` for a non-boolean')
+    ) {
+      return; // Suppress these errors
+    }
+    originalError.apply(console, args);
+  };
+}
+
 // Your public Stripe key (test or live)
 const stripePromise = loadStripe("pk_test_51SZR8tBr6feLHBsTihpvakcYTtUKzYmD86ImCvthYHPAdpzT8KHGOmt4Edqs09Ai9uKyPhVElHC87Yoah3esy3Ot00xQrnQCWL");
 

@@ -26,7 +26,6 @@ export default function SocialShare({
   const whatsappShare = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
 
   const iconColor = "white";
-  const circleBgColor = "#b88b5f";
   const iconSize = 20;
 
   const sharedClass =
@@ -62,7 +61,7 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
         >
           <FaFacebookF size={iconSize} color={iconColor} />
         </a>
@@ -73,7 +72,7 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
         >
           <FaInstagram size={iconSize} color={iconColor} />
         </a>
@@ -84,7 +83,7 @@ export default function SocialShare({
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
-          style={{ backgroundColor: circleBgColor }}
+          style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
         >
           <FaTiktok size={iconSize} color={iconColor} />
         </a>

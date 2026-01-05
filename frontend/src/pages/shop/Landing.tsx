@@ -13,6 +13,7 @@ import Hero2 from "@/components/hero/Hero2";
 import FeatureSection from "@/components/hero/FeatureSection";
 import ClientFeedback from "@/components/hero/ClientFeedback";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
+import PageLoader from "@/components/ui/PageLoader";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
@@ -91,6 +92,11 @@ export default function () {
       console.error("Failed to load banners for Landing page", err);
     }
   };
+
+  if (initialLoad) {
+    return <PageLoader message="GraceByAnu" />;
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-800 overflow-x-hidden">
 

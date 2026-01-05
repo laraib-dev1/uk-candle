@@ -1,23 +1,138 @@
 import React, { useState, useEffect } from "react";
-import { Code2 } from "lucide-react";
+import { Code2, User, Package, MapPin, Heart, MessageSquare, Star, LayoutDashboard } from "lucide-react";
 import DeveloperKeyModal from "../../../components/developer/DeveloperKeyModal";
 import PageLoader from "@/components/ui/PageLoader";
+import { getProfilePages, updateProfilePage } from "@/api/profilepage.api";
+import CircularLoader from "@/components/ui/CircularLoader";
+import { useToast } from "@/components/ui/toast";
+
+interface ProfilePage {
+  _id: string;
+  title: string;
+  slug: string;
+  icon: string;
+  enabled: boolean;
+  subInfo: string;
+  order: number;
+}
+
+// Base profile tabs that are always available on the site
+const baseProfileTabs = [
+  { _id: "dashboard", title: "Dashboard", slug: "/profile?tab=dashboard", icon: "LayoutDashboard", enabled: true, subInfo: "User dashboard overview", order: 1 },
+  { _id: "profile", title: "Profile", slug: "/profile?tab=profile", icon: "User", enabled: true, subInfo: "User profile settings", order: 2 },
+  { _id: "addresses", title: "Addresses", slug: "/profile?tab=addresses", icon: "MapPin", enabled: true, subInfo: "Manage delivery addresses", order: 3 },
+  { _id: "orders", title: "Orders", slug: "/profile?tab=orders", icon: "Package", enabled: true, subInfo: "Order history", order: 4 },
+  { _id: "wishlist", title: "Wishlist", slug: "/profile?tab=wishlist", icon: "Heart", enabled: true, subInfo: "Saved products", order: 5 },
+  { _id: "queries", title: "Support", slug: "/profile?tab=queries", icon: "MessageSquare", enabled: true, subInfo: "Support & help", order: 6 },
+  { _id: "reviews", title: "Reviews", slug: "/profile?tab=reviews", icon: "Star", enabled: true, subInfo: "Product reviews", order: 7 },
+];
 
 export default function SpConsolePage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Force initialize with base tabs - create a new array to ensure React detects the change
+  const [profilePages, setProfilePages] = useState<ProfilePage[]>(() => {
+    console.log("SP Console - Initializing state with base tabs:", baseProfileTabs.length);
+    return JSON.parse(JSON.stringify(baseProfileTabs)); // Deep copy to ensure new reference
+  });
+  const [toggleLoading, setToggleLoading] = useState<Record<string, boolean>>({});
+  const { success, error } = useToast();
 
   useEffect(() => {
     // Simulate loading for SP Console
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
+    loadProfilePages();
     return () => clearTimeout(timer);
   }, []);
 
+  // Debug: Log when profilePages changes
+  useEffect(() => {
+    console.log("=== SP Console - Profile pages state updated ===");
+    console.log("Count:", profilePages.length);
+    console.log("Pages:", profilePages);
+    console.log("First page:", profilePages[0]);
+  }, [profilePages]);
+
+  const loadProfilePages = async () => {
+    // Immediately set base tabs to ensure they're visible
+    console.log("=== SP Console Page - Loading profile pages ===");
+    console.log("Base tabs count:", baseProfileTabs.length);
+    console.log("Base tabs:", baseProfileTabs);
+    
+    // Set base tabs immediately
+    setProfilePages([...baseProfileTabs]);
+    console.log("Base tabs set in state immediately");
+    
+    try {
+      // Try to load custom profile pages from API
+      try {
+        const response = await getProfilePages();
+        console.log("SP Console - Profile pages API response:", response);
+        
+        // Handle different response formats
+        let customPages: ProfilePage[] = [];
+        if (response && typeof response === 'object') {
+          if (Array.isArray(response)) {
+            customPages = response;
+          } else if (response.data && Array.isArray(response.data)) {
+            customPages = response.data;
+          }
+        }
+        
+        // Combine base tabs with custom pages
+        let allPages: ProfilePage[] = [...baseProfileTabs];
+        if (Array.isArray(customPages) && customPages.length > 0) {
+          allPages = [...allPages, ...customPages];
+          console.log(`SP Console - Added ${customPages.length} custom profile pages`);
+        } else {
+          console.log("SP Console - No custom profile pages found, using base tabs only");
+        }
+        
+        // Sort by order
+        allPages.sort((a, b) => (a.order || 0) - (b.order || 0));
+        console.log(`SP Console - Setting total profile pages: ${allPages.length}`, allPages);
+        setProfilePages(allPages);
+      } catch (apiErr) {
+        console.warn("SP Console - Could not load custom profile pages from API, using base tabs only:", apiErr);
+        // Base tabs are already set above, so we're good
+      }
+    } catch (err: any) {
+      console.error("SP Console - Failed to load profile pages:", err);
+      // Base tabs are already set above, so we're good
+    }
+  };
+
+  const togglePage = async (id: string, enabled: boolean) => {
+    if (toggleLoading[id]) return;
+    
+    // Check if it's a base tab (always enabled, can't be disabled)
+    const isBaseTab = baseProfileTabs.some(tab => tab._id === id);
+    if (isBaseTab) {
+      error("Base profile tabs cannot be disabled");
+      return;
+    }
+    
+    setToggleLoading(prev => ({ ...prev, [id]: true }));
+    try {
+      await updateProfilePage(id, { enabled: !enabled });
+      await loadProfilePages();
+      success(`Profile page ${!enabled ? 'enabled' : 'disabled'} successfully`);
+    } catch (err: any) {
+      console.error("Failed to toggle page:", err);
+      error(err.message || "Failed to update profile page");
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [id]: false }));
+    }
+  };
+
   if (loading) {
+    console.log("SP Console - Still loading, showing loader");
     return <PageLoader message="GraceByAnu" />;
   }
+  
+  console.log("SP Console - Page loaded, rendering content. Profile pages:", profilePages.length);
 
   return (
     <div>
@@ -127,6 +242,7 @@ export default function SpConsolePage() {
           </div>
         </div>
       </div>
+
 
       {/* Developer Key Modal */}
       <DeveloperKeyModal open={showModal} onClose={() => setShowModal(false)} />

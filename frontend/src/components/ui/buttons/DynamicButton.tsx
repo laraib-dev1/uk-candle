@@ -1,6 +1,7 @@
 // components/ui/DynamicButton.tsx
 import React from "react";
 import clsx from "clsx";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 interface DynamicButtonProps {
   label: string;
@@ -79,7 +80,7 @@ const DynamicButton: React.FC<DynamicButtonProps> = ({
     >
       {loading ? (
         <>
-          <span className="animate-spin h-4 w-4 border-2 border-t-transparent border-white rounded-full" />
+          <CircularLoader size={16} color="white" />
           Loading...
         </>
       ) : (
