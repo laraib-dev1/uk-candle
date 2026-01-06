@@ -90,6 +90,9 @@ useEffect(() => {
 
     try {
       const data = await getMe(token);
+      console.log("Settings Page - User data:", data.user);
+      console.log("Settings Page - Avatar from API:", data.user.avatar);
+      
       // Handle avatar URL - if it's already a full URL (Cloudinary), use as-is, otherwise prepend API URL
       // Use same logic as axios.ts to get correct API URL for production
       const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
@@ -97,11 +100,24 @@ useEffect(() => {
       const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
       const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
       
-      const avatarUrl = data.user.avatar 
-        ? (data.user.avatar.startsWith('http://') || data.user.avatar.startsWith('https://')
-            ? data.user.avatar 
-            : `${apiBaseWithoutApi}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
-        : undefined;
+      console.log("Settings Page - API Base URL:", API_BASE_URL);
+      console.log("Settings Page - API Base without /api:", apiBaseWithoutApi);
+      
+      // Cloudinary URLs are already full URLs, use as-is
+      // Also handle relative paths from backend
+      let avatarUrl = data.user.avatar;
+      if (avatarUrl) {
+        // If it's already a full URL (Cloudinary or any other), use as-is
+        if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+          // Already a full URL - use directly (Cloudinary URLs are like https://res.cloudinary.com/...)
+          avatarUrl = avatarUrl;
+        } else {
+          // Relative path - construct full URL
+          avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+        }
+      }
+      
+      console.log("Settings Page - Final avatar URL:", avatarUrl);
       
       setUser({
         ...data.user,

@@ -48,11 +48,19 @@ export const updateAvatar = async (file: File, token: string) => {
   const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
   const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
   
-  const avatarUrl = res.data.avatar 
-    ? (res.data.avatar.startsWith('http://') || res.data.avatar.startsWith('https://')
-        ? res.data.avatar 
-        : `${apiBaseWithoutApi}${res.data.avatar.startsWith('/') ? res.data.avatar : '/' + res.data.avatar}`)
-    : undefined;
+  // Cloudinary URLs are already full URLs, use as-is
+  // Also handle relative paths from backend
+  let avatarUrl = res.data.avatar;
+  if (avatarUrl) {
+    // If it's already a full URL (Cloudinary or any other), use as-is
+    if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+      // Already a full URL - use directly (Cloudinary URLs are like https://res.cloudinary.com/...)
+      avatarUrl = avatarUrl;
+    } else {
+      // Relative path - construct full URL
+      avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+    }
+  }
 
   return {
     ...res.data,

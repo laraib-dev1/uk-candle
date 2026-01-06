@@ -22,6 +22,7 @@ import ProductCard from "@/components/products/ProductCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getProduct, getProducts } from "@/api/product.api";
 import { getCompany } from "@/api/company.api";
+import { getBanners } from "@/api/banner.api";
 import PageLoader from "@/components/ui/PageLoader";
 
 /* =======================
@@ -54,6 +55,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
+  const [heroBannerImage, setHeroBannerImage] = useState<string | undefined>(undefined);
 
   /* =======================
      Fetch Single Product
@@ -98,6 +100,24 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [id]);
+
+  /* =======================
+     Fetch Hero Banner for Social Share
+  ======================= */
+  useEffect(() => {
+    const fetchHeroBanner = async () => {
+      try {
+        const banners = await getBanners();
+        const heroBanner = banners.find((b) => b.slot === "hero-main");
+        if (heroBanner && heroBanner.imageUrl) {
+          setHeroBannerImage(heroBanner.imageUrl);
+        }
+      } catch (err) {
+        console.error("Failed to fetch hero banner:", err);
+      }
+    };
+    fetchHeroBanner();
+  }, []);
 
   /* =======================
      Fetch All Products
@@ -517,12 +537,16 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="bg-white text-black min-h-screen py-20">
-        <div className="max-w-7xl mx-auto px-4 py-10 pb-0">
+      <div className="bg-white text-black min-h-screen pt-20 pb-0">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
           {/* Product Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <ProductImageGallery images={product.images || ["/product.png"]} />
+            {/* Image Gallery - Will align with Description tab */}
+            <div className="w-full">
+              <ProductImageGallery images={product.images || ["/product.png"]} />
+            </div>
 
+            {/* Product Info - Takes remaining space */}
             <div className="flex flex-col gap-6">
               <span 
                 className="text-xs px-3 py-1 rounded-full w-fit text-white font-medium"
@@ -567,7 +591,7 @@ export default function ProductDetail() {
               <SocialShare
                 productName={product.name}
                 productUrl={window.location.href}
-                productImage={product.images?.[0]}
+                productImage={heroBannerImage || product.images?.[0]}
                 productDescription={product.description}
               />
             </div>
@@ -719,9 +743,7 @@ export default function ProductDetail() {
             ))}
           </div>
         </div>
-        <div className="mt-0">
-          <Footer />
-        </div>
+        <Footer />
       </div>
     </>
   );
