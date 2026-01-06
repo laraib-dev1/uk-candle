@@ -69,7 +69,7 @@ export default function Footer() {
   const enabledSections = footerData.sections.filter(s => s.enabled !== false);
 
   return (
-    <footer className="text-gray-300 mt-12" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
+    <footer className="text-gray-300 mt-20" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Logo */}

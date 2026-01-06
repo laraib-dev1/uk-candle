@@ -53,13 +53,21 @@ export default function FAQs() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-20 pb-0">
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
           Frequently Asked Questions
         </h1>
+        
+        {/* Subtitle */}
+        <p className="text-lg text-gray-600 mb-6 text-center">
+          Find answers to common questions
+        </p>
+
+        {/* Divider */}
+        <div className="h-px bg-gray-300 mb-8"></div>
 
         {/* FAQs List */}
         <div className="space-y-3">
@@ -89,6 +97,7 @@ export default function FAQs() {
                   <div className="px-4 pb-4 pt-0">
                     <div
                       className="prose prose-sm max-w-none text-gray-700 text-sm"
+                      style={{ textAlign: 'inherit' }}
                       dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
                     />
                   </div>

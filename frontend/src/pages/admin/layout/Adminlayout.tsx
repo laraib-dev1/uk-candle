@@ -71,11 +71,11 @@ export default function AdminLayout() {
         ]);
 
         if (userData) {
-          // prepend backend URL if avatar exists and doesn't already start with http
+          // Use avatar URL as-is if it's already a full URL (Cloudinary), otherwise prepend API URL
           const avatarUrl = userData.user.avatar 
-            ? (userData.user.avatar.startsWith('http') 
+            ? (userData.user.avatar.startsWith('http://') || userData.user.avatar.startsWith('https://')
                 ? userData.user.avatar 
-                : `${import.meta.env.VITE_API_URL}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
+                : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
             : undefined;
           
           const fullUser = {
@@ -362,7 +362,13 @@ export default function AdminLayout() {
       {/* ============ MAIN CONTENT ============ */}
       <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8">
          <React.Suspense fallback={<PageLoader message="GraceByAnu" />}>
-          <div key={loc.pathname} className="animate-fade-in">
+          <div 
+            key={loc.pathname} 
+            className="animate-fade-in"
+            style={{
+              animation: "fadeInSlide 0.5s ease-out",
+            }}
+          >
             <Outlet />
           </div>
         </React.Suspense>

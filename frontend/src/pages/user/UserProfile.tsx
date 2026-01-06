@@ -23,6 +23,7 @@ import { getProducts } from "@/api/product.api";
 import { getEnabledProfilePages, getProfilePageBySlug } from "@/api/profilepage.api";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import PageLoader from "@/components/ui/PageLoader";
 import {
   User,
   Package,
@@ -351,14 +352,18 @@ export default function UserProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <PageLoader message="Loading profile..." />
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="flex flex-col md:flex-row gap-6">
@@ -1507,6 +1512,11 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
   const handleSubmitReview = async () => {
     if (!selectedProduct) return;
 
+    if (!authUser) {
+      error("Please login to submit a review");
+      return;
+    }
+
     if (reviewData.rating === 0) {
       error("Please select a rating");
       return;
@@ -1519,6 +1529,14 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
 
     setSubmitting(true);
     try {
+      // Verify token exists
+      const token = localStorage.getItem("token");
+      if (!token) {
+        error("Please login to submit a review");
+        setSubmitting(false);
+        return;
+      }
+
       // If productId is not available, search for it by product name
       let productId: string | undefined = selectedProduct.productId;
       if (!productId) {
@@ -1550,7 +1568,12 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
       setReviewData({ rating: 0, comment: "" });
       setSelectedProduct(null);
     } catch (err: any) {
-      error(err.message || "Failed to submit review");
+      console.error("Review submission error:", err);
+      if (err?.response?.status === 401) {
+        error("Please login to submit a review. Your session may have expired.");
+      } else {
+        error(err?.response?.data?.message || err.message || "Failed to submit review");
+      }
     } finally {
       setSubmitting(false);
     }

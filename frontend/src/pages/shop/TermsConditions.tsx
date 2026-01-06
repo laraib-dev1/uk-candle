@@ -46,27 +46,30 @@ export default function TermsConditions() {
   };
 
   return (
-    <div className="min-h-screen bg-white py-20 pb-0">
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+          {content.title || "Terms & Conditions"}
+        </h1>
+        
+        {/* Subtitle */}
+        <p className="text-lg text-gray-600 mb-6 text-center">
+          {content.subTitle || "Legal page related Sub Title"}
+        </p>
+
+        {/* Divider */}
+        <div className="h-px bg-gray-300 mb-8"></div>
+
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Table of Contents - Left Sidebar */}
+          {/* Table of Contents - Left Sidebar - Below divider */}
           <div className="lg:w-64 flex-shrink-0">
             <TableOfContents htmlContent={content.description} contentRef={contentRef} />
           </div>
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4">
-              {content.title || "Terms & Conditions"}
-            </h1>
-            
-            {/* Subtitle */}
-            <p className="text-lg text-gray-600 mb-8">
-              {content.subTitle || "Legal page related Sub Title"}
-            </p>
-
             {/* Content */}
             <div 
               ref={contentRef}

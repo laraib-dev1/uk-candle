@@ -128,6 +128,43 @@ body {
   text-align: inherit !important;
 }
 
+/* Style links in content pages with theme color */
+.prose a,
+.prose a:link,
+.prose a:visited {
+  color: var(--theme-primary, #8B5E3C) !important;
+  text-decoration: underline;
+}
+
+.prose a:hover,
+.prose a:active {
+  color: var(--theme-dark, #6B4A2C) !important;
+}
+
+/* Product Detail Tabs Styling */
+button[data-radix-tabs-trigger][data-state="active"],
+[data-radix-tabs-trigger][data-state="active"] {
+  background-color: var(--theme-primary, #8B5E3C) !important;
+  color: white !important;
+}
+
+button[data-radix-tabs-trigger][data-state="inactive"],
+[data-radix-tabs-trigger][data-state="inactive"] {
+  background-color: transparent !important;
+  color: #666 !important;
+}
+
+/* Additional selector for Radix UI tabs */
+[role="tab"][data-state="active"] {
+  background-color: var(--theme-primary, #8B5E3C) !important;
+  color: white !important;
+}
+
+[role="tab"][data-state="inactive"] {
+  background-color: transparent !important;
+  color: #666 !important;
+}
+
 /* Hide scrollbar for category section */
 .scrollbar-hide {
   -ms-overflow-style: none;

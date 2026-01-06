@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Package, Search, Check, Calendar, Clock, Image as ImageIcon, Globe, Heart, ShoppingCart, User, Star, MapPin, MessageSquare, Eye, Edit, Trash2, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -345,26 +346,24 @@ export default function SpComponentsPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedCategory === cat
-                ? "text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-            style={
-              selectedCategory === cat
-                ? { backgroundColor: "var(--theme-primary)" }
-                : {}
-            }
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
+        <TabsList className="flex flex-wrap gap-2 border-b border-gray-200 pb-2 bg-transparent h-auto p-0">
+          {categories.map((cat) => (
+            <TabsTrigger
+              key={cat}
+              value={cat}
+              className={`px-4 py-2 rounded-lg font-medium transition-all data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:bg-gray-100`}
+              style={
+                selectedCategory === cat
+                  ? { backgroundColor: "var(--theme-primary)" }
+                  : {}
+              }
+            >
+              {cat}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Components List */}
       <div className="space-y-6 mb-8">

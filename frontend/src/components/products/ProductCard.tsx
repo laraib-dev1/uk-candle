@@ -85,16 +85,21 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
                 style={isInWishlist ? { color: 'var(--theme-primary)' } : {}}
               >
                 {wishlistLoading ? (
-                  <CircularLoader 
-                    size={24} 
-                    color={isInWishlist ? 'var(--theme-primary)' : 'white'}
-                    className="drop-shadow-lg"
-                  />
+                  <div className="w-6 h-6 flex items-center justify-center bg-white/80 rounded-full p-1">
+                    <CircularLoader 
+                      size={16} 
+                      color={isInWishlist ? 'var(--theme-primary)' : 'var(--theme-primary)'}
+                    />
+                  </div>
                 ) : (
                   <Heart 
                     size={24} 
-                    className={isInWishlist ? 'fill-current' : 'fill-white/20'}
+                    className={isInWishlist ? 'fill-current' : ''}
                     strokeWidth={2.5}
+                    style={{ 
+                      color: isInWishlist ? 'var(--theme-primary)' : 'white',
+                      fill: isInWishlist ? 'var(--theme-primary)' : 'transparent'
+                    }}
                   />
                 )}
               </button>

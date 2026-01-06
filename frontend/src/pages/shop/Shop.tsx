@@ -161,7 +161,7 @@ const Shop = () => {
                 <SelectTrigger className="w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2">
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
-                <SelectContent side="bottom" align="end">
+                <SelectContent side="bottom" align="end" position="popper">
                   <SelectItem value="all">
                     <div className="flex items-center justify-between w-full">
                       <span>All</span>

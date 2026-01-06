@@ -1,14 +1,149 @@
-import React from "react";
+import React, { useState } from "react";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { createQuery } from "@/api/query.api";
+import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/hooks/useAuth";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 export default function ContactUs() {
+  const { user } = useAuth();
+  const { success, error } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: user?.email || "",
+    subject: "",
+    description: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.subject || !formData.description) {
+      error("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createQuery(formData);
+      success("Your message has been sent successfully!");
+      setFormData({ 
+        email: user?.email || "", 
+        subject: "", 
+        description: "" 
+      });
+    } catch (err: any) {
+      error(err?.response?.data?.message || "Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold theme-heading mb-8">Contact Us</h1>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-600">Contact us page content goes here.</p>
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left: Form */}
+          <div className="bg-[#F5F5DC] rounded-2xl p-8">
+            <h2 className="text-2xl font-semibold mb-2 theme-heading">You have any query!</h2>
+            <p className="text-gray-600 mb-6">Fill the form to send us.</p>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Enter here"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] text-gray-900"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  placeholder="Enter here"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] text-gray-900"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter here"
+                  rows={5}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] resize-none text-gray-900"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-6 py-3 text-white rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: "var(--theme-primary)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  }
+                }}
+              >
+                {loading ? (
+                  <>
+                    <CircularLoader size={20} color="white" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Right: Image Placeholder */}
+          <div className="bg-[#E8E8D8] rounded-2xl flex items-center justify-center min-h-[400px]">
+            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
+              <svg
+                className="w-12 h-12 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -141,15 +141,12 @@ export default function () {
 
 
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-           <CategorySection
-  categories={categories.map(cat => ({
-    title: cat.name,
-    image: (cat.icon && cat.icon.trim() !== "") ? cat.icon : "/category.png"
-  }))}
-/>
-
-        </section>
+        <CategorySection
+          categories={categories.map(cat => ({
+            title: cat.name,
+            image: (cat.icon && cat.icon.trim() !== "") ? cat.icon : "/category.png"
+          }))}
+        />
         {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
         <section className="py-10">
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />

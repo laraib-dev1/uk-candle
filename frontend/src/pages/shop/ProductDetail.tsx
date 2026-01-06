@@ -6,7 +6,12 @@ import {
   RotateCcw,
   Headphones,
   Truck,
+  Heart,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
+import { useToast } from "@/components/ui/toast";
+import CircularLoader from "@/components/ui/CircularLoader";
 
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -55,6 +60,9 @@ export default function ProductDetail() {
   ======================= */
   useEffect(() => {
     if (!id) return;
+
+    // Scroll to top when product changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const fetchProduct = async () => {
       try {
@@ -384,6 +392,102 @@ export default function ProductDetail() {
   const ogDescription = cleanDescription(product.description, product.name);
   const pageTitle = `${product.name} | ${companyName}`;
 
+  // Wishlist Button Component
+  const WishlistButtonComponent = ({ productId }: { productId: string }) => {
+    const { user } = useAuth();
+    const { success, error } = useToast();
+    const [isInWishlist, setIsInWishlist] = useState(false);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
+
+    useEffect(() => {
+      // Check if product is in wishlist
+      const checkWishlistStatus = async () => {
+        if (!user) {
+          setIsInWishlist(false);
+          return;
+        }
+        try {
+          const wishlist = await getUserWishlist();
+          const isInList = Array.isArray(wishlist) && wishlist.some((item: any) => 
+            item._id === productId || item.product?._id === productId || item === productId
+          );
+          setIsInWishlist(isInList);
+        } catch (err) {
+          console.error("Failed to check wishlist status:", err);
+          setIsInWishlist(false);
+        }
+      };
+      checkWishlistStatus();
+    }, [productId, user]);
+
+    const handleWishlistToggle = async () => {
+      if (!user) {
+        error("Please login to add items to wishlist");
+        return;
+      }
+
+      if (wishlistLoading) return;
+
+      setWishlistLoading(true);
+      try {
+        if (isInWishlist) {
+          await removeFromWishlist(productId);
+          setIsInWishlist(false);
+          success("Removed from wishlist");
+        } else {
+          await addToWishlist(productId);
+          setIsInWishlist(true);
+          success("Added to wishlist");
+        }
+      } catch (err: any) {
+        error(err.message || "Failed to update wishlist");
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    if (!user) return null;
+
+    return (
+      <button
+        onClick={handleWishlistToggle}
+        disabled={wishlistLoading}
+        className="flex items-center justify-center w-10 h-10 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          borderColor: "var(--theme-primary)",
+          color: "var(--theme-primary)",
+          backgroundColor: isInWishlist ? "var(--theme-light)" : "transparent",
+        }}
+        onMouseEnter={(e) => {
+          if (!wishlistLoading) {
+            e.currentTarget.style.backgroundColor = "var(--theme-light)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!wishlistLoading) {
+            e.currentTarget.style.backgroundColor = isInWishlist ? "var(--theme-light)" : "transparent";
+          }
+        }}
+      >
+        {wishlistLoading ? (
+          <CircularLoader 
+            size={18} 
+            color="var(--theme-primary)"
+          />
+        ) : (
+          <Heart 
+            size={20} 
+            className={isInWishlist ? 'fill-current' : ''}
+            style={{ 
+              color: "var(--theme-primary)",
+              fill: isInWishlist ? "var(--theme-primary)" : "transparent"
+            }}
+          />
+        )}
+      </button>
+    );
+  };
+
   return (
     <>
       <Helmet>
@@ -447,15 +551,18 @@ export default function ProductDetail() {
                 {product.description}
               </p>
 
-              <AddToCartButton
-                product={{
-                  id: product._id,
-                  name: product.name,
-                  price: product.price,
-                  discount: product.discount,
-                  image: product.images?.[0],
-                }}
-              />
+              <div className="flex items-center gap-4">
+                <AddToCartButton
+                  product={{
+                    id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    discount: product.discount,
+                    image: product.images?.[0],
+                  }}
+                />
+                <WishlistButtonComponent productId={product._id} />
+              </div>
 
               <SocialShare
                 productName={product.name}
@@ -468,57 +575,113 @@ export default function ProductDetail() {
 
           {/* Tabs */}
           <Tabs defaultValue="description">
-            <TabsList className="text-black">
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="videos">Demo Video</TabsTrigger>
+            <TabsList 
+              className="bg-gray-100 p-1 rounded-lg h-auto"
+              style={{ backgroundColor: "#F5F5F5" }}
+            >
+              <TabsTrigger 
+                value="description"
+                className="px-4 py-2 rounded-md transition-all"
+              >
+                Description
+              </TabsTrigger>
+              {(() => {
+                // Only show video tab if video exists and is not empty
+                const hasVideo = product.video1 && 
+                  product.video1.trim() !== "" && 
+                  product.video1.trim().length > 0;
+                
+                if (!hasVideo) return null;
+                
+                return (
+                  <TabsTrigger 
+                    value="videos"
+                    className="px-4 py-2 rounded-md transition-all"
+                  >
+                    Demo Video
+                  </TabsTrigger>
+                );
+              })()}
             </TabsList>
 
-            <TabsContent value="description" className="bg-transparent">
-              <div className="grid md:grid-cols-2 gap-6 bg-transparent">
-                <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Features</h3>
-                  {product.metaFeatures ? (
-                    <div
-                      className="max-w-none meta-info-content text-black"
-                      dangerouslySetInnerHTML={{
-                        __html: cleanHtmlContent(product.metaFeatures),
+            <TabsContent value="description" className="bg-transparent mt-4">
+              {(() => {
+                // Check if content exists and is not just empty HTML
+                const hasMetaFeatures = product.metaFeatures && 
+                  product.metaFeatures.trim() !== "" && 
+                  product.metaFeatures.replace(/<[^>]*>/g, '').trim() !== "";
+                const hasMetaInfo = product.metaInfo && 
+                  product.metaInfo.trim() !== "" && 
+                  product.metaInfo.replace(/<[^>]*>/g, '').trim() !== "";
+                
+                if (hasMetaFeatures || hasMetaInfo) {
+                  return (
+                    <div 
+                      className="grid md:grid-cols-2 gap-6 rounded-xl p-6"
+                      style={{ 
+                        backgroundColor: "#FDFBF8",
+                        border: "1px solid #E5E5E5"
                       }}
-                    />
-                  ) : (
-                    <p className="text-gray-500 text-sm bg-transparent">No features listed</p>
-                  )}
-                </div>
+                    >
+                      {hasMetaFeatures && (
+                        <div className="bg-transparent meta-features-container">
+                          <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Features</h3>
+                          <div
+                            className="max-w-none meta-info-content text-black"
+                            dangerouslySetInnerHTML={{
+                              __html: cleanHtmlContent(product.metaFeatures),
+                            }}
+                          />
+                        </div>
+                      )}
 
-                <div className="bg-transparent meta-features-container">
-                  <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Info</h3>
-                  {product.metaInfo ? (
-                    <div
-                      className="max-w-none meta-info-content text-black"
-                      dangerouslySetInnerHTML={{
-                        __html: cleanHtmlContent(product.metaInfo),
-                      }}
-                    />
-                  ) : (
-                    <p className="text-gray-500 text-sm bg-transparent">No additional information available</p>
-                  )}
-                </div>
-              </div>
+                      {hasMetaInfo && (
+                        <div className="bg-transparent meta-features-container">
+                          <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Info</h3>
+                          <div
+                            className="max-w-none meta-info-content text-black"
+                            dangerouslySetInnerHTML={{
+                              __html: cleanHtmlContent(product.metaInfo),
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </TabsContent>
 
-            <TabsContent value="videos" className="bg-transparent">
-              {product.video1 ? (
-                <iframe
-                  className="w-full h-80"
-                  src={product.video1.replace(
-                    "watch?v=",
-                    "embed/"
-                  )}
-                  allowFullScreen
-                />
-              ) : (
-                <p>No video available</p>
-              )}
-            </TabsContent>
+            {(() => {
+              // Check if video exists and is not empty
+              const hasVideo = product.video1 && 
+                product.video1.trim() !== "" && 
+                product.video1.trim().length > 0;
+              
+              if (!hasVideo) return null;
+              
+              return (
+                <TabsContent value="videos" className="bg-transparent mt-4">
+                  <div 
+                    className="rounded-xl p-6"
+                    style={{ 
+                      backgroundColor: "#FDFBF8",
+                      border: "1px solid #E5E5E5"
+                    }}
+                  >
+                    <iframe
+                      className="w-full h-80 rounded-lg"
+                      src={product.video1.replace(
+                        "watch?v=",
+                        "embed/"
+                      )}
+                      allowFullScreen
+                    />
+                  </div>
+                </TabsContent>
+              );
+            })()}
           </Tabs>
 
           {/* Services */}

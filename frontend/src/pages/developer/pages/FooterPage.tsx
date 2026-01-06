@@ -294,12 +294,13 @@ export default function FooterPage() {
           >
             <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center gap-2 min-w-0">
               <GripVertical className="w-4 h-4 text-gray-400 cursor-grab flex-shrink-0" />
-              <input
-                type="text"
-                value={section.title}
-                onChange={(e) => updateSection(sectionIndex, "title", e.target.value)}
-                className="font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 flex-1 min-w-0"
-              />
+                <input
+                  type="text"
+                  value={section.title}
+                  onChange={(e) => updateSection(sectionIndex, "title", e.target.value)}
+                  className="font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 flex-1 min-w-0"
+                  style={{ color: "#111827" }}
+                />
               <label className="flex items-center gap-1 text-sm text-gray-600 flex-shrink-0 whitespace-nowrap">
                 <input
                   type="checkbox"
@@ -324,7 +325,7 @@ export default function FooterPage() {
                     type="text"
                     value={link.label}
                     onChange={(e) => updateLink(sectionIndex, linkIndex, "label", e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded outline-none min-w-0"
+                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded outline-none min-w-0 text-gray-900"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = "var(--theme-primary)";
                       e.currentTarget.style.boxShadow = "0 0 0 1px var(--theme-primary)";

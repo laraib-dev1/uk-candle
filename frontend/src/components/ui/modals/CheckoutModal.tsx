@@ -35,7 +35,23 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const { cartItems, clearCart } = useCart();
   const { success, error } = useToast();
   const { user } = useAuth();
-  const total = cartItems.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
+  
+  // Calculate subtotal from original prices (item.price is original price)
+  const subtotal = cartItems.reduce((sum: number, item: any) => {
+    const itemPrice = Number(item.price) || 0;
+    return sum + (itemPrice * item.quantity);
+  }, 0);
+
+  // Calculate total discount amount
+  const discount = cartItems.reduce((sum: number, item: any) => {
+    const itemPrice = Number(item.price) || 0;
+    const itemDiscount = Number(item.discount) || 0;
+    if (itemDiscount === 0) return sum;
+    const itemSubtotal = itemPrice * item.quantity;
+    return sum + ((itemDiscount / 100) * itemSubtotal);
+  }, 0);
+
+  const total = subtotal - discount;
 
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -280,13 +296,29 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
             </p>
           ) : (
             <div className="space-y-2">
-              {cartItems.map(item => (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.name} x {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+              {cartItems.map((item: any) => {
+                const itemPrice = Number(item.price) || 0;
+                const itemDiscount = Number(item.discount) || 0;
+                const itemSubtotal = itemPrice * item.quantity;
+                const itemDiscountAmount = itemDiscount > 0 
+                  ? (itemDiscount / 100) * itemSubtotal 
+                  : 0;
+                const itemTotal = itemSubtotal - itemDiscountAmount;
+                
+                return (
+                  <div key={item.id} className="flex justify-between">
+                    <span>{item.name} x {item.quantity}</span>
+                    <span>${itemTotal.toFixed(2)}</span>
+                  </div>
+                );
+              })}
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount</span>
+                  <span>-${discount.toFixed(2)}</span>
                 </div>
-              ))}
-              <div className="flex justify-between font-bold mt-2">
+              )}
+              <div className="flex justify-between font-bold mt-2 pt-2 border-t border-gray-200">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
