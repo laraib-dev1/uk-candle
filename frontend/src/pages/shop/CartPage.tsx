@@ -67,7 +67,6 @@ const total = subtotal - discount;
         <img src={item.image || "/product.png"} className="w-20 h-20 object-cover rounded-lg" />
         <div className="flex-1">
           <h3 className="font-semibold theme-heading">{item.name}</h3>
-          <p className="text-sm text-gray-600">{item.category || "category"}</p>
           <div className="flex items-center gap-2 mt-1">
             {itemDiscount > 0 ? (
               <>

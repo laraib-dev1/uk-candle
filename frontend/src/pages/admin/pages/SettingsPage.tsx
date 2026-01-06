@@ -55,8 +55,8 @@ const saveProfileWithAvatar = async () => {
     if (editAvatarFile) {
   const res = await updateAvatar(editAvatarFile, token);
 
-  // prepend backend URL
-  newAvatar = res.avatar ? `${import.meta.env.VITE_API_URL}${res.avatar}` : undefined;
+  // Use the avatar URL as returned (already processed in API to handle Cloudinary URLs)
+  newAvatar = res.avatar;
 
   setEditAvatarPreview(null); // reset preview
 }
@@ -90,7 +90,17 @@ useEffect(() => {
 
     try {
       const data = await getMe(token);
-      setUser(data.user);
+      // Handle avatar URL - if it's already a full URL (Cloudinary), use as-is, otherwise prepend API URL
+      const avatarUrl = data.user.avatar 
+        ? (data.user.avatar.startsWith('http://') || data.user.avatar.startsWith('https://')
+            ? data.user.avatar 
+            : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
+        : undefined;
+      
+      setUser({
+        ...data.user,
+        avatar: avatarUrl
+      });
       setEditName(data.user.name);
       setEditEmail(data.user.email);
     } catch (err) {
@@ -152,10 +162,16 @@ const changePassword = async () => {
     
 <div className="flex items-center gap-4 mb-6">
    <img
-    src={user?.avatar || "/product.png"} // fetched avatar ya default
+    src={user?.avatar || "/avatar.png"} // fetched avatar ya default
     className="w-20 h-20 rounded-full object-cover border-2"
     style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
     alt="avatar"
+    onError={(e) => {
+      const target = e.target as HTMLImageElement;
+      if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
+        target.src = "/avatar.png";
+      }
+    }}
   />
   <div>
     <h2 className="text-xl font-semibold">{user?.name}</h2>

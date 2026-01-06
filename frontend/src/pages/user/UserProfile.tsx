@@ -1497,6 +1497,7 @@ function QueriesTab() {
 // Reviews Tab Component
 function ReviewsTab({ orders }: { orders: Order[] }) {
   const { success, error } = useToast();
+  const { user: authUser } = useAuth();
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{ name: string; orderId: string; productId?: string } | null>(null);
   const [reviewData, setReviewData] = useState({

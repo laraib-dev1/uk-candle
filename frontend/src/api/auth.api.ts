@@ -38,9 +38,16 @@ export const updateAvatar = async (file: File, token: string) => {
     },
   });
 
+  // If avatar is already a full URL (Cloudinary), use it as-is, otherwise prepend API URL
+  const avatarUrl = res.data.avatar 
+    ? (res.data.avatar.startsWith('http://') || res.data.avatar.startsWith('https://')
+        ? res.data.avatar 
+        : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${res.data.avatar.startsWith('/') ? res.data.avatar : '/' + res.data.avatar}`)
+    : undefined;
+
   return {
     ...res.data,
-    avatar: res.data.avatar ? `${import.meta.env.VITE_API_URL}${res.data.avatar}` : undefined,
+    avatar: avatarUrl,
   };
 };
 

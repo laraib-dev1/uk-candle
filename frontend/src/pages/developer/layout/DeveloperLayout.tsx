@@ -52,7 +52,7 @@ export default function DeveloperLayout() {
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <div className="flex flex-col h-full">
       {/* Developer Badge */}
-      <div className="px-5 pb-6 border-b border-white/20 flex-shrink-0">
+      <div className="px-5 pt-6 pb-6 border-b border-white/20 flex-shrink-0">
         <span 
           className="font-bold text-sm tracking-wider"
           style={{ color: "var(--theme-accent)" }}
