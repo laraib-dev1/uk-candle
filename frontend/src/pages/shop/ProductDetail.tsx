@@ -542,14 +542,14 @@ export default function ProductDetail() {
 
       <div className="bg-white text-black min-h-screen pt-20 pb-0">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
-          {/* Product Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-8 mb-12">
             {/* Image Gallery - Aligned left with space */}
             <div className="w-full flex justify-start">
               <ProductImageGallery images={product.images || ["/product.png"]} />
             </div>
 
-            {/* Product Info - Takes remaining space, fills gap */}
+            {/* Product Info - Takes more space, fills the gap */}
             <div className="flex flex-col gap-6">
               <span 
                 className="text-xs px-3 py-1 rounded-full w-fit text-white font-medium"
@@ -573,6 +573,10 @@ export default function ProductDetail() {
                   </span>
                 )}
               </div>
+
+              <p className="text-gray-600">
+                {product.description}
+              </p>
 
               <div className="flex items-center gap-4">
                 <AddToCartButton
@@ -629,15 +633,6 @@ export default function ProductDetail() {
             </TabsList>
 
             <TabsContent value="description" className="bg-transparent mt-4">
-              {/* Product Description */}
-              {product.description && (
-                <div className="mb-6">
-                  <p className="text-gray-600 whitespace-pre-wrap leading-relaxed">
-                    {product.description}
-                  </p>
-                </div>
-              )}
-              
               {(() => {
                 // Check if content exists and is not just empty HTML
                 const hasMetaFeatures = product.metaFeatures && 
