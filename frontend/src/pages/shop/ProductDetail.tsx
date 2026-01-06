@@ -574,10 +574,6 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              <p className="text-gray-600">
-                {product.description}
-              </p>
-
               <div className="flex items-center gap-4">
                 <AddToCartButton
                   product={{
@@ -591,12 +587,13 @@ export default function ProductDetail() {
                 <WishlistButtonComponent productId={product._id} />
               </div>
 
-              <SocialShare
+              {/* Social Share - Hidden/Commented */}
+              {/* <SocialShare
                 productName={product.name}
                 productUrl={window.location.href}
                 productImage={heroBannerImage || product.images?.[0]}
                 productDescription={product.description}
-              />
+              /> */}
             </div>
           </div>
 
@@ -632,6 +629,15 @@ export default function ProductDetail() {
             </TabsList>
 
             <TabsContent value="description" className="bg-transparent mt-4">
+              {/* Product Description */}
+              {product.description && (
+                <div className="mb-6">
+                  <p className="text-gray-600 whitespace-pre-wrap leading-relaxed">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+              
               {(() => {
                 // Check if content exists and is not just empty HTML
                 const hasMetaFeatures = product.metaFeatures && 

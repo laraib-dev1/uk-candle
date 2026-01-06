@@ -83,16 +83,19 @@ export default function AdminLayout() {
           console.log("Admin Layout - API Base URL:", API_BASE_URL);
           console.log("Admin Layout - API Base without /api:", apiBaseWithoutApi);
           
-          // Cloudinary URLs are already full URLs, use as-is
-          // Backend returns Cloudinary secure_url directly, so use it as-is
+          // Handle avatar URL - fix localhost URLs in production
           let avatarUrl = userData.user.avatar;
           if (avatarUrl) {
-            // Cloudinary URLs start with https://res.cloudinary.com/
-            // If it's already a full URL, use directly
-            if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+            // If it's a localhost URL (from development), replace with production API URL
+            if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
+              // Extract the path from localhost URL
+              const urlPath = avatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+              avatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+            } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+              // Already a full URL (Cloudinary or production) - use directly
               avatarUrl = avatarUrl;
             } else {
-              // Relative path - construct full URL (shouldn't happen with Cloudinary)
+              // Relative path - construct full URL
               avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
             }
           }
