@@ -84,20 +84,25 @@ export default function AdminLayout() {
           console.log("Admin Layout - API Base without /api:", apiBaseWithoutApi);
           
           // Cloudinary URLs are already full URLs, use as-is
-          // Also handle relative paths from backend
+          // Backend returns Cloudinary secure_url directly, so use it as-is
           let avatarUrl = userData.user.avatar;
           if (avatarUrl) {
-            // If it's already a full URL (Cloudinary or any other), use as-is
+            // Cloudinary URLs start with https://res.cloudinary.com/
+            // If it's already a full URL, use directly
             if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
-              // Already a full URL - use directly (Cloudinary URLs are like https://res.cloudinary.com/...)
               avatarUrl = avatarUrl;
             } else {
-              // Relative path - construct full URL
+              // Relative path - construct full URL (shouldn't happen with Cloudinary)
               avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
             }
           }
           
           console.log("Admin Layout - Final avatar URL:", avatarUrl);
+          console.log("Admin Layout - Avatar URL type check:", {
+            original: userData.user.avatar,
+            isCloudinary: userData.user.avatar?.includes('cloudinary'),
+            final: avatarUrl
+          });
           
           const fullUser = {
             ...userData.user,

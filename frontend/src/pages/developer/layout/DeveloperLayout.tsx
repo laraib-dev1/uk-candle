@@ -52,7 +52,7 @@ export default function DeveloperLayout() {
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <div className="flex flex-col h-full">
       {/* Developer Badge */}
-      <div className="px-5 pt-6 pb-6 border-b border-white/20 flex-shrink-0">
+      <div className="px-5 pt-6 pb-6 border-b border-white/20 shrink-0">
         <span 
           className="font-bold text-sm tracking-wider"
           style={{ color: "var(--theme-accent)" }}
@@ -86,7 +86,7 @@ export default function DeveloperLayout() {
       </nav>
 
       {/* BACK TO ADMIN BUTTON (bottom) */}
-      <div className="mt-auto px-2 flex-shrink-0">
+      <div className="mt-auto px-2 shrink-0">
         <button
           onClick={() => {
             handleBackToAdmin();
@@ -104,7 +104,7 @@ export default function DeveloperLayout() {
   return (
     <div className="flex min-h-screen bg-white">
       {/* ============ MOBILE DRAWER ============ */}
-      <div className="lg:hidden fixed top-4 left-4 z-[100]">
+      <div className="lg:hidden fixed top-4 left-4 z-100">
         <Button
           type="button"
           onClick={() => setSidebarOpen(true)}

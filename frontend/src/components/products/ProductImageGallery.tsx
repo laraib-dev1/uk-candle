@@ -9,8 +9,8 @@ export default function ProductImageGallery({ images }: Props) {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Main Image - 3:4 aspect ratio - Increased size but still 3:4 */}
-      <div className="w-full max-w-xl mx-auto aspect-[3/4] bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+      {/* Main Image - 3:4 aspect ratio - Smaller size, aligned left */}
+      <div className="w-full max-w-sm aspect-[3/4] bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
         <img
           src={selected}
           alt="Product"
@@ -21,8 +21,8 @@ export default function ProductImageGallery({ images }: Props) {
         />
       </div>
 
-      {/* Thumbnails - 4 small square boxes below main image - Aligned with main image */}
-      <div className="grid grid-cols-4 gap-2 w-full max-w-xl mx-auto">
+      {/* Thumbnails - 4 small square boxes below main image - Shorter but keep 3:4 ratio */}
+      <div className="grid grid-cols-4 gap-2 w-full max-w-sm">
         {images.slice(0, 4).map((img, i) => (
           <div
             key={i}

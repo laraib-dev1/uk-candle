@@ -256,7 +256,9 @@ export default function ProductDetail() {
   useEffect(() => {
     if (!product) return;
 
-    const ogImageUrl = getAbsoluteImageUrl(product.images?.[0]);
+    // Use hero banner image for social sharing, fallback to product image
+    const imageToUse = heroBannerImage || product.images?.[0];
+    const ogImageUrl = getAbsoluteImageUrl(imageToUse);
     const ogDescription = cleanDescription(product.description, product.name);
     const pageTitle = `${product.name} | ${companyName}`;
 
@@ -266,6 +268,8 @@ export default function ProductDetail() {
       cleanedDescription: ogDescription,
       productImages: product.images,
       firstImage: product.images?.[0],
+      heroBannerImage: heroBannerImage,
+      imageUsed: imageToUse,
       ogImageUrl: ogImageUrl,
       companyName: companyName,
       pageUrl: window.location.href,
@@ -365,6 +369,12 @@ export default function ProductDetail() {
     .filter((p) => p._id !== product._id)
     .slice(0, 4);
 
+  // Calculate meta tags for Helmet (use hero banner if available, else product image)
+  const imageForMeta = heroBannerImage || product?.images?.[0];
+  const metaImageUrl = product ? getAbsoluteImageUrl(imageForMeta) : "";
+  const metaDescription = product ? cleanDescription(product.description, product.name) : "";
+  const metaTitle = product ? `${product.name} | ${companyName}` : companyName;
+
   // No need to parse - display as HTML like metaInfo
 
   // Clean HTML content to remove broken images and backgrounds
@@ -404,13 +414,6 @@ export default function ProductDetail() {
     
     return cleaned;
   };
-
-  /* =======================
-     JSX - Calculate meta tag values
-  ======================= */
-  const ogImageUrl = getAbsoluteImageUrl(product.images?.[0]);
-  const ogDescription = cleanDescription(product.description, product.name);
-  const pageTitle = `${product.name} | ${companyName}`;
 
   // Wishlist Button Component
   const WishlistButtonComponent = ({ productId }: { productId: string }) => {
@@ -511,27 +514,27 @@ export default function ProductDetail() {
   return (
     <>
       <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={ogDescription} />
-        <meta property="og:title" content={product.name} />
-        <meta property="og:description" content={ogDescription} />
-        <meta property="og:image" content={ogImageUrl} />
-        <meta property="og:image:secure_url" content={ogImageUrl} />
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <meta property="og:title" content={product?.name || ""} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={metaImageUrl} />
+        <meta property="og:image:secure_url" content={metaImageUrl} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={product.name} />
+        <meta property="og:image:alt" content={product?.name || ""} />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:type" content="product" />
         <meta property="og:site_name" content={companyName} />
-        <meta property="product:price:amount" content={product.price.toString()} />
+        <meta property="product:price:amount" content={product?.price?.toString() || ""} />
         <meta property="product:price:currency" content="PKR" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={product.name} />
-        <meta name="twitter:description" content={ogDescription} />
-        <meta name="twitter:image" content={ogImageUrl} />
-        <meta name="twitter:image:alt" content={product.name} />
+        <meta name="twitter:title" content={product?.name || ""} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={metaImageUrl} />
+        <meta name="twitter:image:alt" content={product?.name || ""} />
         {/* Additional meta tags for better compatibility */}
-        <meta name="og:image" content={ogImageUrl} />
+        <meta name="og:image" content={metaImageUrl} />
         <link rel="canonical" href={window.location.href} />
       </Helmet>
 
@@ -541,12 +544,12 @@ export default function ProductDetail() {
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
           {/* Product Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {/* Image Gallery - Will align with Description tab */}
-            <div className="w-full">
+            {/* Image Gallery - Aligned left with space */}
+            <div className="w-full flex justify-start">
               <ProductImageGallery images={product.images || ["/product.png"]} />
             </div>
 
-            {/* Product Info - Takes remaining space */}
+            {/* Product Info - Takes remaining space, fills gap */}
             <div className="flex flex-col gap-6">
               <span 
                 className="text-xs px-3 py-1 rounded-full w-fit text-white font-medium"
