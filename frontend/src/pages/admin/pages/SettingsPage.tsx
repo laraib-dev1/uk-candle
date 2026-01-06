@@ -91,10 +91,16 @@ useEffect(() => {
     try {
       const data = await getMe(token);
       // Handle avatar URL - if it's already a full URL (Cloudinary), use as-is, otherwise prepend API URL
+      // Use same logic as axios.ts to get correct API URL for production
+      const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+      const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+      const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+      
       const avatarUrl = data.user.avatar 
         ? (data.user.avatar.startsWith('http://') || data.user.avatar.startsWith('https://')
             ? data.user.avatar 
-            : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
+            : `${apiBaseWithoutApi}${data.user.avatar.startsWith('/') ? data.user.avatar : '/' + data.user.avatar}`)
         : undefined;
       
       setUser({

@@ -39,10 +39,19 @@ export const updateAvatar = async (file: File, token: string) => {
   });
 
   // If avatar is already a full URL (Cloudinary), use it as-is, otherwise prepend API URL
+  // Use same logic as axios.ts to get correct API URL for production
+  const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+  const isLocalhost = typeof window !== 'undefined' && (
+    window.location.hostname === "localhost" || 
+    window.location.hostname === "127.0.0.1"
+  );
+  const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+  const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+  
   const avatarUrl = res.data.avatar 
     ? (res.data.avatar.startsWith('http://') || res.data.avatar.startsWith('https://')
         ? res.data.avatar 
-        : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${res.data.avatar.startsWith('/') ? res.data.avatar : '/' + res.data.avatar}`)
+        : `${apiBaseWithoutApi}${res.data.avatar.startsWith('/') ? res.data.avatar : '/' + res.data.avatar}`)
     : undefined;
 
   return {

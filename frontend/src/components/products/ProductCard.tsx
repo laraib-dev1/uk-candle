@@ -96,12 +96,12 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
               alt={name}
               className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
             />
-            {/* Wishlist Button - Top Right Corner - Always visible */}
+            {/* Wishlist Button - Top Right Corner - Show on hover */}
             {user && (
               <button
                 onClick={handleWishlistToggle}
                 disabled={wishlistLoading}
-                className={`absolute top-3 right-3 transition-all duration-300 opacity-100 hover:scale-110 z-10 ${
+                className={`absolute top-3 right-3 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 z-10 ${
                   isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
                 } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
                 title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}

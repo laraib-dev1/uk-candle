@@ -96,7 +96,10 @@ export const cancelOrder = async (orderId: string): Promise<Order> => {
 // Wishlist APIs
 export const getUserWishlist = async () => {
   const res = await API.get("/user/wishlist");
-  return res.data.data;
+  // Backend returns wishlist.map(item => item.productId), so data is array of products
+  const wishlist = res.data.data || res.data || [];
+  console.log("Wishlist API response:", wishlist);
+  return Array.isArray(wishlist) ? wishlist : [];
 };
 
 export const addToWishlist = async (productId: string) => {

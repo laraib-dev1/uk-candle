@@ -115,9 +115,18 @@ export default function UserProfile() {
       setAddresses(Array.isArray(addressesData) ? addressesData : []);
       setOrders(Array.isArray(ordersData) ? ordersData : []);
       // Filter out null/undefined products from wishlist
+      // Backend returns products directly (from wishlist.map(item => item.productId))
+      // So we need to handle both cases: direct product objects or nested productId
       const validWishlist = Array.isArray(wishlistData) 
-        ? wishlistData.filter((item: any) => item && item._id) 
+        ? wishlistData
+            .map((item: any) => {
+              // Handle both direct product objects and nested productId
+              const product = item?.productId || item;
+              return product && product._id ? product : null;
+            })
+            .filter((item: any) => item !== null)
         : [];
+      console.log("Wishlist data processed:", validWishlist);
       setWishlist(validWishlist);
       
       // Handle profile pages data
@@ -1315,9 +1324,12 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {wishlist.map((product: any) => {
-            // Handle case where product might be null or productId might be populated
+            // Backend returns products directly, but handle both cases for safety
             const productData = product?.productId || product;
-            if (!productData || !productData._id) return null;
+            if (!productData || !productData._id) {
+              console.warn("Invalid product in wishlist:", product);
+              return null;
+            }
             
             // Calculate discounted price if discount exists
             const discount = productData.discount || 0;

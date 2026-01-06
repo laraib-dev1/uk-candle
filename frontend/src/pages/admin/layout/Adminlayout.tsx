@@ -72,10 +72,16 @@ export default function AdminLayout() {
 
         if (userData) {
           // Use avatar URL as-is if it's already a full URL (Cloudinary), otherwise prepend API URL
+          // Use same logic as axios.ts to get correct API URL for production
+          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+          
           const avatarUrl = userData.user.avatar 
             ? (userData.user.avatar.startsWith('http://') || userData.user.avatar.startsWith('https://')
                 ? userData.user.avatar 
-                : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
+                : `${apiBaseWithoutApi}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
             : undefined;
           
           const fullUser = {
