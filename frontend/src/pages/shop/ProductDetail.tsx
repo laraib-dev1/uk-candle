@@ -78,13 +78,13 @@ export default function ProductDetail() {
           data.image6,
         ].filter(Boolean);
 
+        const categoryName = data.categoryName || data.category?.name || data.category || null;
         setProduct({
           ...data,
           images,
-          categoryName:
-            data.categoryName ||
-            data.category?.name ||
-            "Category",
+          categoryName: categoryName,
+          category: data.category || null,
+          name: data.name || "Product",
           metaFeatures: data.metaFeatures || "",
           metaInfo: data.metaInfo || "",
         });
@@ -348,7 +348,7 @@ export default function ProductDetail() {
   // No need to parse - display as HTML like metaInfo
 
   // Clean HTML content to remove broken images and backgrounds
-  const cleanHtmlContent = (html: string) => {
+  const cleanHtmlContent = (html: string | undefined) => {
     if (!html) return "";
     // Remove img tags with empty src, invalid src, or placeholder text
     let cleaned = html
@@ -517,24 +517,24 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="bg-white text-black min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 py-10">
+      <div className="bg-white text-black min-h-screen py-20">
+        <div className="max-w-7xl mx-auto px-4 py-10 pb-0">
           {/* Product Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             <ProductImageGallery images={product.images || ["/product.png"]} />
 
             <div className="flex flex-col gap-6">
               <span 
-                className="text-xs px-3 py-1 rounded-full w-fit"
+                className="text-xs px-3 py-1 rounded-full w-fit text-white font-medium"
                 style={{
-                  backgroundColor: "var(--theme-light)",
-                  color: "var(--theme-primary)",
+                  backgroundColor: "var(--theme-primary)",
+                  color: "white",
                 }}
               >
-                {product.categoryName}
+                {product.categoryName || product.category?.name || (typeof product.category === 'string' ? product.category : 'Category')}
               </span>
 
-              <h1 className="text-3xl font-bold theme-heading">{product.name}</h1>
+              <h1 className="text-3xl font-bold theme-heading">{product.name || "Product Name"}</h1>
 
               <div className="flex gap-3 items-center">
                 <span className="text-2xl font-bold">
@@ -672,10 +672,10 @@ export default function ProductDetail() {
                   >
                     <iframe
                       className="w-full h-80 rounded-lg"
-                      src={product.video1.replace(
+                      src={product.video1?.replace(
                         "watch?v=",
                         "embed/"
-                      )}
+                      ) || ""}
                       allowFullScreen
                     />
                   </div>
@@ -719,9 +719,10 @@ export default function ProductDetail() {
             ))}
           </div>
         </div>
+        <div className="mt-0">
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
     </>
   );
 }

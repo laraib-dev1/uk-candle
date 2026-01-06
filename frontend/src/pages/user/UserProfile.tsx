@@ -114,7 +114,11 @@ export default function UserProfile() {
       console.log("Loaded addresses:", addressesData);
       setAddresses(Array.isArray(addressesData) ? addressesData : []);
       setOrders(Array.isArray(ordersData) ? ordersData : []);
-      setWishlist(Array.isArray(wishlistData) ? wishlistData : []);
+      // Filter out null/undefined products from wishlist
+      const validWishlist = Array.isArray(wishlistData) 
+        ? wishlistData.filter((item: any) => item && item._id) 
+        : [];
+      setWishlist(validWishlist);
       
       // Handle profile pages data
       console.log("Profile pages API response:", profilePagesData);
@@ -365,7 +369,7 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="container mx-auto px-4 pt-16 pb-8 mb-0">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4">
@@ -437,7 +441,9 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
-      <Footer />
+      <div className="mt-0">
+        <Footer />
+      </div>
     </div>
   );
 }
@@ -448,7 +454,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
   const pendingOrders = orders.filter(o => o.status === "Pending").length;
   
   return (
-    <div>
+    <div className="pt-0">
       <h2 className="text-2xl font-bold mb-6 theme-heading">Dashboard</h2>
       
       {/* Quick Stats */}
@@ -1308,22 +1314,26 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
         <p className="text-gray-600">Your wishlist is empty</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {wishlist.map((product) => {
+          {wishlist.map((product: any) => {
+            // Handle case where product might be null or productId might be populated
+            const productData = product?.productId || product;
+            if (!productData || !productData._id) return null;
+            
             // Calculate discounted price if discount exists
-            const discount = product.discount || 0;
-            const originalPrice = product.price;
+            const discount = productData.discount || 0;
+            const originalPrice = productData.price;
             const discountedPrice = discount > 0 
               ? originalPrice * (1 - discount / 100)
               : originalPrice;
 
             return (
-              <div key={product._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div key={productData._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                 {/* Product Image */}
-                {product.image1 && (
+                {(productData.image1 || productData.image) && (
                   <div className="w-full aspect-square bg-gray-100 overflow-hidden">
                     <img
-                      src={product.image1}
-                      alt={product.name}
+                      src={productData.image1 || productData.image || "/product.png"}
+                      alt={productData.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -1331,7 +1341,7 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
                 
                 {/* Product Info */}
                 <div className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold mb-2 text-gray-900 text-base line-clamp-2 min-h-[3rem]">{product.name}</h3>
+                  <h3 className="font-semibold mb-2 text-gray-900 text-base line-clamp-2 min-h-[3rem]">{productData.name}</h3>
                   
                   {/* Price */}
                   <div className="mb-4">
@@ -1354,13 +1364,13 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
                   {/* Action Buttons */}
                   <div className="flex gap-2 mt-auto">
                     <button
-                      onClick={() => navigate(`/product/${product._id}`)}
+                      onClick={() => navigate(`/product/${productData._id}`)}
                       className="flex-1 px-3 py-2 theme-button rounded-lg text-sm font-medium whitespace-nowrap"
                     >
                       View Product
                     </button>
                     <button
-                      onClick={() => handleRemove(product._id)}
+                      onClick={() => handleRemove(productData._id)}
                       className="px-3 py-2 border-2 border-red-200 rounded-lg hover:bg-red-50 text-red-600 transition-colors flex-shrink-0"
                       title="Remove from wishlist"
                     >

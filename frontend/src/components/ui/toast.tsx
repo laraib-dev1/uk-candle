@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { X, CheckCircle, XCircle, AlertCircle, Info } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -68,19 +68,6 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     showToast(message, "info", duration);
   }, [showToast]);
 
-  const getIcon = (type: ToastType) => {
-    switch (type) {
-      case "success":
-        return <CheckCircle className="w-5 h-5" />;
-      case "error":
-        return <XCircle className="w-5 h-5" />;
-      case "warning":
-        return <AlertCircle className="w-5 h-5" />;
-      case "info":
-        return <Info className="w-5 h-5" />;
-    }
-  };
-
   const getStyles = (type: ToastType) => {
     switch (type) {
       case "success":
@@ -106,7 +93,6 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               getStyles(toast.type)
             )}
           >
-            <div className="flex-shrink-0">{getIcon(toast.type)}</div>
             <p className="flex-1 text-sm font-medium">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}

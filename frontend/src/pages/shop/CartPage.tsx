@@ -1,15 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TwoColumnLayout from "@/components/ui/TwoColumnLayout";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import CheckoutModal from "@/components/ui/modals/CheckoutModal";
 import { Trash2 } from "lucide-react";
 import { useCart } from "@/components/products/CartContext";
+import Banner from "@/components/hero/Banner";
+import { getBanners, type Banner as BannerType } from "@/api/banner.api";
 
 
 const CartPage = () => {
     const [openCheckout, setOpenCheckout] = useState(false);
+    const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
 const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
+
+  // Load shop banner
+  useEffect(() => {
+    const fetchBanner = async () => {
+      try {
+        const data = await getBanners();
+        const banner = data.find((b) => b.slot === "shop-main");
+        setShopBanner(banner || null);
+      } catch (err) {
+        console.error("Failed to load banner for Cart page", err);
+      }
+    };
+    fetchBanner();
+  }, []);
 const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
 // Calculate subtotal from original prices (item.price is original price)
@@ -136,6 +153,13 @@ const rightContent = (
 
         <TwoColumnLayout left={leftContent} right={rightContent} />
         <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+
+        {/* Shop Banner after Purchase List and Order Summary */}
+        {shopBanner && (
+          <div className="mt-30">
+            <Banner imageSrc={shopBanner.imageUrl} />
+          </div>
+        )}
 
       </div>
 

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { addToWishlist, removeFromWishlist } from "@/api/user.api";
+import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
 import { useToast } from "@/components/ui/toast";
 import CircularLoader from "@/components/ui/CircularLoader";
 
@@ -20,6 +20,28 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
   const { success, error } = useToast();
   const [isInWishlist, setIsInWishlist] = useState(initialIsInWishlist || false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Check wishlist status on mount
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!user) {
+        setIsInWishlist(false);
+        return;
+      }
+      try {
+        const wishlist = await getUserWishlist();
+        const productId = String(id);
+        const isInList = Array.isArray(wishlist) && wishlist.some((item: any) => 
+          item._id === productId || item.product?._id === productId || item === productId || String(item) === productId
+        );
+        setIsInWishlist(isInList);
+      } catch (err) {
+        console.error("Failed to check wishlist status:", err);
+        setIsInWishlist(false);
+      }
+    };
+    checkWishlistStatus();
+  }, [id, user]);
 
   // Calculate prices
   const numericPrice = typeof price === 'string' ? parseFloat(price.replace(/[^0-9.]/g, '')) : price;
@@ -62,7 +84,8 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
 
   return (
     <Link to={id ? `/product/${id}` : '#'}
-      className="block h-full w-full cursor-pointer"
+      className="block h-full w-full"
+      style={{ cursor: "pointer" }}
     >
       <article className="flex flex-col bg-slate-100 text-black rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 h-full relative group">
         {/* Image Container - Takes upper 2/3 of card */}
@@ -73,12 +96,12 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
               alt={name}
               className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
             />
-            {/* Wishlist Button - Top Right Corner - Only visible on hover */}
+            {/* Wishlist Button - Top Right Corner - Always visible */}
             {user && (
               <button
                 onClick={handleWishlistToggle}
                 disabled={wishlistLoading}
-                className={`absolute top-3 right-3 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 ${
+                className={`absolute top-3 right-3 transition-all duration-300 opacity-100 hover:scale-110 z-10 ${
                   isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
                 } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
                 title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}

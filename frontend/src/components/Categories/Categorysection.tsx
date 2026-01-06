@@ -44,6 +44,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
             onClick={scrollLeft}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
             aria-label="Scroll left"
+            style={{ cursor: "pointer" }}
           >
             <ChevronLeft className="w-6 h-6 text-gray-700" />
           </button>
@@ -51,6 +52,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
             onClick={scrollRight}
             className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
             aria-label="Scroll right"
+            style={{ cursor: "pointer" }}
           >
             <ChevronRight className="w-6 h-6 text-gray-700" />
           </button>
@@ -69,7 +71,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
           {categories.map((cat, index) => (
             <div
               key={index}
-              className="shrink-0 w-48 text-center group cursor-pointer"
+              className="shrink-0 w-48 text-center group"
+              style={{ cursor: 'pointer' }}
               onClick={() => {
                 const categoryName = cat.title;
                 window.location.href = `/shop?category=${encodeURIComponent(categoryName)}`;

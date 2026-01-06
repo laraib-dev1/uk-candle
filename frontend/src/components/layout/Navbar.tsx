@@ -60,7 +60,7 @@ let user = null;
         <Link
           to="/"
           className="text-xl font-serif font-semibold flex items-center gap-2"
-          style={{ color: "var(--theme-primary)" }}
+          style={{ color: "var(--theme-primary)", cursor: "pointer" }}
         >
           {company.logo && (
             <img
@@ -82,6 +82,7 @@ let user = null;
             className={linkClasses("/")}
             style={{ 
               color: pathname === "/" ? "var(--theme-primary)" : "var(--theme-dark)",
+              cursor: "pointer",
             }}
           >
             Home
@@ -91,6 +92,7 @@ let user = null;
             className={linkClasses("/shop")}
             style={{ 
               color: pathname === "/shop" ? "var(--theme-primary)" : "var(--theme-dark)",
+              cursor: "pointer",
             }}
           >
             Shop
@@ -100,7 +102,7 @@ let user = null;
         {/* RIGHT: Cart + Sign In + Mobile Menu */}
         <div className="flex items-center gap-4">
           {/* Cart icon (always visible) */}
-          <Link to="/cart" className="relative cursor-pointer">
+          <Link to="/cart" className="relative" style={{ cursor: "pointer" }}>
   <ShoppingCart className="w-6 h-6 text-gray-700 " />
   <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
   {totalItems}
@@ -158,6 +160,7 @@ let user = null;
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
                 title="Profile"
+                style={{ cursor: "pointer" }}
               >
                 {user.name?.charAt(0).toUpperCase()}
               </button>
@@ -175,6 +178,7 @@ let user = null;
                       navigate("/profile");
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-black"
+                    style={{ cursor: "pointer" }}
                   >
                     <User size={16} /> Profile
                   </button>
@@ -186,6 +190,7 @@ let user = null;
                       navigate("/login");
                     }}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-red-500"
+                    style={{ cursor: "pointer" }}
                   >
                     <LogOut size={16} /> Logout
                   </button>

@@ -10,7 +10,7 @@ export default function ProductImageGallery({ images }: Props) {
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* Main Image - 3:4 aspect ratio */}
-      <div className="w-full aspect-3/4 bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
+      <div className="w-full max-w-md mx-auto aspect-[3/4] bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
         <img
           src={selected}
           alt="Product"

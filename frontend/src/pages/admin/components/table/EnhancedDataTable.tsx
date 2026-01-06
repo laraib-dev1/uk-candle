@@ -195,6 +195,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
         paddingLeft: "12px",
         paddingRight: "12px",
         fontSize: "0.875rem",
+        color: "#000000",
       },
     },
     rows: {

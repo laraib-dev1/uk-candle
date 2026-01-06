@@ -360,13 +360,14 @@ export default function AdminLayout() {
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8">
+      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8 text-black">
          <React.Suspense fallback={<PageLoader message="GraceByAnu" />}>
           <div 
             key={loc.pathname} 
-            className="animate-fade-in"
+            className="animate-fade-in text-black"
             style={{
               animation: "fadeInSlide 0.5s ease-out",
+              color: "#000000",
             }}
           >
             <Outlet />

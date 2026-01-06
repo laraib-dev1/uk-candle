@@ -139,9 +139,11 @@ export default function DeveloperLayout() {
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8 bg-gray-50">
+      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8 bg-gray-50 text-black">
         <React.Suspense fallback={<PageLoader message="GraceByAnu" />}>
-          <Outlet />
+          <div style={{ color: "#000000" }}>
+            <Outlet />
+          </div>
         </React.Suspense>
       </main>
     </div>

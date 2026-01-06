@@ -71,50 +71,56 @@ export default function Footer() {
   return (
     <footer className="text-gray-300 mt-20" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Logo */}
-          <div className="flex flex-col space-y-4">
-            <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
-            <p className="text-xs text-gray-400">© {new Date().getFullYear()} {companyData.company}. All Rights Reserved.</p>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left side - Logo and Footer Sections */}
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Logo */}
+            <div className="flex flex-col space-y-4">
+              <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
+              <p className="text-xs text-gray-400">© {new Date().getFullYear()} {companyData.company}. All Rights Reserved.</p>
+            </div>
+
+            {/* Footer Sections from SP Panel */}
+            {enabledSections.map((section, index) => (
+              <div key={index} className="flex flex-col space-y-2 text-sm">
+                <h3 className="text-white font-semibold mb-2">{section.title}</h3>
+                {section.links.map((link, linkIndex) => (
+                  <button
+                    key={linkIndex}
+                    onClick={() => handleLinkClick(link.url)}
+                    className="text-left text-gray-300 hover:underline"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
+            ))}
           </div>
 
-          {/* Footer Sections from SP Panel */}
-          {enabledSections.map((section, index) => (
-            <div key={index} className="flex flex-col space-y-2 text-sm">
-              <h3 className="text-white font-semibold mb-2">{section.title}</h3>
-              {section.links.map((link, linkIndex) => (
-                <button
-                  key={linkIndex}
-                  onClick={() => handleLinkClick(link.url)}
-                  className="text-left text-gray-300 hover:underline"
-                >
-                  {link.label}
-                </button>
-              ))}
-            </div>
-          ))}
-
-          {/* Social Posts Gallery - only show if there are posts */}
+          {/* Right side - Social Posts Gallery - only show if there are posts */}
           {companyData.socialPosts.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
-              {companyData.socialPosts.map((post, index) => (
-                <a
-                  key={index}
-                  href={post.url || "#"}
-                  target={post.url ? "_blank" : undefined}
-                  rel={post.url ? "noopener noreferrer" : undefined}
-                  className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity"
-                >
-                  <img
-                    src={post.image}
-                    alt={`Social post ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </a>
-              ))}
+            <div className="lg:ml-auto">
+              <div className="grid grid-cols-4 gap-2">
+                {companyData.socialPosts.map((post, index) => (
+                  <a
+                    key={index}
+                    href={post.url || "#"}
+                    target={post.url ? "_blank" : undefined}
+                    rel={post.url ? "noopener noreferrer" : undefined}
+                    className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity"
+                  >
+                    <img
+                      src={post.image}
+                      alt={`Social post ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>

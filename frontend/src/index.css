@@ -75,13 +75,57 @@ body {
   color: var(--theme-primary, #8B5E3C);
 }
 
+/* Admin and Developer Panel - Force black text for readability */
+main[class*="admin"],
+main[class*="developer"] {
+  color: #000000 !important;
+}
+
+main[class*="admin"] *,
+main[class*="developer"] * {
+  color: #000000 !important;
+}
+
+/* Preserve theme colors for specific elements */
+main[class*="admin"] .theme-heading,
+main[class*="admin"] .theme-text-primary,
+main[class*="developer"] .theme-heading,
+main[class*="developer"] .theme-text-primary {
+  color: var(--theme-primary, #8B5E3C) !important;
+}
+
+/* Theme buttons should have white text - applies everywhere */
+.theme-button,
+button.theme-button,
+[class*="theme-button"],
+button[style*="background-color: var(--theme-primary"],
+button[style*="background-color: var(--theme-dark"],
+button[style*="backgroundColor: var(--theme-primary"],
+button[style*="backgroundColor: var(--theme-dark"] {
+  color: #ffffff !important;
+}
+
+/* Preserve other button and link colors */
+main[class*="admin"] button:not(.theme-button):not([style*="background-color: var(--theme"]),
+main[class*="admin"] a:not([class*="theme"]),
+main[class*="developer"] button:not(.theme-button):not([style*="background-color: var(--theme"]),
+main[class*="developer"] a:not([class*="theme"]) {
+  color: #000000 !important;
+}
+
+/* Ensure table cells are black */
+.rdt_TableCell {
+  color: #000000 !important;
+}
+
 .theme-button {
   background-color: var(--theme-primary, #8B5E3C);
-  color: white;
+  color: white !important;
 }
 
 .theme-button:hover {
   background-color: var(--theme-dark, #6B4A2C);
+  color: white !important;
 }
 
 /* Enhanced DataTable row hover */
@@ -173,6 +217,14 @@ button[data-radix-tabs-trigger][data-state="inactive"],
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Ensure all clickable elements use pointer cursor */
+a:not([style*="cursor: not-allowed"]):not([style*="cursor:default"]),
+button:not([disabled]):not([style*="cursor: not-allowed"]):not([style*="cursor:default"]),
+[role="button"]:not([style*="cursor: not-allowed"]):not([style*="cursor:default"]),
+[onclick]:not([style*="cursor: not-allowed"]):not([style*="cursor:default"]) {
+  cursor: pointer;
 }
 
 /* Circular loader animation */
