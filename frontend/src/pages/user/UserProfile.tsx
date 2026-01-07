@@ -45,6 +45,7 @@ import type { UserProfile as UserProfileType, Address, Order } from "@/api/user.
 type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "queries" | "reviews" | string;
 
 export default function UserProfile() {
+  console.log('🚀🚀🚀 UserProfile component RENDERED 🚀🚀🚀');
   const navigate = useNavigate();
   const { user: authUser, logout, loading: authLoading } = useAuth();
   const { success, error } = useToast();
@@ -59,6 +60,31 @@ export default function UserProfile() {
   
   // Force re-read from localStorage when component updates
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [forceRender, setForceRender] = useState(0);
+  
+  // CRITICAL: Read localStorage directly on every render to ensure we always have latest value
+  // This is like admin panel reading from API on every render
+  const getBaseTabsStateFromStorage = (): Record<string, boolean> => {
+    try {
+      const saved = localStorage.getItem('baseProfileTabsState');
+      console.log('📦📦📦 Direct localStorage read - raw:', saved);
+      if (saved) {
+        const state = JSON.parse(saved);
+        console.log('📦📦📦 Direct localStorage read - parsed:', state);
+        console.log('📦📦📦 Keys in state:', Object.keys(state));
+        Object.keys(state).forEach(key => {
+          const value = state[key];
+          console.log(`  📦 ${key}: ${value} (${typeof value}) - Will be filtered: ${value === false}`);
+        });
+        return state;
+      } else {
+        console.log('📦📦📦 localStorage is EMPTY - all tabs will be enabled');
+      }
+    } catch (e) {
+      console.error('❌ Failed to read localStorage directly:', e);
+    }
+    return {};
+  };
 
   useEffect(() => {
     // Wait for auth to finish loading before checking
@@ -129,18 +155,24 @@ export default function UserProfile() {
       console.log("Wishlist data processed:", validWishlist);
       setWishlist(validWishlist);
       
-      // Handle profile pages data
-      console.log("Profile pages API response:", profilePagesData);
+      // Handle profile pages data (CUSTOM pages only, not base tabs)
+      // Base tabs are handled via localStorage in the useMemo hook
+      console.log("Profile pages API response (CUSTOM pages only):", profilePagesData);
       if (Array.isArray(profilePagesData)) {
         setProfilePages(profilePagesData);
-        console.log(`Loaded ${profilePagesData.length} enabled profile pages`);
+        console.log(`Loaded ${profilePagesData.length} enabled CUSTOM profile pages`);
       } else if (profilePagesData && Array.isArray(profilePagesData.data)) {
         setProfilePages(profilePagesData.data);
-        console.log(`Loaded ${profilePagesData.data.length} enabled profile pages`);
+        console.log(`Loaded ${profilePagesData.data.length} enabled CUSTOM profile pages`);
       } else {
         console.warn("Invalid profile pages data format:", profilePagesData);
         setProfilePages([]);
+        console.log("No CUSTOM profile pages found. Base tabs are handled via localStorage.");
       }
+      
+      // Force refresh base tabs from localStorage after data load
+      console.log("🔄 Forcing refresh of base tabs from localStorage after data load");
+      setRefreshTrigger(prev => prev + 1);
       
       // Refresh base tabs state from localStorage after data load
       try {
@@ -177,13 +209,65 @@ export default function UserProfile() {
         console.log('=====================================');
         return state;
       } else {
-        console.log('No baseProfileTabsState found in localStorage');
+        console.log('⚠️ No baseProfileTabsState found in localStorage - all tabs will be enabled by default');
       }
     } catch (e) {
-      console.error('Failed to load base tabs state:', e);
+      console.error('❌ Failed to load base tabs state:', e);
     }
     return {};
   });
+  
+  // Force refresh baseTabsState when component mounts or when localStorage might have changed
+  useEffect(() => {
+    console.log('🚀 UserProfile component mounted/updated - checking localStorage');
+    // Check localStorage on mount and update state if needed
+    const checkLocalStorage = () => {
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        console.log('🔍 Mount check - localStorage value:', saved);
+        if (saved) {
+          const state = JSON.parse(saved);
+          console.log('🔍 Mount check - Parsed state:', state);
+          const currentStateStr = JSON.stringify(baseTabsState);
+          const newStateStr = JSON.stringify(state);
+          if (currentStateStr !== newStateStr) {
+            console.log('🔄 Mount check - localStorage changed, updating state:', state);
+            console.log('Old state:', baseTabsState);
+            console.log('New state:', state);
+            setBaseTabsState(state);
+            setRefreshTrigger(prev => prev + 1);
+            console.log('✅ State updated and refresh trigger incremented');
+          } else {
+            console.log('✅ Mount check - State already matches localStorage');
+          }
+        } else {
+          console.log('⚠️ Mount check - localStorage is empty');
+          // If localStorage is empty but we have state, reset it
+          if (Object.keys(baseTabsState).length > 0) {
+            console.log('🔄 Resetting state to empty object');
+            setBaseTabsState({});
+            setRefreshTrigger(prev => prev + 1);
+          }
+        }
+      } catch (e) {
+        console.error('❌ Failed to check localStorage on mount:', e);
+      }
+    };
+    
+    // Check immediately
+    checkLocalStorage();
+    
+    // Also check after short delays to catch any recent changes
+    const timeoutId = setTimeout(checkLocalStorage, 100);
+    const timeoutId2 = setTimeout(checkLocalStorage, 500);
+    const timeoutId3 = setTimeout(checkLocalStorage, 1000);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(timeoutId2);
+      clearTimeout(timeoutId3);
+    };
+  }, []); // Only run on mount
   
   // Listen for storage changes and custom events
   useEffect(() => {
@@ -202,11 +286,26 @@ export default function UserProfile() {
       }
     };
     
-    const handleCustomEvent = (e: CustomEvent) => {
-      if (e.detail) {
-        setBaseTabsState(e.detail);
+    const handleCustomEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        console.log('🔄 Custom event received - updating base tabs state:', customEvent.detail);
+        setBaseTabsState(customEvent.detail);
         setRefreshTrigger(prev => prev + 1);
-        console.log('Base tabs state updated from custom event:', e.detail);
+        console.log('✅ Base tabs state updated from custom event');
+      } else {
+        // If no detail, read directly from localStorage
+        try {
+          const saved = localStorage.getItem('baseProfileTabsState');
+          if (saved) {
+            const state = JSON.parse(saved);
+            console.log('🔄 Custom event (no detail) - reading from localStorage:', state);
+            setBaseTabsState(state);
+            setRefreshTrigger(prev => prev + 1);
+          }
+        } catch (e) {
+          console.error('❌ Failed to read localStorage in custom event handler:', e);
+        }
       }
     };
     
@@ -227,97 +326,157 @@ export default function UserProfile() {
       }
     };
     
-    // Also add a periodic check to sync with localStorage (every 2 seconds when visible)
+    // Also add a periodic check to sync with localStorage (every 100ms)
+    // This ensures we catch changes quickly even if events don't fire
+    // Make it very aggressive to match admin panel behavior
     const intervalId = setInterval(() => {
-      if (!document.hidden) {
-        try {
-          const saved = localStorage.getItem('baseProfileTabsState');
-          if (saved) {
-            const state = JSON.parse(saved);
-            // Only update if state actually changed
-            const currentStateStr = JSON.stringify(baseTabsState);
-            const newStateStr = JSON.stringify(state);
-            if (currentStateStr !== newStateStr) {
-              setBaseTabsState(state);
-              setRefreshTrigger(prev => prev + 1);
-              console.log('Base tabs state synced from localStorage:', state);
-            }
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          // Always check and update refreshTrigger to force re-render
+          const currentStateStr = JSON.stringify(baseTabsState);
+          const newStateStr = JSON.stringify(state);
+          if (currentStateStr !== newStateStr) {
+            console.log('🔄🔄🔄 Interval check - state changed, updating:', state);
+            console.log('Old state:', baseTabsState);
+            console.log('New state:', state);
+            setBaseTabsState(state);
+            setRefreshTrigger(prev => {
+              const newVal = prev + 1;
+              console.log('✅ Refresh trigger incremented to:', newVal);
+              return newVal;
+            });
+            setForceRender(prev => prev + 1); // Force component re-render
+            console.log('✅✅✅ Base tabs state synced from localStorage and force render triggered');
           }
-        } catch (e) {
-          // Silent fail for interval
+        } else {
+          // If localStorage is empty but we have state, reset it
+          if (Object.keys(baseTabsState).length > 0) {
+            console.log('🔄 Interval check - localStorage cleared, resetting state');
+            setBaseTabsState({});
+            setRefreshTrigger(prev => prev + 1);
+            setForceRender(prev => prev + 1); // Force component re-render
+          }
         }
+      } catch (e) {
+        console.error('❌ Interval check error:', e);
       }
-    }, 2000);
+    }, 100); // Check every 100ms for very fast updates
     
+    // Also listen for window focus to check localStorage when user switches tabs
+    const handleFocus = () => {
+      console.log('🔄 Window focused - checking localStorage');
+      try {
+        const saved = localStorage.getItem('baseProfileTabsState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          setBaseTabsState(state);
+          setRefreshTrigger(prev => prev + 1);
+          console.log('✅ State updated on window focus');
+        }
+      } catch (e) {
+        console.error('❌ Failed to check localStorage on focus:', e);
+      }
+    };
+    
+    // Listen on both window and document for better compatibility
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
+    document.addEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
+      document.removeEventListener('baseProfileTabsStateChanged', handleCustomEvent as EventListener);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
       clearInterval(intervalId);
     };
   }, [baseTabsState]); // Add baseTabsState as dependency to avoid stale closure
   
   // Base tabs - filtered based on enabled state from localStorage
-  const baseTabs = useMemo(() => {
-    // Always read fresh from localStorage
-    let currentState: Record<string, boolean> = {};
-    try {
-      const saved = localStorage.getItem('baseProfileTabsState');
-      if (saved) {
-        currentState = JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to read localStorage in useMemo:', e);
+  // CRITICAL: Read localStorage DIRECTLY on every render (not cached in useMemo)
+  // This ensures we always have the latest value, just like admin panel reads from API
+  const currentState = getBaseTabsStateFromStorage();
+  
+  // CRITICAL DEBUG: Log what we're actually getting
+  console.log('🔵🔵🔵 DEBUG - currentState:', currentState);
+  console.log('🔵🔵🔵 DEBUG - typeof currentState:', typeof currentState);
+  console.log('🔵🔵🔵 DEBUG - currentState keys:', Object.keys(currentState));
+  console.log('🔵🔵🔵 DEBUG - wishlist state:', currentState['wishlist'], 'type:', typeof currentState['wishlist']);
+  console.log('🔵🔵🔵 DEBUG - profile state:', currentState['profile'], 'type:', typeof currentState['profile']);
+  
+  const allBaseTabs = [
+    { id: "dashboard" as TabType, label: "Dashboard", icon: User },
+    { id: "profile" as TabType, label: "Profile", icon: User },
+    { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
+    { id: "orders" as TabType, label: "Orders", icon: Package },
+    { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
+    { id: "queries" as TabType, label: "Support", icon: MessageSquare },
+    { id: "reviews" as TabType, label: "Reviews", icon: Star },
+  ];
+  
+  // CRITICAL: Get list of disabled tabs FIRST
+  const disabledTabIds = allBaseTabs
+    .filter(tab => {
+      const tabState = currentState[tab.id];
+      return tabState === false; // Only if explicitly false
+    })
+    .map(tab => tab.id);
+  
+  console.log('🔴🔴🔴 DISABLED TABS FROM LOCALSTORAGE:', disabledTabIds);
+  console.log('🔴🔴🔴 CURRENT STATE:', currentState);
+  
+  // Filter base tabs based on enabled state (default to enabled if not set)
+  // This runs on EVERY render, ensuring we always have the latest filtered tabs
+  const baseTabs = allBaseTabs.filter(tab => {
+    // Check if this tab is disabled in localStorage
+    // IMPORTANT: Only filter out if explicitly set to false
+    const tabState = currentState[tab.id];
+    
+    // Debug logging for all tabs
+    console.log(`🔍🔍🔍 Checking tab "${tab.id}": state=${tabState}, type=${typeof tabState}, isEnabled=${tabState !== false}`);
+    
+    // If tabState is explicitly false, disable it. Otherwise (true, undefined, null), enable it.
+    const isEnabled = tabState !== false;
+    
+    if (!isEnabled) {
+      console.log(`❌❌❌❌❌ Tab "${tab.id}" is DISABLED (state=${tabState}, type=${typeof tabState}) and will be FILTERED OUT ❌❌❌❌❌`);
     }
     
-    const allBaseTabs = [
-      { id: "dashboard" as TabType, label: "Dashboard", icon: User },
-      { id: "profile" as TabType, label: "Profile", icon: User },
-      { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
-      { id: "orders" as TabType, label: "Orders", icon: Package },
-      { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
-      { id: "queries" as TabType, label: "Support", icon: MessageSquare },
-      { id: "reviews" as TabType, label: "Reviews", icon: Star },
-    ];
-    
-    // Filter base tabs based on enabled state (default to enabled if not set)
-    const filtered = allBaseTabs.filter(tab => {
-      // Check if this tab is disabled in localStorage
-      // IMPORTANT: Only filter out if explicitly set to false
-      const tabState = currentState[tab.id];
-      const isDisabled = tabState === false;
-      const enabled = !isDisabled; // If explicitly false, disable it, otherwise enable
-      
-      console.log(`Tab "${tab.id}": tabState=${tabState}, type=${typeof tabState}, isDisabled=${isDisabled}, enabled=${enabled}, willShow=${enabled}`);
-      
-      if (tab.id === 'addresses') {
-        console.log('>>> ADDRESSES TAB DEBUG:', {
-          tabState,
-          currentState,
-          isDisabled,
-          enabled,
-          willInclude: enabled
-        });
-      }
-      
-      return enabled;
-    });
-    
-    console.log('=== Base Tabs Filtering ===');
-    console.log('Refresh trigger:', refreshTrigger);
-    console.log('localStorage value:', localStorage.getItem('baseProfileTabsState'));
-    console.log('Parsed state:', currentState);
-    console.log('All base tabs:', allBaseTabs.map(t => t.id));
-    console.log('Filtered base tabs:', filtered.map(t => t.id));
-    console.log('Missing from filtered:', allBaseTabs.filter(t => !filtered.find(f => f.id === t.id)).map(t => t.id));
-    console.log('===========================');
-    
-    return filtered;
-  }, [baseTabsState, refreshTrigger]);
+    return isEnabled;
+  });
+  
+  // CRITICAL: Double-check that disabled tabs are actually filtered out
+  const stillShowing = baseTabs.filter(tab => disabledTabIds.includes(tab.id));
+  if (stillShowing.length > 0) {
+    console.error('🚨🚨🚨 CRITICAL ERROR: Disabled tabs are still in baseTabs!', stillShowing.map(t => t.id));
+    console.error('🚨 This should NEVER happen! Filtering logic is broken!');
+  } else if (disabledTabIds.length > 0) {
+    console.log('✅✅✅ SUCCESS: All disabled tabs were filtered out correctly!');
+  }
+  
+  console.log('=== Base Tabs Filtering Result (EVERY RENDER) ===');
+  console.log('Force render count:', forceRender);
+  console.log('localStorage raw value:', localStorage.getItem('baseProfileTabsState'));
+  console.log('Parsed state:', currentState);
+  console.log('State keys:', Object.keys(currentState));
+  console.log('All base tabs:', allBaseTabs.map(t => t.id));
+  console.log('✅✅✅ Filtered base tabs (SHOWING):', baseTabs.map(t => t.id));
+  console.log('❌❌❌ Disabled tabs (HIDDEN):', allBaseTabs.filter(t => currentState[t.id] === false).map(t => t.id));
+  console.log('Filtered count:', baseTabs.length, 'of', allBaseTabs.length);
+  
+  // CRITICAL CHECK: Verify filtering is working
+  const disabledTabs = allBaseTabs.filter(t => currentState[t.id] === false);
+  if (disabledTabs.length > 0) {
+    console.log('⚠️⚠️⚠️ WARNING: These tabs should be HIDDEN:', disabledTabs.map(t => t.id));
+    console.log('⚠️⚠️⚠️ But they might still be in baseTabs:', baseTabs.filter(t => disabledTabs.some(d => d.id === t.id)).map(t => t.id));
+  }
+  
+  console.log('==================================================');
 
   // Add profile pages as tabs - only enabled pages
   const profilePageTabs = profilePages
@@ -332,12 +491,45 @@ export default function UserProfile() {
 
   const tabs = [...baseTabs, ...profilePageTabs];
   
-  // Check if active tab is still available, if not redirect to dashboard
+  // CRITICAL: Check if any disabled tabs are in the final tabs array
+  // (disabledTabIds is already declared above, so we reuse it)
+  const disabledTabsInFinalArray = tabs.filter(tab => disabledTabIds.includes(tab.id));
+  
+  // Debug: Log final tabs array - ALWAYS log when tabs change
+  useEffect(() => {
+    console.log('=== Final Tabs Array ===');
+    console.log('Base tabs count:', baseTabs.length);
+    console.log('Base tabs IDs:', baseTabs.map(t => t.id));
+    console.log('Profile page tabs count:', profilePageTabs.length);
+    console.log('Total tabs:', tabs.length);
+    console.log('Tab IDs:', tabs.map(t => t.id));
+    console.log('localStorage value:', localStorage.getItem('baseProfileTabsState'));
+    console.log('Disabled tab IDs from localStorage:', disabledTabIds);
+    console.log('Disabled tabs in final array (SHOULD BE EMPTY):', disabledTabsInFinalArray.map(t => t.id));
+    if (disabledTabsInFinalArray.length > 0) {
+      console.error('🚨🚨🚨 CRITICAL ERROR: Disabled tabs are in final tabs array!', disabledTabsInFinalArray.map(t => t.id));
+    }
+    console.log('=======================');
+  }, [tabs, baseTabs, profilePageTabs, disabledTabIds, disabledTabsInFinalArray]);
+  
+  // CRITICAL: Log what's being rendered
+  console.log('🎨🎨🎨 RENDERING - Current tabs:', tabs.map(t => t.id));
+  console.log('🎨🎨🎨 RENDERING - Base tabs:', baseTabs.map(t => t.id));
+  console.log('🎨🎨🎨 RENDERING - localStorage:', localStorage.getItem('baseProfileTabsState'));
+  console.log('🎨🎨🎨 RENDERING - Disabled tabs that should NOT be shown:', disabledTabIds);
+  
+  // Check if active tab is still available, if not redirect to first available tab
   useEffect(() => {
     const isActiveTabAvailable = tabs.some(tab => tab.id === activeTab);
     if (!isActiveTabAvailable && tabs.length > 0) {
-      console.log(`Active tab "${activeTab}" is not available, redirecting to dashboard`);
-      setActiveTab("dashboard");
+      console.log(`Active tab "${activeTab}" is not available, redirecting to first available tab`);
+      // Try to redirect to dashboard first, if not available, use first tab
+      const dashboardTab = tabs.find(tab => tab.id === "dashboard");
+      const firstTab = dashboardTab || tabs[0];
+      if (firstTab) {
+        console.log(`Redirecting to tab: ${firstTab.id}`);
+        setActiveTab(firstTab.id);
+      }
     }
   }, [tabs, activeTab]);
   
@@ -382,6 +574,18 @@ export default function UserProfile() {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4">
+            {/* DEBUG: Show warning if disabled tabs are being rendered */}
+            {disabledTabsInFinalArray.length > 0 && (
+              <div className="mb-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg">
+                <p className="text-red-700 font-bold text-sm">
+                  ⚠️ ERROR: {disabledTabsInFinalArray.length} disabled tab(s) are still showing: {disabledTabsInFinalArray.map(t => t.id).join(', ')}
+                </p>
+                <p className="text-red-600 text-xs mt-1">
+                  localStorage: {localStorage.getItem('baseProfileTabsState')}
+                </p>
+              </div>
+            )}
+            
             <div className="mb-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl font-bold text-gray-700">
@@ -392,24 +596,39 @@ export default function UserProfile() {
               <p className="text-center text-sm text-gray-600">{profile?.email || authUser?.email}</p>
             </div>
             <nav className="space-y-1">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                      activeTab === tab.id
-                        ? "text-white font-semibold"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                    style={activeTab === tab.id ? { backgroundColor: "var(--theme-primary)" } : {}}
-                  >
-                    <Icon size={18} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
+              {tabs.length === 0 ? (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  No tabs available
+                </div>
+              ) : (
+                tabs
+                  .filter(tab => {
+                    // CRITICAL SAFETY CHECK: Don't render disabled tabs even if they're in the array
+                    const isDisabled = disabledTabIds.includes(tab.id);
+                    if (isDisabled) {
+                      console.error(`🚨🚨🚨 PREVENTING RENDER OF DISABLED TAB: ${tab.id}`);
+                    }
+                    return !isDisabled; // Only render enabled tabs
+                  })
+                  .map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                          activeTab === tab.id
+                            ? "text-white font-semibold"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                        style={activeTab === tab.id ? { backgroundColor: "var(--theme-primary)" } : {}}
+                      >
+                        <Icon size={18} />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })
+              )}
             </nav>
           </div>
 

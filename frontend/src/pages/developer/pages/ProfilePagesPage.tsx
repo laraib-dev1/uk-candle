@@ -216,16 +216,34 @@ export default function ProfilePagesPage() {
         console.log('===========================');
         
         // Trigger custom event for same-window updates (storage event only fires cross-tab)
-        window.dispatchEvent(new CustomEvent('baseProfileTabsStateChanged', {
-          detail: baseTabsState
-        }));
+        // Use a more reliable event that works in same tab
+        const customEvent = new CustomEvent('baseProfileTabsStateChanged', {
+          detail: baseTabsState,
+          bubbles: true,
+          cancelable: true
+        });
+        window.dispatchEvent(customEvent);
         
-        // Also trigger storage event for other tabs/windows
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'baseProfileTabsState',
-          newValue: stateString,
-          storageArea: localStorage
-        }));
+        // Also dispatch to document for better compatibility
+        document.dispatchEvent(customEvent);
+        
+        // Force a storage event for other tabs/windows (this won't fire in same tab)
+        try {
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'baseProfileTabsState',
+            newValue: stateString,
+            oldValue: existing,
+            storageArea: localStorage,
+            bubbles: true
+          }));
+        } catch (e) {
+          // StorageEvent might not work in all browsers, that's okay
+          console.log('Could not dispatch StorageEvent:', e);
+        }
+        
+        // Additional: Force a page visibility check by dispatching visibilitychange
+        // This will trigger the visibility change handler in UserProfile
+        document.dispatchEvent(new Event('visibilitychange'));
       } catch (e) {
         console.error('Failed to save base tab state:', e);
         error('Failed to save tab state. Please try again.');

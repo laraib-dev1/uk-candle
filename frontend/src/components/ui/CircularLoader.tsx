@@ -8,9 +8,11 @@ interface CircularLoaderProps {
 
 export default function CircularLoader({ 
   size = 20, 
-  color = "currentColor",
+  color,
   className = "" 
 }: CircularLoaderProps) {
+  // Use theme color by default if no color is provided
+  const loaderColor = color || "var(--theme-primary)";
   const borderWidth = Math.max(2, Math.floor(size / 10));
   
   return (
@@ -21,7 +23,7 @@ export default function CircularLoader({
         height: `${size}px`,
         borderWidth: `${borderWidth}px`,
         borderStyle: 'solid',
-        borderColor: color,
+        borderColor: loaderColor,
         borderTopColor: 'transparent',
         borderRadius: '50%',
       }}

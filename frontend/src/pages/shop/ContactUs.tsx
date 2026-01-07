@@ -46,7 +46,7 @@ export default function ContactUs() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left: Form */}
-          <div className="bg-[#F5F5DC] rounded-2xl p-8">
+          <div className="rounded-2xl p-8" style={{ backgroundColor: "var(--theme-light, #f5f5f5)" }}>
             <h2 className="text-2xl font-semibold mb-2 theme-heading">You have any query!</h2>
             <p className="text-gray-600 mb-6">Fill the form to send us.</p>
             
@@ -123,23 +123,17 @@ export default function ContactUs() {
             </form>
           </div>
 
-          {/* Right: Image Placeholder */}
-          <div className="bg-[#E8E8D8] rounded-2xl flex items-center justify-center min-h-[400px]">
-            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
-              <svg
-                className="w-12 h-12 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
+          {/* Right: Logo Image */}
+          <div className="rounded-2xl flex items-center justify-center min-h-[400px] p-8" style={{ backgroundColor: "var(--theme-light, #f5f5f5)" }}>
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/logo.png";
+              }}
+            />
           </div>
         </div>
       </main>
