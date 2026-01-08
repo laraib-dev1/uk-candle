@@ -5,6 +5,8 @@ import {
   createProfilePage,
   updateProfilePage,
   deleteProfilePage,
+  updateBaseProfileTab,
+  getBaseProfileTabs,
 } from "@/api/profilepage.api";
 import IconPicker from "@/components/developer/IconPicker";
 import { useToast } from "@/components/ui/toast";
@@ -165,91 +167,31 @@ export default function ProfilePagesPage() {
     const isBaseTab = baseProfileTabs.some(tab => tab._id === id);
     
     if (isBaseTab) {
-      // For base tabs, update local state and save to localStorage
-      const newEnabled = !enabled;
-      setPages(prevPages => 
-        prevPages.map(page => 
-          page._id === id ? { ...page, enabled: newEnabled } : page
-        )
-      );
-      
-      // Save base tabs enabled state to localStorage
+      // For base tabs, update via API (like admin tabs)
+      setToggleLoading(prev => ({ ...prev, [id]: true }));
       try {
-        let baseTabsState: Record<string, boolean> = {};
-        const existing = localStorage.getItem('baseProfileTabsState');
-        if (existing) {
-          try {
-            baseTabsState = JSON.parse(existing);
-          } catch (parseErr) {
-            console.warn('Failed to parse existing state, starting fresh');
-            baseTabsState = {};
-          }
-        }
+        // Update via API (like admin tabs)
+        await updateBaseProfileTab(id, { enabled: !enabled });
         
-        baseTabsState[id] = newEnabled;
-        const stateString = JSON.stringify(baseTabsState);
-        localStorage.setItem('baseProfileTabsState', stateString);
+        // Update local state immediately for better UX
+        setPages(prevPages => 
+          prevPages.map(page => 
+            page._id === id ? { ...page, enabled: !enabled } : page
+          )
+        );
         
-        // Verify it was saved
-        const verify = localStorage.getItem('baseProfileTabsState');
-        console.log('=== Saved base tab state ===');
-        console.log('Tab ID:', id);
-        console.log('New enabled state:', newEnabled);
-        console.log('Full state object:', baseTabsState);
-        console.log('localStorage key: baseProfileTabsState');
-        console.log('localStorage value (saved):', stateString);
-        console.log('localStorage value (verified):', verify);
-        console.log('Verification match:', stateString === verify);
+        success(`Base tab ${!enabled ? 'enabled' : 'disabled'} successfully`);
         
-        // Double check with direct localStorage access
-        const doubleCheck = localStorage.getItem('baseProfileTabsState');
-        console.log('Double check localStorage:', doubleCheck);
-        if (doubleCheck) {
-          try {
-            const parsed = JSON.parse(doubleCheck);
-            console.log('Double check parsed:', parsed);
-            console.log(`Addresses in parsed: ${parsed['addresses']} (type: ${typeof parsed['addresses']})`);
-          } catch (e) {
-            console.error('Failed to parse double check:', e);
-          }
-        }
-        console.log('===========================');
-        
-        // Trigger custom event for same-window updates (storage event only fires cross-tab)
-        // Use a more reliable event that works in same tab
-        const customEvent = new CustomEvent('baseProfileTabsStateChanged', {
-          detail: baseTabsState,
-          bubbles: true,
-          cancelable: true
-        });
-        window.dispatchEvent(customEvent);
-        
-        // Also dispatch to document for better compatibility
-        document.dispatchEvent(customEvent);
-        
-        // Force a storage event for other tabs/windows (this won't fire in same tab)
-        try {
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'baseProfileTabsState',
-            newValue: stateString,
-            oldValue: existing,
-            storageArea: localStorage,
-            bubbles: true
-          }));
-        } catch (e) {
-          // StorageEvent might not work in all browsers, that's okay
-          console.log('Could not dispatch StorageEvent:', e);
-        }
-        
-        // Additional: Force a page visibility check by dispatching visibilitychange
-        // This will trigger the visibility change handler in UserProfile
-        document.dispatchEvent(new Event('visibilitychange'));
-      } catch (e) {
-        console.error('Failed to save base tab state:', e);
-        error('Failed to save tab state. Please try again.');
+        // Reload to sync with server
+        await loadPages();
+      } catch (err: any) {
+        console.error("Failed to toggle base tab:", err);
+        error(err.response?.data?.message || err.message || "Failed to toggle base tab");
+        // Reload to revert any local changes
+        await loadPages();
+      } finally {
+        setToggleLoading(prev => ({ ...prev, [id]: false }));
       }
-      
-      success(`Base tab ${newEnabled ? 'enabled' : 'disabled'} successfully`);
       return;
     }
     

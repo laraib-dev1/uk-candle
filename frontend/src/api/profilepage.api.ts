@@ -30,3 +30,19 @@ export const deleteProfilePage = async (id: string) => {
   return res.data;
 };
 
+// Base profile tabs API (like admin tabs)
+export const getBaseProfileTabs = async () => {
+  const res = await API.get("/profilepages/base-tabs");
+  return res.data.data;
+};
+
+export const getEnabledBaseProfileTabs = async () => {
+  const res = await API.get("/profilepages/base-tabs/enabled");
+  return res.data.data;
+};
+
+export const updateBaseProfileTab = async (id: string, tab: { enabled: boolean }) => {
+  const res = await API.put(`/profilepages/base-tabs/${id}`, tab);
+  return res.data.data;
+};
+
