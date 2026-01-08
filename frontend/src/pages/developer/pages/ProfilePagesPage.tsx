@@ -41,24 +41,8 @@ const baseProfileTabs = [
 export default function ProfilePagesPage() {
   const { success, error } = useToast();
   const [pages, setPages] = useState<ProfilePage[]>(() => {
-    // Initialize with base tabs and load enabled state from localStorage
-    const tabs = JSON.parse(JSON.stringify(baseProfileTabs));
-    try {
-      const saved = localStorage.getItem('baseProfileTabsState');
-      if (saved) {
-        const state = JSON.parse(saved);
-        // Apply saved state to base tabs
-        tabs.forEach((tab: ProfilePage) => {
-          if (state[tab._id] !== undefined) {
-            tab.enabled = state[tab._id];
-          }
-        });
-        console.log('Loaded base tabs initial state from localStorage:', state);
-      }
-    } catch (e) {
-      console.error('Failed to load base tabs initial state:', e);
-    }
-    return tabs;
+    // Initialize with default base tabs (will be replaced by API data on load)
+    return JSON.parse(JSON.stringify(baseProfileTabs));
   });
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,50 +68,52 @@ export default function ProfilePagesPage() {
   const loadPages = async () => {
     setLoading(true);
     try {
-      // Load base tabs enabled state from localStorage first
-      let baseTabsState: Record<string, boolean> = {};
+      // Load base tabs from API
+      let baseTabsFromAPI: ProfilePage[] = [];
       try {
-        const saved = localStorage.getItem('baseProfileTabsState');
-        if (saved) {
-          baseTabsState = JSON.parse(saved);
-          console.log("Loaded base tabs state from localStorage:", baseTabsState);
+        const baseTabsData = await getBaseProfileTabs();
+        console.log("Base tabs API response:", baseTabsData);
+        
+        if (Array.isArray(baseTabsData)) {
+          baseTabsFromAPI = baseTabsData;
+        } else if (baseTabsData && Array.isArray(baseTabsData.data)) {
+          baseTabsFromAPI = baseTabsData.data;
         }
-      } catch (e) {
-        console.error('Failed to load base tabs state:', e);
+        console.log(`Loaded ${baseTabsFromAPI.length} base tabs from API`);
+      } catch (apiErr) {
+        console.warn("Could not load base tabs from API, using defaults:", apiErr);
+        // Fallback to default base tabs (all enabled)
+        baseTabsFromAPI = JSON.parse(JSON.stringify(baseProfileTabs));
       }
       
-      // Always start with base tabs and apply saved state
-      let allPages: ProfilePage[] = JSON.parse(JSON.stringify(baseProfileTabs));
-      // Apply saved enabled state to base tabs
-      allPages.forEach((page) => {
-        if (baseTabsState[page._id] !== undefined) {
-          page.enabled = baseTabsState[page._id];
-        }
-      });
-      console.log("Profile pages - Base tabs count:", baseProfileTabs.length);
+      // If API returned empty, use defaults
+      if (baseTabsFromAPI.length === 0) {
+        baseTabsFromAPI = JSON.parse(JSON.stringify(baseProfileTabs));
+      }
       
       // Try to load custom profile pages from API
+      let customPages: ProfilePage[] = [];
       try {
         const data = await getProfilePages();
         console.log("Profile pages API response:", data);
         
-        let customPages: ProfilePage[] = [];
         if (Array.isArray(data)) {
           customPages = data;
         } else if (data && Array.isArray(data.data)) {
           customPages = data.data;
         }
         
-        // Add custom pages to base tabs
         if (Array.isArray(customPages) && customPages.length > 0) {
-          allPages = [...allPages, ...customPages];
           console.log(`Added ${customPages.length} custom profile pages`);
         } else {
-          console.log("No custom profile pages found, using base tabs only");
+          console.log("No custom profile pages found");
         }
       } catch (apiErr) {
         console.warn("Could not load custom profile pages from API:", apiErr);
       }
+      
+      // Combine base tabs and custom pages
+      const allPages = [...baseTabsFromAPI, ...customPages];
       
       // Sort by order
       allPages.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -137,24 +123,8 @@ export default function ProfilePagesPage() {
       console.error("Failed to load profile pages:", err);
       error(err.response?.data?.message || err.message || "Failed to load profile pages");
       
-      // Fallback to base tabs with saved state
-      try {
-        const saved = localStorage.getItem('baseProfileTabsState');
-        if (saved) {
-          const baseTabsState = JSON.parse(saved);
-          const fallbackPages = JSON.parse(JSON.stringify(baseProfileTabs));
-          fallbackPages.forEach((page: ProfilePage) => {
-            if (baseTabsState[page._id] !== undefined) {
-              page.enabled = baseTabsState[page._id];
-            }
-          });
-          setPages(fallbackPages);
-        } else {
-          setPages(JSON.parse(JSON.stringify(baseProfileTabs)));
-        }
-      } catch (e) {
-        setPages(JSON.parse(JSON.stringify(baseProfileTabs)));
-      }
+      // Fallback to default base tabs
+      setPages(JSON.parse(JSON.stringify(baseProfileTabs)));
     } finally {
       setLoading(false);
     }
@@ -166,40 +136,17 @@ export default function ProfilePagesPage() {
     // Check if it's a base tab
     const isBaseTab = baseProfileTabs.some(tab => tab._id === id);
     
-    if (isBaseTab) {
-      // For base tabs, update via API (like admin tabs)
-      setToggleLoading(prev => ({ ...prev, [id]: true }));
-      try {
-        // Update via API (like admin tabs)
-        await updateBaseProfileTab(id, { enabled: !enabled });
-        
-        // Update local state immediately for better UX
-        setPages(prevPages => 
-          prevPages.map(page => 
-            page._id === id ? { ...page, enabled: !enabled } : page
-          )
-        );
-        
-        success(`Base tab ${!enabled ? 'enabled' : 'disabled'} successfully`);
-        
-        // Reload to sync with server
-        await loadPages();
-      } catch (err: any) {
-        console.error("Failed to toggle base tab:", err);
-        error(err.response?.data?.message || err.message || "Failed to toggle base tab");
-        // Reload to revert any local changes
-        await loadPages();
-      } finally {
-        setToggleLoading(prev => ({ ...prev, [id]: false }));
-      }
-      return;
-    }
-    
-    // For custom pages, update via API
     setToggleLoading(prev => ({ ...prev, [id]: true }));
     try {
-      // Update the page via API
-      await updateProfilePage(id, { enabled: !enabled });
+      if (isBaseTab) {
+        // For base tabs, update via API
+        await updateBaseProfileTab(id, { enabled: !enabled });
+        success(`Base tab ${!enabled ? 'enabled' : 'disabled'} successfully`);
+      } else {
+        // For custom pages, update via API
+        await updateProfilePage(id, { enabled: !enabled });
+        success(`Profile page ${!enabled ? 'enabled' : 'disabled'} successfully`);
+      }
       
       // Update local state immediately for better UX
       setPages(prevPages => 
@@ -208,13 +155,11 @@ export default function ProfilePagesPage() {
         )
       );
       
-      success(`Profile page ${!enabled ? 'enabled' : 'disabled'} successfully`);
-      
       // Reload to sync with server
       await loadPages();
     } catch (err: any) {
-      console.error("Failed to toggle page:", err);
-      error(err.response?.data?.message || err.message || "Failed to toggle profile page");
+      console.error("Failed to toggle:", err);
+      error(err.response?.data?.message || err.message || `Failed to toggle ${isBaseTab ? 'base tab' : 'profile page'}`);
       // Reload to revert any local changes
       await loadPages();
     } finally {
@@ -464,12 +409,6 @@ export default function ProfilePagesPage() {
                           console.log('Current enabled:', page.enabled);
                           console.log('Will toggle to:', !page.enabled);
                           togglePage(page._id, page.enabled);
-                          
-                          // Immediately verify localStorage after toggle
-                          setTimeout(() => {
-                            const saved = localStorage.getItem('baseProfileTabsState');
-                            console.log('🔍 localStorage after toggle:', saved);
-                          }, 100);
                         }}
                         disabled={toggleLoading[page._id]}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
