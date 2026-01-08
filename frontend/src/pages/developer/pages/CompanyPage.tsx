@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/ui/toast";
 import PageLoader from "@/components/ui/PageLoader";
 import CircularLoader from "@/components/ui/CircularLoader";
+import { removeCachedData, CACHE_KEYS } from "@/utils/cache";
 
 const INITIAL_SOCIAL_POSTS = Array(8).fill(null).map((_, i) => ({ image: "", url: "", order: i }));
 
@@ -20,6 +21,7 @@ export default function CompanyPage() {
     address: "",
     logo: "",
     favicon: "",
+    copyright: "",
     socialLinks: {
       facebook: "",
       tiktok: "",
@@ -328,6 +330,8 @@ export default function CompanyPage() {
       if (updated.company) {
         document.title = updated.company || "Grace by Anu";
       }
+      // Invalidate cache so site reflects changes immediately
+      removeCachedData(CACHE_KEYS.COMPANY);
       success("Company settings updated successfully!");
     } catch (err) {
       console.error("Failed to update company:", err);
@@ -504,6 +508,23 @@ export default function CompanyPage() {
                 placeholder="Address"
               />
             </div>
+          </div>
+          
+          {/* Copyright Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Copyright Text
+            </label>
+            <input
+              type="text"
+              value={companyData.copyright}
+              onChange={(e) => handleChange("copyright", e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+              placeholder="© 2026 Grace By Anu. All Rights Reserved."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This text will appear in the footer. If empty, default copyright will be shown.
+            </p>
           </div>
         </div>
       </div>

@@ -138,7 +138,7 @@ export default function SpConsolePage() {
     <div>
       {/* Full Width Header and Main Card */}
       <div className="w-full -mx-4 lg:-mx-8 px-4 lg:px-8">
-        <h1 className="text-2xl font-semibold theme-heading mb-6">Sp Console</h1>
+        <h1 className="text-2xl font-bold theme-heading mb-6">Sp Console</h1>
 
         {/* Main Card - Full Width */}
         <div className="border rounded-2xl p-8 shadow-sm mb-8 w-full" style={{ backgroundColor: "var(--theme-light, #f5f5f5)", borderColor: "var(--theme-light)" }}>

@@ -5,6 +5,7 @@ import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
 import { useToast } from "@/components/ui/toast";
 import PageLoader from "@/components/ui/PageLoader";
 import CircularLoader from "@/components/ui/CircularLoader";
+import { removeCachedData, CACHE_KEYS } from "@/utils/cache";
 
 interface FooterLink {
   label: string;
@@ -140,6 +141,8 @@ export default function FooterPage() {
       const result = await updateFooter(saveData);
       console.log("Backend response:", result);
       
+      // Invalidate cache so site reflects changes immediately
+      removeCachedData(CACHE_KEYS.FOOTER);
       success("Footer settings saved successfully!");
       
       // Reload to verify it was saved

@@ -541,9 +541,9 @@ export default function ProductDetail() {
       <Navbar />
 
       <div className="bg-white text-black min-h-screen pt-20 pb-0">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 md:gap-8 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
             <div className="w-full flex justify-start">
               <ProductImageGallery images={product.images || ["/product.png"]} />
@@ -561,24 +561,24 @@ export default function ProductDetail() {
                 {product.categoryName || product.category?.name || (typeof product.category === 'string' ? product.category : 'Category')}
               </span>
 
-              <h1 className="text-3xl font-bold theme-heading">{product.name || "Product Name"}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold theme-heading">{product.name || "Product Name"}</h1>
 
-              <div className="flex gap-3 items-center">
-                <span className="text-2xl font-bold">
+              <div className="flex gap-3 items-center flex-wrap">
+                <span className="text-xl sm:text-2xl font-bold">
                   {discountedPrice} Rs
                 </span>
                 {product.discount && (
-                  <span className="line-through text-gray-400">
+                  <span className="line-through text-gray-400 text-lg sm:text-xl">
                     {product.price} Rs
                   </span>
                 )}
               </div>
 
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm sm:text-base">
                 {product.description}
               </p>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <AddToCartButton
                   product={{
                     id: product._id,
@@ -653,7 +653,7 @@ export default function ProductDetail() {
                     >
                       {hasMetaFeatures && (
                         <div className="bg-transparent meta-features-container">
-                          <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Features</h3>
+                          <h3 className="text-2xl font-bold mb-6 theme-heading">Meta Features</h3>
                           <div
                             className="max-w-none meta-info-content text-black"
                             dangerouslySetInnerHTML={{
@@ -665,7 +665,7 @@ export default function ProductDetail() {
 
                       {hasMetaInfo && (
                         <div className="bg-transparent meta-features-container">
-                          <h3 className="text-lg font-semibold mb-3 theme-heading">Meta Info</h3>
+                          <h3 className="text-2xl font-bold mb-6 theme-heading">Meta Info</h3>
                           <div
                             className="max-w-none meta-info-content text-black"
                             dangerouslySetInnerHTML={{
@@ -730,7 +730,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-xl font-semibold mb-4 theme-heading">
+          <h3 className="text-2xl font-bold mb-6 theme-heading">
             Similar Products
           </h3>
 

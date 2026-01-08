@@ -78,7 +78,7 @@ export default function UserProfile() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [profileData, addressesData, ordersData, wishlistData, profilePagesData] = await Promise.all([
+      const [profileData, addressesData, ordersData, wishlistData, profilePagesData, baseTabsData] = await Promise.all([
         getUserProfile().catch((err) => {
           console.error("Failed to load profile:", err);
           return null;
@@ -305,10 +305,10 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <div className="container mx-auto px-4 pt-16 pb-8 mb-0">
-        <div className="flex flex-col md:flex-row gap-6">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
-          <div className="w-full md:w-64 bg-white rounded-lg shadow p-4">
+          <div className="w-full md:w-64 bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="mb-6">
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-3">
                 <span className="text-2xl font-bold text-gray-700">
@@ -347,7 +347,7 @@ export default function UserProfile() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-6">
+          <div className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
             {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
             {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
             {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
@@ -479,6 +479,17 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
     email: profile?.email || "",
     phone: profile?.phone || "",
   });
+  
+  // Update formData when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+      });
+    }
+  }, [profile]);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -713,7 +724,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
 
     setIsSubmitting(true);
     try {
-      await addUserAddress(formData);
+      const updatedAddresses = await addUserAddress(formData);
       success("Address added successfully!");
       setShowAddForm(false);
       setFormData({
@@ -727,9 +738,11 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
         line1: "",
         isDefault: false,
       });
-      onUpdate();
+      // Force refresh to get latest data
+      await onUpdate();
     } catch (err: any) {
-      error(err.message || "Failed to add address");
+      console.error("Error adding address:", err);
+      error(err.response?.data?.message || err.message || "Failed to add address");
     } finally {
       setIsSubmitting(false);
     }
@@ -1427,13 +1440,6 @@ function QueriesTab() {
             </button>
           </form>
         </div>
-        <div className="border rounded-lg p-6">
-          <h3 className="font-semibold mb-2 text-gray-900">Live Chat</h3>
-          <p className="text-gray-700 mb-4">Chat with us in real-time for instant support.</p>
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            Start Chat
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -1536,7 +1542,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <h2 className="text-2xl font-bold mb-6 theme-heading">My Reviews</h2>
       {completedOrders.length === 0 ? (
         <p className="text-gray-600">You haven't completed any orders yet. Reviews are available after order completion.</p>
@@ -1571,7 +1577,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Write Review</h3>
+              <h3 className="text-2xl font-bold theme-heading">Write Review</h3>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
@@ -1600,7 +1606,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                   >
                     <Star
                       size={32}
-                      className={star <= reviewData.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                      className={star <= reviewData.rating ? "fill-[var(--theme-primary)] text-[var(--theme-primary)]" : "text-gray-300"}
                     />
                   </button>
                 ))}

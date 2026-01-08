@@ -148,11 +148,11 @@ export default function () {
           }))}
         />
         {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
-        <section className="py-10">
+        <section className="py-6 sm:py-10">
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           {loading ? (
             <ProductGridSkeleton count={15} />
           ) : (
@@ -192,7 +192,7 @@ export default function () {
           <OfferSection />
         </section> */}
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
-         <section className="py-10">
+         <section className="py-6 sm:py-10">
            <Hero2
              title="Discover new scents"
              subtitle="A selection of fragrances to brighten your mood."
@@ -200,11 +200,11 @@ export default function () {
              imagePosition="right"
            />
          </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <AtYourService />
         </section>
         {/* Banner at bottom of services section - aligned with products */}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <Hero
           title="Discover your natural glow"
           subtitle="Pure essentials for body and mind."
@@ -212,10 +212,10 @@ export default function () {
           imagePosition="left"
           />
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <FeatureSection />
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <ClientFeedback />
         </section>
 

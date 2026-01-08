@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCompany } from "@/api/company.api";
 import { getFooter } from "@/api/footer.api";
+import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 
 interface FooterLink {
   label: string;
@@ -20,6 +21,7 @@ export default function Footer() {
   const navigate = useNavigate();
   const [companyData, setCompanyData] = useState({
     company: "VERES",
+    copyright: "",
     socialPosts: [] as Array<{ image: string; url: string; order: number }>,
   });
   const [footerData, setFooterData] = useState<{
@@ -33,22 +35,61 @@ export default function Footer() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [company, footer] = await Promise.all([
-          getCompany(),
-          getFooter().catch(() => ({ sections: [], copyright: "" })),
-        ]);
+        // Try to get from cache first
+        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+        const cachedFooter = getCachedData<any>(CACHE_KEYS.FOOTER);
+
+        let company, footer;
+
+        if (cachedCompany && cachedFooter) {
+          // Use cached data
+          company = cachedCompany;
+          footer = cachedFooter;
+        } else {
+          // Fetch from API
+          const [companyData, footerData] = await Promise.all([
+            getCompany(),
+            getFooter().catch(() => ({ sections: [], copyright: "" })),
+          ]);
+
+          company = companyData;
+          footer = footerData;
+
+          // Cache the data (24 hours)
+          setCachedData(CACHE_KEYS.COMPANY, company);
+          setCachedData(CACHE_KEYS.FOOTER, footer);
+        }
         
         setCompanyData({
           company: company.company || "VERES",
+          copyright: company.copyright || "",
           socialPosts: (company.socialPosts || []).filter((post: any) => post.image).slice(0, 8),
         });
 
+        // Use copyright from company first, then footer, then default
+        const copyrightText = company.copyright || footer.copyright || `© ${new Date().getFullYear()} ${company.company || "VERES"}. All rights reserved.`;
         setFooterData({
           sections: (footer.sections || []).filter((s: FooterSection) => s.enabled !== false).sort((a: FooterSection, b: FooterSection) => a.order - b.order),
-          copyright: footer.copyright || `© ${new Date().getFullYear()} ${company.company || "VERES"}. All rights reserved.`,
+          copyright: copyrightText,
         });
       } catch (err) {
         console.error("Failed to load footer data", err);
+        // Try to use cached data as fallback
+        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+        const cachedFooter = getCachedData<any>(CACHE_KEYS.FOOTER);
+        if (cachedCompany) {
+          setCompanyData({
+            company: cachedCompany.company || "VERES",
+            copyright: cachedCompany.copyright || "",
+            socialPosts: (cachedCompany.socialPosts || []).filter((post: any) => post.image).slice(0, 8),
+          });
+        }
+        if (cachedFooter) {
+          setFooterData({
+            sections: (cachedFooter.sections || []).filter((s: FooterSection) => s.enabled !== false).sort((a: FooterSection, b: FooterSection) => a.order - b.order),
+            copyright: cachedFooter.copyright || `© ${new Date().getFullYear()} ${cachedCompany?.company || "VERES"}. All rights reserved.`,
+          });
+        }
       }
     };
     loadData();
@@ -69,15 +110,14 @@ export default function Footer() {
   const enabledSections = footerData.sections.filter(s => s.enabled !== false);
 
   return (
-    <footer className="text-gray-300 mt-20" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+    <footer className="text-gray-300 mt-12 sm:mt-20" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left side - Logo and Footer Sections */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Logo */}
             <div className="flex flex-col space-y-4">
               <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
-              <p className="text-xs text-gray-400">© {new Date().getFullYear()} {companyData.company}. All Rights Reserved.</p>
             </div>
 
             {/* Footer Sections from SP Panel */}
@@ -126,9 +166,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 border-t border-gray-600 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
-          <span>{footerData.copyright || `© ${new Date().getFullYear()} ${companyData.company}. All rights reserved.`}</span>
-          <div className="flex gap-4 mt-2 md:mt-0">
+        <div className="mt-6 sm:mt-8 border-t border-gray-600 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-2">
+          <span className="text-center md:text-left">{footerData.copyright || `© ${new Date().getFullYear()} ${companyData.company}. All rights reserved.`}</span>
+          <div className="flex gap-3 sm:gap-4">
             <span>Visa</span>
             <span>Mastercard</span>
             <span>PayPal</span>

@@ -87,7 +87,7 @@ export default function ReviewsTable() {
               <Star
                 key={star}
                 size={16}
-                className={star <= row.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                className={star <= row.rating ? "fill-[var(--theme-primary)] text-[var(--theme-primary)]" : "text-gray-300"}
               />
             ))}
             <span className="ml-2 text-sm text-gray-600">({row.rating}/5)</span>
@@ -119,7 +119,7 @@ export default function ReviewsTable() {
         cancelText="Cancel"
       />
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold theme-heading">Reviews</h2>
+        <h2 className="text-2xl font-bold mb-6 theme-heading">Reviews</h2>
       </div>
 
       <div className="bg-white shadow-md rounded-lg border border-gray-200 overflow-hidden">

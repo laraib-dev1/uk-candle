@@ -12,6 +12,7 @@ import { getBanners, type Banner as BannerType } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageLoader from "@/components/ui/PageLoader";
+import Pagination from "@/components/ui/Pagination";
 
 // API product type
 interface ApiProduct {
@@ -54,8 +55,11 @@ const Shop = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
-  const [limit, setLimit] = useState(8);
+  const [currentPage, setCurrentPage] = useState(1);
   const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
+  
+  // Products per page: 20 products = 4 rows (5 products per row on large screen)
+  const PRODUCTS_PER_PAGE = 20;
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -127,8 +131,22 @@ const Shop = () => {
     }
   };
 
-  const handleLoadMore = () => setLimit((prev) => prev + 4);
-  const displayedProducts = products.slice(0, limit);
+  // Calculate pagination
+  const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const endIndex = startIndex + PRODUCTS_PER_PAGE;
+  const displayedProducts = products.slice(startIndex, endIndex);
+
+  // Reset to page 1 when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (initialLoad && loading) {
     return <PageLoader message="Loading products..." />;
@@ -143,11 +161,11 @@ const Shop = () => {
           {/* Shop banner – if admin configured one, use it, otherwise use default image */}
           <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
 
-          <div className="flex justify-between items-center mt-10 mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-10 mb-6 gap-4">
             <h2 className="text-2xl font-bold theme-heading">
               Products
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Select
                 value={selectedCategory || "all"}
                 onValueChange={(value) => {
@@ -158,8 +176,15 @@ const Shop = () => {
                   }
                 }}
               >
-                <SelectTrigger className="w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2">
-                  <SelectValue placeholder="Select Category" />
+                <SelectTrigger className="w-full sm:w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2" style={{ overflow: 'hidden' }}>
+                  <span className="flex items-center justify-between min-w-0 w-full" style={{ maxWidth: 'calc(100% - 24px)' }}>
+                    <SelectValue placeholder="Select Category" />
+                    <span className="text-xs text-gray-500 ml-auto shrink-0 whitespace-nowrap">
+                      {selectedCategory === "all" || !selectedCategory
+                        ? `(${allProducts.length})`
+                        : `(${allProducts.filter((p) => p.categoryName === selectedCategory).length})`}
+                    </span>
+                  </span>
                 </SelectTrigger>
                 <SelectContent 
                   side="bottom" 
@@ -168,26 +193,22 @@ const Shop = () => {
                   sideOffset={4}
                   avoidCollisions={false}
                 >
-                  <SelectItem value="all">
-                    <div className="flex items-center justify-between w-full">
-                      <span>All</span>
-                      <span className="ml-4 text-xs text-gray-500">
-                        ({allProducts.length})
-                      </span>
-                    </div>
+                  <SelectItem value="all" className="relative group">
+                    <span className="flex-1 min-w-0 truncate pr-2">All</span>
+                    <span className="absolute right-2 text-xs text-gray-500 whitespace-nowrap group-data-[state=checked]:hidden">
+                      {/* ({allProducts.length}) */}
+                    </span>
                   </SelectItem>
                   {categories.map((category) => {
                     const count = allProducts.filter(
                       (p) => p.categoryName === category.name
                     ).length;
                     return (
-                      <SelectItem key={category._id} value={category.name}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{category.name}</span>
-                          <span className="ml-4 text-xs text-gray-500">
-                            ({count})
-                          </span>
-                        </div>
+                      <SelectItem key={category._id} value={category.name} className="relative group">
+                        <span className="flex-1 min-w-0 truncate pr-2">{category.name}</span>
+                        <span className="absolute right-2 text-xs text-gray-500 whitespace-nowrap group-data-[state=checked]:hidden">
+                          ({count})
+                        </span>
                       </SelectItem>
                     );
                   })}
@@ -197,21 +218,22 @@ const Shop = () => {
           </div>
 
           {loading && !initialLoad ? (
-            <ProductGridSkeleton count={8} />
+            <ProductGridSkeleton count={PRODUCTS_PER_PAGE} />
           ) : (
-            <ProductGrid items={displayedProducts} />
-          )}
-
-          {limit < products.length && (
-            <div className="flex justify-center mt-10">
-              <DynamicButton
-                label="Load More"
-                loading={loading}
-                onClick={handleLoadMore}
-                variant="transparent"
-                shape="rounded"
-              />
-            </div>
+            <>
+              <ProductGrid items={displayedProducts} />
+              
+              {/* Pagination */}
+              {products.length > PRODUCTS_PER_PAGE && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={products.length}
+                  itemsPerPage={PRODUCTS_PER_PAGE}
+                />
+              )}
+            </>
           )}
         </div>
       </main>

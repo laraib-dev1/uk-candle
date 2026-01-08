@@ -47,7 +47,7 @@ export default function ContactUs() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left: Form */}
           <div className="rounded-2xl p-8" style={{ backgroundColor: "var(--theme-light, #f5f5f5)" }}>
-            <h2 className="text-2xl font-semibold mb-2 theme-heading">You have any query!</h2>
+            <h2 className="text-2xl font-bold mb-6 theme-heading">You have any query!</h2>
             <p className="text-gray-600 mb-6">Fill the form to send us.</p>
             
             <form onSubmit={handleSubmit} className="space-y-4">

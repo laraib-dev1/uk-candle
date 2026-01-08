@@ -6,6 +6,7 @@ import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
 import { Menu, ShoppingCart, LogOut, User } from "lucide-react";
 import { getCompany } from "@/api/company.api";
+import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 import * as LucideIcons from "lucide-react";
 
 export default function Navbar() {
@@ -21,11 +22,37 @@ export default function Navbar() {
   useEffect(() => {
     const loadCompany = async () => {
       try {
-        const data = await getCompany();
-        setCompany({ logo: data.logo || "/logo-removebg-preview.png", company: data.company || "Grace by Anu" });
+        // Try to get from cache first
+        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+        
+        if (cachedCompany) {
+          // Use cached data
+          setCompany({ 
+            logo: cachedCompany.logo || "/logo-removebg-preview.png", 
+            company: cachedCompany.company || "Grace by Anu" 
+          });
+        } else {
+          // Fetch from API
+          const data = await getCompany();
+          setCompany({ 
+            logo: data.logo || "/logo-removebg-preview.png", 
+            company: data.company || "Grace by Anu" 
+          });
+          // Cache the data (24 hours)
+          setCachedData(CACHE_KEYS.COMPANY, data);
+        }
       } catch (error) {
         console.error("Failed to load company:", error);
-        setCompany({ logo: "/logo-removebg-preview.png", company: "Grace by Anu" });
+        // Try to use cached data as fallback
+        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+        if (cachedCompany) {
+          setCompany({ 
+            logo: cachedCompany.logo || "/logo-removebg-preview.png", 
+            company: cachedCompany.company || "Grace by Anu" 
+          });
+        } else {
+          setCompany({ logo: "/logo-removebg-preview.png", company: "Grace by Anu" });
+        }
       }
     };
     loadCompany();
@@ -54,7 +81,7 @@ let user = null;
 
   return (
     <header className="bg-white  text-black  shadow-sm fixed top-0 w-full z-50">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-8xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
         
         {/* LEFT: Logo */}
         <Link
@@ -66,13 +93,13 @@ let user = null;
             <img
               src={company.logo.startsWith("http") ? company.logo : (company.logo ? `${import.meta.env.VITE_API_URL?.replace(/\/$/, "")}${company.logo.startsWith("/") ? "" : "/"}${company.logo}` : "/logo-removebg-preview.png")}
               alt="Logo"
-              className="w-16 h-16 object-contain"
+              className="w-10 h-10 sm:w-16 sm:h-16 object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/logo-removebg-preview.png";
               }}
             />
           )}
-          {company.company}
+          <span className="text-base sm:text-xl font-serif font-semibold">{company.company}</span>
         </Link>
 
         {/* CENTER: Nav links (desktop only) */}
@@ -103,7 +130,7 @@ let user = null;
         <div className="flex items-center gap-4">
           {/* Cart icon (always visible) */}
           <Link to="/cart" className="relative" style={{ cursor: "pointer" }}>
-  <ShoppingCart className="w-6 h-6 text-gray-700 " />
+  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 " />
   <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
   {totalItems}
 </span>

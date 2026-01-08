@@ -148,7 +148,7 @@ const rightContent = (
       <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 
         {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-3xl font-semibold mb-10 theme-heading">Purchase List</h2>
+        <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
 
         <TwoColumnLayout left={leftContent} right={rightContent} />
         <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />

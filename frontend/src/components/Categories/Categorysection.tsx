@@ -71,7 +71,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
           {categories.map((cat, index) => (
             <div
               key={index}
-              className="shrink-0 w-48 text-center group"
+              className="shrink-0 w-24 md:w-48 text-center group"
               style={{ cursor: 'pointer' }}
               onClick={() => {
                 const categoryName = cat.title;
@@ -91,7 +91,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
                   }}
                 />
               </div>
-              <p className="mt-3 text-lg text-gray-800 font-medium italic">
+              <p className="mt-3 text-sm md:text-lg text-gray-800 font-medium italic">
                 {cat.title}
               </p>
             </div>
