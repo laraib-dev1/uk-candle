@@ -95,6 +95,7 @@ export const updateCompany = async (req, res) => {
         updateData.socialPosts = typeof req.body.socialPosts === 'string'
           ? JSON.parse(req.body.socialPosts)
           : req.body.socialPosts;
+        console.log("Social Posts received:", JSON.stringify(updateData.socialPosts, null, 2));
       } catch (e) {
         console.error("Error parsing socialPosts:", e);
       }
@@ -114,6 +115,9 @@ export const updateCompany = async (req, res) => {
     // Handle file uploads
     // With upload.any(), req.files is an array, not an object
     if (req.files && Array.isArray(req.files)) {
+      console.log("Files received:", req.files.length, "files");
+      console.log("File fieldnames:", req.files.map(f => f.fieldname));
+      
       // Create a map of fieldname -> file for easier access
       const filesMap = {};
       req.files.forEach(file => {
@@ -122,6 +126,8 @@ export const updateCompany = async (req, res) => {
         }
         filesMap[file.fieldname].push(file);
       });
+      
+      console.log("Files map keys:", Object.keys(filesMap));
 
       // Upload logo if provided
       if (filesMap.logo && filesMap.logo[0]) {
@@ -154,15 +160,25 @@ export const updateCompany = async (req, res) => {
         }
 
         // Upload social post images
+        console.log("File indices to process:", fileIndices);
         for (const index of fileIndices) {
           const fileKey = `socialPost_${index}`;
+          console.log(`Processing social post ${index}, fileKey: ${fileKey}`);
           if (filesMap[fileKey] && filesMap[fileKey][0]) {
+            console.log(`Uploading file for social post ${index}`);
             const imageUrl = await uploadImage(filesMap[fileKey][0], "company/social-posts");
+            console.log(`Uploaded image URL for social post ${index}:`, imageUrl);
             if (imageUrl && updateData.socialPosts[index]) {
               updateData.socialPosts[index].image = imageUrl;
+              console.log(`Updated social post ${index} with image URL:`, imageUrl);
+            } else {
+              console.warn(`Failed to update social post ${index}:`, { imageUrl, postExists: !!updateData.socialPosts[index] });
             }
+          } else {
+            console.warn(`No file found for social post ${index}, fileKey: ${fileKey}`);
           }
         }
+        console.log("Final social posts after upload:", JSON.stringify(updateData.socialPosts, null, 2));
       }
     }
 

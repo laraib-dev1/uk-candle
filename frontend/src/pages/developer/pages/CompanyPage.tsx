@@ -325,10 +325,14 @@ export default function CompanyPage() {
       const socialPostsData: any[] = [];
       const socialPostFilesToUpload: Map<number, File> = new Map();
       
+      console.log("Preparing social posts for upload:", companyData.socialPosts);
+      console.log("Stored social post files:", Array.from(socialPostFiles.entries()));
+      
       companyData.socialPosts.forEach((post: any, index: number) => {
         // Check if we have a stored file for this post
         const storedFile = socialPostFiles.get(index);
         if (storedFile) {
+          console.log(`Post ${index}: Using stored file`);
           socialPostFilesToUpload.set(index, storedFile);
           // Store post data without base64 image (file will be uploaded separately)
           socialPostsData.push({
@@ -337,9 +341,11 @@ export default function CompanyPage() {
             image: "" // Will be set by backend after upload
           });
         } else if (post.image && post.image.startsWith('data:')) {
+          console.log(`Post ${index}: Converting base64 to file`);
           // Convert base64 to file
           const file = base64ToFile(post.image, `social-post-${index}.png`);
           if (file) {
+            console.log(`Post ${index}: Base64 converted to file successfully`);
             socialPostFilesToUpload.set(index, file);
             socialPostsData.push({
               url: post.url || "",
@@ -347,6 +353,7 @@ export default function CompanyPage() {
               image: "" // Will be set by backend after upload
             });
           } else {
+            console.warn(`Post ${index}: Base64 conversion failed, keeping original`);
             // Keep existing post data if conversion fails
             socialPostsData.push({
               url: post.url || "",
@@ -355,6 +362,7 @@ export default function CompanyPage() {
             });
           }
         } else {
+          console.log(`Post ${index}: Already a URL or empty, keeping as is:`, post.image);
           // Already a URL or empty, keep as is
           socialPostsData.push({
             url: post.url || "",
@@ -363,6 +371,9 @@ export default function CompanyPage() {
           });
         }
       });
+      
+      console.log("Social posts data to send:", socialPostsData);
+      console.log("Social post files to upload:", Array.from(socialPostFilesToUpload.entries()).map(([idx, file]) => ({ index: idx, fileName: file.name, fileSize: file.size })));
 
       // Convert Map to array for serialization
       const socialPostFilesArray: Array<{ index: number; file: File }> = [];
@@ -379,6 +390,7 @@ export default function CompanyPage() {
       };
 
       const updated = await updateCompany(formData);
+      console.log("Company updated - Social Posts:", updated.socialPosts); // Debug log
       setCompanyData(updated);
       setOriginalData(updated);
       // Clear social post files after successful upload
@@ -411,7 +423,8 @@ export default function CompanyPage() {
       }
       // Invalidate cache so site reflects changes immediately
       removeCachedData(CACHE_KEYS.COMPANY);
-      success("Company settings updated successfully!");
+      console.log("Cache cleared. Please refresh the page to see updated social posts in footer.");
+      success("Company settings updated successfully! Please refresh the page to see changes in footer.");
     } catch (err) {
       console.error("Failed to update company:", err);
       error("Failed to update company settings");

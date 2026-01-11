@@ -38,16 +38,25 @@ export const updateCompany = async (data: any) => {
 
   // Append social post files
   if (data.socialPostFiles && Array.isArray(data.socialPostFiles)) {
+    console.log("Appending social post files:", data.socialPostFiles.length);
     const fileIndices: number[] = [];
     data.socialPostFiles.forEach((item: { index: number; file: File }) => {
       if (item && item.file instanceof File) {
+        console.log(`Appending file for social post ${item.index}:`, item.file.name, item.file.size);
         formData.append(`socialPost_${item.index}`, item.file);
         fileIndices.push(item.index);
+      } else {
+        console.warn("Invalid social post file item:", item);
       }
     });
     if (fileIndices.length > 0) {
+      console.log("Social post file indices:", fileIndices);
       formData.append("socialPostFileIndices", JSON.stringify(fileIndices));
+    } else {
+      console.warn("No valid social post files to append");
     }
+  } else {
+    console.log("No social post files to append");
   }
 
   // Append brand theme

@@ -35,48 +35,81 @@ export default function Footer() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Try to get from cache first
-        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
-        const cachedFooter = getCachedData<any>(CACHE_KEYS.FOOTER);
+        // Always fetch fresh data to ensure social posts are up to date
+        // Fetch from API
+        const [companyData, footerData] = await Promise.all([
+          getCompany(),
+          getFooter().catch(() => ({ sections: [], copyright: "" })),
+        ]);
 
-        let company, footer;
+        const company = companyData;
+        const footer = footerData;
 
-        if (cachedCompany && cachedFooter) {
-          // Use cached data
-          company = cachedCompany;
-          footer = cachedFooter;
-        } else {
-          // Fetch from API
-          const [companyData, footerData] = await Promise.all([
-            getCompany(),
-            getFooter().catch(() => ({ sections: [], copyright: "" })),
-          ]);
-
-          company = companyData;
-          footer = footerData;
-
-          // Cache the data (24 hours)
-          setCachedData(CACHE_KEYS.COMPANY, company);
-          setCachedData(CACHE_KEYS.FOOTER, footer);
-        }
+        // Cache the data (24 hours)
+        setCachedData(CACHE_KEYS.COMPANY, company);
+        setCachedData(CACHE_KEYS.FOOTER, footer);
         
         // Process social posts - ensure they have valid images
+        // Helper to get full image URL
+        const getImageUrl = (imageUrl: string): string => {
+          if (!imageUrl || typeof imageUrl !== 'string' || imageUrl.trim() === "") {
+            return "";
+          }
+          
+          const trimmed = imageUrl.trim();
+          
+          // If it's a base64 data URL, return as is (shouldn't happen after upload, but handle it)
+          if (trimmed.startsWith('data:')) {
+            return trimmed;
+          }
+          
+          // If it's already a full URL (Cloudinary or http/https), return as is
+          if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+            return trimmed;
+          }
+          
+          // If it's a relative path, construct full URL
+          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+          const isLocalhost = typeof window !== 'undefined' && (
+            window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1"
+          );
+          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+          
+          if (trimmed.startsWith('/')) {
+            return `${apiBaseWithoutApi}${trimmed}`;
+          }
+          
+          return `${apiBaseWithoutApi}/${trimmed}`;
+        };
+        
         const validSocialPosts = (company.socialPosts || [])
           .filter((post: any) => {
             return post && 
                    post.image && 
                    typeof post.image === 'string' && 
-                   post.image.trim() !== "";
+                   post.image.trim() !== "" &&
+                   !post.image.startsWith('data:'); // Exclude base64 (should be uploaded by now)
           })
-          .map((post: any) => ({
-            image: post.image.trim(),
-            url: post.url || "#",
-            order: post.order || 0
-          }))
+          .map((post: any) => {
+            const imageUrl = getImageUrl(post.image);
+            return {
+              image: imageUrl,
+              url: post.url || "#",
+              order: post.order || 0
+            };
+          })
+          .filter((post: any) => post.image !== "") // Remove posts with invalid URLs
           .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
           .slice(0, 8);
         
-        console.log("Social Posts loaded:", validSocialPosts.length, validSocialPosts); // Debug log
+        console.log("Social Posts loaded:", {
+          total: (company.socialPosts || []).length,
+          valid: validSocialPosts.length,
+          posts: validSocialPosts,
+          rawPosts: company.socialPosts
+        }); // Debug log
         
         setCompanyData({
           company: company.company || "VERES",
@@ -176,10 +209,12 @@ export default function Footer() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
+                        console.error("Failed to load social post image:", post.image, "for post:", post);
                         target.style.display = "none";
                       }}
                       onLoad={(e) => {
                         const target = e.target as HTMLImageElement;
+                        console.log("Successfully loaded social post image:", post.image);
                         target.style.display = "block";
                       }}
                     />
