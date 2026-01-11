@@ -36,6 +36,20 @@ export const updateCompany = async (data: any) => {
     formData.append("socialPosts", JSON.stringify(data.socialPosts));
   }
 
+  // Append social post files
+  if (data.socialPostFiles && Array.isArray(data.socialPostFiles)) {
+    const fileIndices: number[] = [];
+    data.socialPostFiles.forEach((item: { index: number; file: File }) => {
+      if (item && item.file instanceof File) {
+        formData.append(`socialPost_${item.index}`, item.file);
+        fileIndices.push(item.index);
+      }
+    });
+    if (fileIndices.length > 0) {
+      formData.append("socialPostFileIndices", JSON.stringify(fileIndices));
+    }
+  }
+
   // Append brand theme
   if (data.brandTheme) {
     formData.append("brandTheme", JSON.stringify(data.brandTheme));

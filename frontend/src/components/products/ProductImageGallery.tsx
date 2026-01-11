@@ -8,7 +8,7 @@ export default function ProductImageGallery({ images }: Props) {
   const [selected, setSelected] = useState(images[0] || "/product.png");
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-2 w-full">
       {/* Main Image - 3:4 aspect ratio - Smaller size, aligned left */}
       <div className="w-full max-w-sm aspect-[3/4] bg-gray-100 overflow-hidden rounded-lg border border-gray-200 flex items-center justify-center">
         <img

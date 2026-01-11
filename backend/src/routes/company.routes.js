@@ -5,10 +5,7 @@ import { upload } from "../middleware/upload.js";
 const router = express.Router();
 
 router.get("/", getCompany);
-router.put("/", upload.fields([
-  { name: "logo", maxCount: 1 },
-  { name: "favicon", maxCount: 1 },
-]), updateCompany);
+router.put("/", upload.any(), updateCompany);
 
 export default router;
 

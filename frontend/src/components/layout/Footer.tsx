@@ -60,10 +60,28 @@ export default function Footer() {
           setCachedData(CACHE_KEYS.FOOTER, footer);
         }
         
+        // Process social posts - ensure they have valid images
+        const validSocialPosts = (company.socialPosts || [])
+          .filter((post: any) => {
+            return post && 
+                   post.image && 
+                   typeof post.image === 'string' && 
+                   post.image.trim() !== "";
+          })
+          .map((post: any) => ({
+            image: post.image.trim(),
+            url: post.url || "#",
+            order: post.order || 0
+          }))
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+          .slice(0, 8);
+        
+        console.log("Social Posts loaded:", validSocialPosts.length, validSocialPosts); // Debug log
+        
         setCompanyData({
           company: company.company || "VERES",
           copyright: company.copyright || "",
-          socialPosts: (company.socialPosts || []).filter((post: any) => post.image).slice(0, 8),
+          socialPosts: validSocialPosts,
         });
 
         // Use copyright from company first, then footer, then default
@@ -81,7 +99,9 @@ export default function Footer() {
           setCompanyData({
             company: cachedCompany.company || "VERES",
             copyright: cachedCompany.copyright || "",
-            socialPosts: (cachedCompany.socialPosts || []).filter((post: any) => post.image).slice(0, 8),
+            socialPosts: (cachedCompany.socialPosts || [])
+              .filter((post: any) => post && post.image && post.image.trim() !== "")
+              .slice(0, 8),
           });
         }
         if (cachedFooter) {
@@ -110,7 +130,7 @@ export default function Footer() {
   const enabledSections = footerData.sections.filter(s => s.enabled !== false);
 
   return (
-    <footer className="text-gray-300 mt-12 sm:mt-20" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
+    <footer className="text-gray-300" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left side - Logo and Footer Sections */}
@@ -139,23 +159,28 @@ export default function Footer() {
           </div>
 
           {/* Right side - Social Posts Gallery - only show if there are posts */}
-          {companyData.socialPosts.length > 0 && (
+          {companyData.socialPosts && companyData.socialPosts.length > 0 && (
             <div className="lg:ml-auto">
               <div className="grid grid-cols-4 gap-2">
                 {companyData.socialPosts.map((post, index) => (
                   <a
                     key={index}
                     href={post.url || "#"}
-                    target={post.url ? "_blank" : undefined}
-                    rel={post.url ? "noopener noreferrer" : undefined}
-                    className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity"
+                    target={post.url && post.url !== "#" ? "_blank" : undefined}
+                    rel={post.url && post.url !== "#" ? "noopener noreferrer" : undefined}
+                    className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
                   >
                     <img
                       src={post.image}
                       alt={`Social post ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                      }}
+                      onLoad={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "block";
                       }}
                     />
                   </a>

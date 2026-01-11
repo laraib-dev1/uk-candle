@@ -103,21 +103,23 @@ export default function () {
       <Navbar />
       <main>
         {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
-        {bannersBySlot["hero-main"] ? (
-          <Hero
-            title="Welcome to our store"
-            subtitle="Discover our latest collections."
-            image={bannersBySlot["hero-main"].imageUrl}
-            variant="full-background"
-          />
-        ) : (
-          <Hero
-            title="Welcome to our store"
-            subtitle="This hero uses the image as full background"
-            image="hero.png"
-            variant="full-background"
-          />
-        )}
+        <section className="py-10">
+          {bannersBySlot["hero-main"] ? (
+            <Hero
+              title="Welcome to our store"
+              subtitle="Discover our latest collections."
+              image={bannersBySlot["hero-main"].imageUrl}
+              variant="full-background"
+            />
+          ) : (
+            <Hero
+              title="Welcome to our store"
+              subtitle="This hero uses the image as full background"
+              image="hero.png"
+              variant="full-background"
+            />
+          )}
+        </section>
         <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
           {loading ? (
@@ -148,11 +150,11 @@ export default function () {
           }))}
         />
         {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
-        <section className="py-6 sm:py-10">
+        <section className="py-10">
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {loading ? (
             <ProductGridSkeleton count={15} />
           ) : (
@@ -176,7 +178,7 @@ export default function () {
                   }))
                 }
               />
-              <div className="flex justify-center mt-6">
+              <div className="flex justify-center mt-3">
                 <DynamicButton 
                   label="See All" 
                   variant="filled" 
@@ -192,7 +194,7 @@ export default function () {
           <OfferSection />
         </section> */}
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
-         <section className="py-6 sm:py-10">
+         <section className="py-10">
            <Hero2
              title="Discover new scents"
              subtitle="A selection of fragrances to brighten your mood."
@@ -200,11 +202,11 @@ export default function () {
              imagePosition="right"
            />
          </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <AtYourService />
         </section>
-        {/* Banner at bottom of services section - aligned with products */}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Banner at bottom of services section - Full width */}
+        <section className="w-full py-10">
           <Hero
           title="Discover your natural glow"
           subtitle="Pure essentials for body and mind."
@@ -212,12 +214,16 @@ export default function () {
           imagePosition="left"
           />
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <section className="w-full py-10">
           <FeatureSection />
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Feedback Section - Full Width */}
+        <section className="w-full py-10 pb-0 bg-white">
           <ClientFeedback />
         </section>
+        
+        {/* Gap between Feedback and Footer - White background */}
+        <div className="w-full h-10 bg-white"></div>
 
       </main>
       <Footer />

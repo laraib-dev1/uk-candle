@@ -543,14 +543,14 @@ export default function ProductDetail() {
       <div className="bg-white text-black min-h-screen pt-20 pb-0">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 md:gap-8 mb-8 md:mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
-            <div className="w-full flex justify-start">
+            <div className="w-full flex justify-start -mr-2 md:-mr-3">
               <ProductImageGallery images={product.images || ["/product.png"]} />
             </div>
 
             {/* Product Info - Takes more space, fills the gap */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
               <span 
                 className="text-xs px-3 py-1 rounded-full w-fit text-white font-medium"
                 style={{

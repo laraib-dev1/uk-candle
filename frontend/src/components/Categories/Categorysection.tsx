@@ -34,7 +34,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
   return (
     <section className="py-10 bg-white text-black">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl font-semibold mb-6 tracking-wide">
+        <h2 className="text-center text-2xl font-semibold mb-2.5 tracking-wide">
           ALL GIFT IDEAS
         </h2>
 

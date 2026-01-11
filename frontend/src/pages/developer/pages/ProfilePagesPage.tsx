@@ -32,10 +32,10 @@ const baseProfileTabs = [
   { _id: "dashboard", title: "Dashboard", slug: "/profile?tab=dashboard", icon: "LayoutDashboard", enabled: true, subInfo: "User dashboard overview", order: 1, content: "" },
   { _id: "profile", title: "Profile", slug: "/profile?tab=profile", icon: "User", enabled: true, subInfo: "User profile settings", order: 2, content: "" },
   { _id: "addresses", title: "Addresses", slug: "/profile?tab=addresses", icon: "MapPin", enabled: true, subInfo: "Manage delivery addresses", order: 3, content: "" },
-  { _id: "orders", title: "Orders", slug: "/profile?tab=orders", icon: "Package", enabled: true, subInfo: "Order history", order: 4, content: "" },
-  { _id: "wishlist", title: "Wishlist", slug: "/profile?tab=wishlist", icon: "Heart", enabled: true, subInfo: "Saved products", order: 5, content: "" },
-  { _id: "queries", title: "Support", slug: "/profile?tab=queries", icon: "MessageSquare", enabled: true, subInfo: "Support & help", order: 6, content: "" },
-  { _id: "reviews", title: "Reviews", slug: "/profile?tab=reviews", icon: "Star", enabled: true, subInfo: "Product reviews", order: 7, content: "" },
+  { _id: "wishlist", title: "Wishlist", slug: "/profile?tab=wishlist", icon: "Heart", enabled: true, subInfo: "Saved products", order: 4, content: "" },
+  { _id: "orders", title: "Orders", slug: "/profile?tab=orders", icon: "Package", enabled: true, subInfo: "Order history", order: 5, content: "" },
+  { _id: "reviews", title: "Reviews", slug: "/profile?tab=reviews", icon: "Star", enabled: true, subInfo: "Product reviews", order: 6, content: "" },
+  { _id: "queries", title: "Support", slug: "/profile?tab=queries", icon: "MessageSquare", enabled: true, subInfo: "Support & help", order: 7, content: "" },
 ];
 
 export default function ProfilePagesPage() {

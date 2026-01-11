@@ -25,18 +25,32 @@ const Hero2 = ({
   };
 
   return (
-    <section className="py-10 bg-gray-200">
+    <section className="py-0 bg-gray-200">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {fullWidthText ? (
           <div className="flex flex-col justify-center py-10 text-center">
             <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
             </h1>
-            <p className="mt-3 text-gray-600 text-sm md:text-base max-w-3xl mx-auto">
+            <p className="mt-2.5 text-gray-600 text-sm md:text-base max-w-3xl mx-auto">
               {subtitle || "Explore our latest collections and exclusive deals."}
             </p>
-            <div className="mt-6 flex justify-center">
-              <Button onClick={handleShopMore}>Shop More</Button>
+            <div className="mt-2.5 flex justify-center">
+              <Button 
+                onClick={handleShopMore}
+                style={{ 
+                  backgroundColor: "var(--theme-primary)",
+                  borderColor: "var(--theme-primary)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  e.currentTarget.style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  e.currentTarget.style.opacity = "1";
+                }}
+              >Shop More</Button>
             </div>
           </div>
         ) : (
@@ -60,11 +74,25 @@ const Hero2 = ({
               <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
                 {title || "Welcome to Our Store"}
               </h1>
-              <p className="mt-3 text-gray-600 text-sm md:text-base max-w-lg">
+              <p className="mt-2.5 text-gray-600 text-sm md:text-base max-w-lg">
                 {subtitle || "Explore our latest collections and exclusive deals."}
               </p>
-              <div className="mt-6">
-                <Button onClick={handleShopMore}>Shop More</Button>
+              <div className="mt-2.5">
+                <Button 
+                  onClick={handleShopMore}
+                  style={{ 
+                    backgroundColor: "var(--theme-primary)",
+                    borderColor: "var(--theme-primary)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                    e.currentTarget.style.opacity = "0.9";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                    e.currentTarget.style.opacity = "1";
+                  }}
+                >Shop More</Button>
               </div>
             </div>
 

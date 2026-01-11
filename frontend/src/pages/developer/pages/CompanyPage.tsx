@@ -45,6 +45,7 @@ export default function CompanyPage() {
   const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null);
   const [postUrl, setPostUrl] = useState("");
   const [postImageFile, setPostImageFile] = useState<File | null>(null);
+  const [socialPostFiles, setSocialPostFiles] = useState<Map<number, File>>(new Map());
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const socialPostInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -213,12 +214,14 @@ export default function CompanyPage() {
     const file = e.target.files?.[0];
     if (file && editingPostIndex !== null) {
       setPostImageFile(file);
+      // Store the file for upload
+      setSocialPostFiles(prev => new Map(prev).set(editingPostIndex, file));
       const reader = new FileReader();
       reader.onload = (event) => {
         const newPosts = [...companyData.socialPosts];
         newPosts[editingPostIndex] = { 
           ...newPosts[editingPostIndex], 
-          image: event.target?.result as string,
+          image: event.target?.result as string, // Keep base64 for preview
           url: newPosts[editingPostIndex].url || "" // Keep existing URL if any
         };
         handleChange("socialPosts", newPosts);
@@ -292,18 +295,94 @@ export default function CompanyPage() {
     handleChange("brandTheme", newTheme);
   };
 
+  // Helper to convert base64 to File
+  const base64ToFile = (base64String: string, filename: string): File | null => {
+    try {
+      // Check if it's a data URL
+      if (!base64String.startsWith('data:')) {
+        return null; // Already a URL, not base64
+      }
+      
+      const arr = base64String.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, { type: mime });
+    } catch (error) {
+      console.error("Error converting base64 to file:", error);
+      return null;
+    }
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
+      // Prepare social posts data and collect files
+      const socialPostsData: any[] = [];
+      const socialPostFilesToUpload: Map<number, File> = new Map();
+      
+      companyData.socialPosts.forEach((post: any, index: number) => {
+        // Check if we have a stored file for this post
+        const storedFile = socialPostFiles.get(index);
+        if (storedFile) {
+          socialPostFilesToUpload.set(index, storedFile);
+          // Store post data without base64 image (file will be uploaded separately)
+          socialPostsData.push({
+            url: post.url || "",
+            order: post.order || index,
+            image: "" // Will be set by backend after upload
+          });
+        } else if (post.image && post.image.startsWith('data:')) {
+          // Convert base64 to file
+          const file = base64ToFile(post.image, `social-post-${index}.png`);
+          if (file) {
+            socialPostFilesToUpload.set(index, file);
+            socialPostsData.push({
+              url: post.url || "",
+              order: post.order || index,
+              image: "" // Will be set by backend after upload
+            });
+          } else {
+            // Keep existing post data if conversion fails
+            socialPostsData.push({
+              url: post.url || "",
+              order: post.order || index,
+              image: post.image
+            });
+          }
+        } else {
+          // Already a URL or empty, keep as is
+          socialPostsData.push({
+            url: post.url || "",
+            order: post.order || index,
+            image: post.image || ""
+          });
+        }
+      });
+
+      // Convert Map to array for serialization
+      const socialPostFilesArray: Array<{ index: number; file: File }> = [];
+      socialPostFilesToUpload.forEach((file, index) => {
+        socialPostFilesArray.push({ index, file });
+      });
+
       const formData: any = {
         ...companyData,
         logoFile: logoInputRef.current?.files?.[0],
         faviconFile: faviconInputRef.current?.files?.[0],
+        socialPosts: socialPostsData,
+        socialPostFiles: socialPostFilesArray
       };
 
       const updated = await updateCompany(formData);
       setCompanyData(updated);
       setOriginalData(updated);
+      // Clear social post files after successful upload
+      setSocialPostFiles(new Map());
       if (updated.brandTheme) {
         updateTheme(updated.brandTheme);
       }

@@ -39,7 +39,9 @@ import {
   Eye,
   EyeOff,
   FileText,
+  LayoutDashboard,
 } from "lucide-react";
+import ProductCard from "@/components/products/ProductCard";
 import type { UserProfile as UserProfileType, Address, Order } from "@/api/user.api";
 
 type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "queries" | "reviews" | string;
@@ -204,13 +206,13 @@ export default function UserProfile() {
   }, [baseTabsFromAPI]);
   
   const allBaseTabs = [
-    { id: "dashboard" as TabType, label: "Dashboard", icon: User },
+    { id: "dashboard" as TabType, label: "Dashboard", icon: LayoutDashboard },
     { id: "profile" as TabType, label: "Profile", icon: User },
     { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
-    { id: "orders" as TabType, label: "Orders", icon: Package },
     { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
-    { id: "queries" as TabType, label: "Support", icon: MessageSquare },
+    { id: "orders" as TabType, label: "Orders", icon: Package },
     { id: "reviews" as TabType, label: "Reviews", icon: Star },
+    { id: "queries" as TabType, label: "Support", icon: MessageSquare },
   ];
   
   // Filter base tabs based on API data - only show enabled tabs
@@ -1249,19 +1251,6 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
 
 // Wishlist Tab Component
 function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => void }) {
-  const { success, error } = useToast();
-  const navigate = useNavigate();
-
-  const handleRemove = async (productId: string) => {
-    try {
-      await removeFromWishlist(productId);
-      success("Removed from wishlist");
-      onUpdate();
-    } catch (err: any) {
-      error(err.message || "Failed to remove from wishlist");
-    }
-  };
-
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6 theme-heading">My Wishlist</h2>
@@ -1277,66 +1266,21 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
               return null;
             }
             
-            // Calculate discounted price if discount exists
+            const productImage = productData.image1 || productData.image2 || productData.image3 || productData.image4 || productData.image5 || productData.image6 || productData.image || "/product.png";
             const discount = productData.discount || 0;
-            const originalPrice = productData.price;
-            const discountedPrice = discount > 0 
-              ? originalPrice * (1 - discount / 100)
-              : originalPrice;
 
             return (
-              <div key={productData._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                {/* Product Image */}
-                {(productData.image1 || productData.image) && (
-                  <div className="w-full aspect-square bg-gray-100 overflow-hidden">
-                    <img
-                      src={productData.image1 || productData.image || "/product.png"}
-                      alt={productData.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                {/* Product Info */}
-                <div className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold mb-2 text-gray-900 text-base line-clamp-2 min-h-[3rem]">{productData.name}</h3>
-                  
-                  {/* Price */}
-                  <div className="mb-4">
-                    {discount > 0 ? (
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-sm text-gray-500 line-through">
-                          ${Math.round(originalPrice)}
-                        </span>
-                        <span className="text-lg font-bold theme-text-primary">
-                          ${Math.round(discountedPrice)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-lg font-bold theme-text-primary">
-                        ${Math.round(originalPrice)}
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 mt-auto">
-                    <button
-                      onClick={() => navigate(`/product/${productData._id}`)}
-                      className="flex-1 px-3 py-2 theme-button rounded-lg text-sm font-medium whitespace-nowrap"
-                    >
-                      View Product
-                    </button>
-                    <button
-                      onClick={() => handleRemove(productData._id)}
-                      className="px-3 py-2 border-2 border-red-200 rounded-lg hover:bg-red-50 text-red-600 transition-colors flex-shrink-0"
-                      title="Remove from wishlist"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard
+                key={productData._id}
+                id={productData._id}
+                name={productData.name}
+                price={productData.price}
+                image={productImage}
+                offer={discount > 0 ? discount.toString() : undefined}
+                isInWishlist={true}
+                showHeartAlways={true}
+                onRemove={onUpdate}
+              />
             );
           })}
         </div>

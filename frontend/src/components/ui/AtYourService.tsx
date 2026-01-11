@@ -29,14 +29,14 @@ const services = [
 
 const AtYourService = () => {
   return (
-    <section className="py-12 text-center">
+    <section className="py-0 text-center">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Decorative border lines */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-4">
           <div className="w-full border-t border-gray-400"></div>
         </div>
 
-        <h2 className="text-xl font-semibold tracking-wide mb-10">
+        <h2 className="text-xl font-semibold tracking-wide mb-2.5">
           AT YOUR SERVICE
         </h2>
 
@@ -58,7 +58,7 @@ const AtYourService = () => {
         </div>
 
         {/* Decorative border line at bottom */}
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-5">
           <div className="w-full border-t border-gray-400"></div>
         </div>
       </div>

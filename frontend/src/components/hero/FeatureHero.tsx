@@ -8,11 +8,11 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
   const bannerImage = image || "/hero.png";
   
   return (
-    <section className="bg-white text-black py-4">
+    <section className="bg-white text-black py-0">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Text content */}
-        <div className="max-w-3xl mx-auto mb-6">
-          <h2 className="text-2xl md:text-4xl font-semibold mb-3 text-gray-900">
+        <div className="max-w-3xl mx-auto mb-2.5">
+          <h2 className="text-2xl md:text-4xl font-semibold mb-2.5 text-gray-900">
             An alchemy of gold and perfume
           </h2>
           <p className="text-sm md:text-base text-gray-600">

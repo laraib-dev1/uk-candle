@@ -36,12 +36,26 @@ const handleShopMore = () => {
           <h1 className="text-4xl md:text-5xl font-serif leading-tight ">
             {title || "Welcome to Our Store"}
           </h1>
-          <p className="mt-4 text-gray-200 max-w-xl">
+          <p className="mt-2.5 text-gray-200 max-w-xl">
             {subtitle || "Explore our latest collections and exclusive deals."}
           </p>
 
-          <div className="mt-8">
-            <Button onClick={handleShopMore}>Shop More</Button>
+          <div className="mt-2.5">
+            <Button 
+              onClick={handleShopMore}
+              style={{ 
+                backgroundColor: "var(--theme-primary)",
+                borderColor: "var(--theme-primary)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                e.currentTarget.style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                e.currentTarget.style.opacity = "1";
+              }}
+            >Shop More</Button>
           </div>
         </div>
       </section>
@@ -51,26 +65,40 @@ const handleShopMore = () => {
   // LEFT / RIGHT IMAGE VERSION
   return (
     <section className="relative bg-gray-50">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-16">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
 
         {/* Text */}
-        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"}`}>
+        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
           <h1 className="text-4xl md:text-5xl font-serif leading-tight tracking-tight">
             {title || "Welcome to Our Store"}
           </h1>
 
-          <p className="mt-4 text-gray-600 max-w-xl">
+          <p className="mt-2.5 text-gray-600 max-w-xl">
             {subtitle || "Explore our latest collections and exclusive deals."}
           </p>
 
-          <div className="mt-8">
-            <Button onClick={handleShopMore}>Shop More</Button>
+          <div className="mt-2.5">
+            <Button 
+              onClick={handleShopMore}
+              style={{ 
+                backgroundColor: "var(--theme-primary)",
+                borderColor: "var(--theme-primary)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                e.currentTarget.style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                e.currentTarget.style.opacity = "1";
+              }}
+            >Shop More</Button>
           </div>
         </div>
 
         {/* Side Image */}
         <div
-          className={`w-full h-80 md:h-[420px] rounded bg-cover bg-center ${
+          className={`w-full h-80 md:h-[500px] bg-cover bg-center ${
             imagePosition === "left" ? "order-1 md:order-2" : "order-2"
           }`}
           style={{ backgroundImage: `url(${heroImage})` }}

@@ -112,20 +112,56 @@ export const updateCompany = async (req, res) => {
     }
 
     // Handle file uploads
-    if (req.files) {
+    // With upload.any(), req.files is an array, not an object
+    if (req.files && Array.isArray(req.files)) {
+      // Create a map of fieldname -> file for easier access
+      const filesMap = {};
+      req.files.forEach(file => {
+        if (!filesMap[file.fieldname]) {
+          filesMap[file.fieldname] = [];
+        }
+        filesMap[file.fieldname].push(file);
+      });
+
       // Upload logo if provided
-      if (req.files.logo && req.files.logo[0]) {
-        const logoUrl = await uploadImage(req.files.logo[0], "company");
+      if (filesMap.logo && filesMap.logo[0]) {
+        const logoUrl = await uploadImage(filesMap.logo[0], "company");
         if (logoUrl) {
           updateData.logo = logoUrl;
         }
       }
 
       // Upload favicon if provided
-      if (req.files.favicon && req.files.favicon[0]) {
-        const faviconUrl = await uploadImage(req.files.favicon[0], "company");
+      if (filesMap.favicon && filesMap.favicon[0]) {
+        const faviconUrl = await uploadImage(filesMap.favicon[0], "company");
         if (faviconUrl) {
           updateData.favicon = faviconUrl;
+        }
+      }
+
+      // Handle social post images
+      if (updateData.socialPosts && Array.isArray(updateData.socialPosts)) {
+        // Get file indices if provided
+        let fileIndices = [];
+        if (req.body.socialPostFileIndices) {
+          try {
+            fileIndices = typeof req.body.socialPostFileIndices === 'string'
+              ? JSON.parse(req.body.socialPostFileIndices)
+              : req.body.socialPostFileIndices;
+          } catch (e) {
+            console.error("Error parsing socialPostFileIndices:", e);
+          }
+        }
+
+        // Upload social post images
+        for (const index of fileIndices) {
+          const fileKey = `socialPost_${index}`;
+          if (filesMap[fileKey] && filesMap[fileKey][0]) {
+            const imageUrl = await uploadImage(filesMap[fileKey][0], "company/social-posts");
+            if (imageUrl && updateData.socialPosts[index]) {
+              updateData.socialPosts[index].image = imageUrl;
+            }
+          }
         }
       }
     }

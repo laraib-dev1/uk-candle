@@ -13,9 +13,11 @@ type Props = {
   image?: string;
   offer?: string;
   isInWishlist?: boolean;
+  onRemove?: () => void; // Callback when item is removed from wishlist
+  showHeartAlways?: boolean; // Show heart icon always (for wishlist page)
 };
 
-export default function ProductCard({ id, name, price, image, offer, isInWishlist: initialIsInWishlist }: Props) {
+export default function ProductCard({ id, name, price, image, offer, isInWishlist: initialIsInWishlist, onRemove, showHeartAlways = false }: Props) {
   const { user } = useAuth();
   const { success, error } = useToast();
   const [isInWishlist, setIsInWishlist] = useState(initialIsInWishlist || false);
@@ -70,6 +72,10 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
         await removeFromWishlist(String(id));
         setIsInWishlist(false);
         success("Removed from wishlist");
+        // Call onRemove callback if provided (for wishlist page)
+        if (onRemove) {
+          onRemove();
+        }
       } else {
         await addToWishlist(String(id));
         setIsInWishlist(true);
@@ -82,12 +88,8 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
     }
   };
 
-  return (
-    <Link to={id ? `/product/${id}` : '#'}
-      className="block h-full w-full"
-      style={{ cursor: "pointer" }}
-    >
-      <article className="flex flex-col bg-slate-100 text-black rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 h-full relative group">
+  const CardContent = (
+    <article className="flex flex-col bg-slate-100 text-black rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 h-full relative group">
         {/* Image Container - Takes upper 2/3 of card */}
         <div className="relative w-full flex-[2] min-h-[200px]">
           <div className="relative w-full h-full bg-gray-200 overflow-hidden rounded-t-lg group">
@@ -96,12 +98,14 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
               alt={name}
               className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
             />
-            {/* Wishlist Button - Top Right Corner - Show on hover */}
+            {/* Wishlist Button - Top Right Corner - Show on hover or always if showHeartAlways */}
             {user && (
               <button
                 onClick={handleWishlistToggle}
                 disabled={wishlistLoading}
-                className={`absolute top-3 right-3 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 z-10 ${
+                className={`absolute top-3 right-3 transition-all duration-300 ${
+                  showHeartAlways ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                } transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 z-10 ${
                   isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
                 } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
                 title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
@@ -133,35 +137,43 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
         {/* Content Section - Takes lower 1/3 of card */}
         <div className="px-4 py-2 flex flex-col bg-white rounded-b-lg relative">
           {/* Item Name */}
-          <h3 className="text-sm font-medium text-gray-800 mb-1 line-clamp-2">{name}</h3>
+          <h3 className="text-base font-medium text-gray-800 mb-1 line-clamp-2">{name}</h3>
           
           {/* Pricing Information with Discount Badge */}
           <div className="flex items-baseline gap-2 justify-between">
             <div className="flex items-baseline gap-2">
               {discountPercent > 0 ? (
                 <>
-                  <span className="text-sm text-gray-600 line-through">
+                  <span className="text-base text-gray-600 line-through">
                     {Math.round(originalPrice)}
                   </span>
-                  <span className="text-sm font-semibold theme-text-primary">
+                  <span className="text-base font-semibold theme-text-primary">
                     Rs: {Math.round(discountedPrice)}
                   </span>
                 </>
               ) : (
-                <span className="text-sm font-semibold theme-text-primary">
+                <span className="text-base font-semibold theme-text-primary">
                   Rs: {Math.round(numericPrice)}
                 </span>
               )}
             </div>
             {/* Discount Badge - Bottom Right Corner aligned with price */}
             {offer && discountPercent > 0 && (
-              <span className="theme-bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
+              <span className="theme-bg-primary text-white text-sm font-semibold px-2 py-1 rounded">
                 {discountPercent}% OFF
               </span>
             )}
           </div>
         </div>
       </article>
+  );
+
+  return (
+    <Link to={id ? `/product/${id}` : '#'}
+      className="block h-full w-full"
+      style={{ cursor: "pointer" }}
+    >
+      {CardContent}
     </Link>
   );
 }

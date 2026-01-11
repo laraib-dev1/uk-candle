@@ -8,6 +8,53 @@ import { useToast } from "@/components/ui/toast";
 import FilterTabs from "@/components/ui/FilterTabs";
 import ImageCropperModal from "@/components/admin/product/ImageCropperModal";
 
+// Helper function to preserve alignment styles from RichTextEditor
+const processAlignmentStyles = (html: string): string => {
+  if (!html) return html;
+  
+  // Create a temporary DOM element to parse HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  
+  // Find all elements with Quill alignment classes
+  const elements = tempDiv.querySelectorAll('[class*="ql-align"]');
+  
+  elements.forEach((el) => {
+    const element = el as HTMLElement;
+    const classes = element.className;
+    
+    // Determine alignment from class
+    let alignment = '';
+    if (classes.includes('ql-align-center')) {
+      alignment = 'center';
+    } else if (classes.includes('ql-align-right')) {
+      alignment = 'right';
+    } else if (classes.includes('ql-align-justify')) {
+      alignment = 'justify';
+    } else if (classes.includes('ql-align-left')) {
+      alignment = 'left';
+    }
+    
+    if (alignment) {
+      // Get existing style attribute
+      const existingStyle = element.getAttribute('style') || '';
+      // Remove any existing text-align from style
+      const cleanedStyle = existingStyle.replace(/text-align\s*:\s*[^;]+;?/gi, '').trim();
+      // Add text-align to style
+      const newStyle = cleanedStyle 
+        ? `${cleanedStyle}; text-align: ${alignment};`
+        : `text-align: ${alignment};`;
+      element.setAttribute('style', newStyle);
+      // Remove Quill alignment classes
+      element.className = element.className
+        .replace(/\s*ql-align-(center|right|justify|left)\s*/g, ' ')
+        .trim();
+    }
+  });
+  
+  return tempDiv.innerHTML;
+};
+
 type TabType = "banners" | "privacy" | "terms" | "faq";
 
 export default function AssetsPage() {
@@ -211,10 +258,13 @@ export default function AssetsPage() {
     if (!privacyContent) return;
     setSavingContent(true);
     try {
+      // Process alignment styles one more time before saving
+      const description = processAlignmentStyles(privacyContent.description);
+      
       await updateContent("privacy", {
         title: privacyContent.title,
         subTitle: privacyContent.subTitle,
-        description: privacyContent.description,
+        description: description,
       });
       success("Privacy Policy updated successfully!");
       setIsEditingPrivacy(false);
@@ -241,10 +291,13 @@ export default function AssetsPage() {
     if (!termsContent) return;
     setSavingContent(true);
     try {
+      // Process alignment styles one more time before saving
+      const description = processAlignmentStyles(termsContent.description);
+      
       await updateContent("terms", {
         title: termsContent.title,
         subTitle: termsContent.subTitle,
-        description: termsContent.description,
+        description: description,
       });
       success("Terms & Conditions updated successfully!");
       setIsEditingTerms(false);
@@ -273,11 +326,17 @@ export default function AssetsPage() {
     if (!faqContent) return;
     setSavingContent(true);
     try {
+      // Process alignment styles in FAQ answers before saving
+      const faqs = (faqContent.faqs || []).map(faq => ({
+        ...faq,
+        answer: processAlignmentStyles(faq.answer)
+      }));
+      
       await updateContent("faqs", {
         title: faqContent.title,
         subTitle: faqContent.subTitle,
         description: faqContent.description,
-        faqs: faqContent.faqs || [],
+        faqs: faqs,
       });
       success("FAQ updated successfully!");
       setIsEditingFAQ(false);
@@ -545,7 +604,7 @@ export default function AssetsPage() {
                   </div>
                   <div
                     dangerouslySetInnerHTML={{ __html: privacyContent.description }}
-                    className="prose max-w-none"
+                    className="prose max-w-none content-area"
                   />
                   {privacyContent.lastUpdated && (
                     <div className="text-right absolute bottom-4 right-6">
@@ -583,10 +642,22 @@ export default function AssetsPage() {
                     <label className="block text-sm font-medium mb-2">Content</label>
                     <RichTextEditor
                       value={privacyContent.description}
-                      onChange={(value) =>
-                        setPrivacyContent({ ...privacyContent, description: value })
-                      }
+                      onChange={(value) => {
+                        // Process HTML to ensure alignment styles are preserved
+                        const processedValue = processAlignmentStyles(value);
+                        setPrivacyContent({ ...privacyContent, description: processedValue });
+                      }}
                       className="w-full bg-white text-gray-900"
+                      controls={[
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['h1', 'h2', 'h3'],
+                        ['unorderedList', 'orderedList'],
+                        ['link', 'image', 'video'],
+                        ['alignLeft', 'alignCenter', 'alignRight', 'justify'],
+                        ['blockquote', 'code'],
+                        ['sup', 'sub'],
+                        ['clean'],
+                      ]}
                     />
                   </div>
                   
@@ -642,7 +713,7 @@ export default function AssetsPage() {
                   </div>
                   <div
                     dangerouslySetInnerHTML={{ __html: termsContent.description }}
-                    className="prose max-w-none"
+                    className="prose max-w-none content-area"
                   />
                   {termsContent.lastUpdated && (
                     <div className="text-right absolute bottom-4 right-6">
@@ -680,10 +751,22 @@ export default function AssetsPage() {
                     <label className="block text-sm font-medium mb-2">Content</label>
                     <RichTextEditor
                       value={termsContent.description}
-                      onChange={(value) =>
-                        setTermsContent({ ...termsContent, description: value })
-                      }
+                      onChange={(value) => {
+                        // Process HTML to ensure alignment styles are preserved
+                        const processedValue = processAlignmentStyles(value);
+                        setTermsContent({ ...termsContent, description: processedValue });
+                      }}
                       className="w-full bg-white text-gray-900"
+                      controls={[
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['h1', 'h2', 'h3'],
+                        ['unorderedList', 'orderedList'],
+                        ['link', 'image', 'video'],
+                        ['alignLeft', 'alignCenter', 'alignRight', 'justify'],
+                        ['blockquote', 'code'],
+                        ['sup', 'sub'],
+                        ['clean'],
+                      ]}
                     />
                   </div>
                   
@@ -815,10 +898,22 @@ export default function AssetsPage() {
                         <label className="block text-sm font-medium mb-2">Answer</label>
                         <RichTextEditor
                           value={newFAQ.answer}
-                          onChange={(value) =>
-                            setNewFAQ({ ...newFAQ, answer: value })
-                          }
+                          onChange={(value) => {
+                            // Process HTML to ensure alignment styles are preserved
+                            const processedValue = processAlignmentStyles(value);
+                            setNewFAQ({ ...newFAQ, answer: processedValue });
+                          }}
                           className="w-full bg-white text-gray-900"
+                          controls={[
+                            ['bold', 'italic', 'underline', 'strike'],
+                            ['h1', 'h2', 'h3'],
+                            ['unorderedList', 'orderedList'],
+                            ['link', 'image', 'video'],
+                            ['alignLeft', 'alignCenter', 'alignRight', 'justify'],
+                            ['blockquote', 'code'],
+                            ['sup', 'sub'],
+                            ['clean'],
+                          ]}
                         />
                       </div>
                       

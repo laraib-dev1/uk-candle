@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
@@ -50,6 +50,50 @@ const feedbacks = [
 
 const ClientFeedback: React.FC = () => {
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Calculate which card is currently centered/visible
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const updateActiveIndex = () => {
+      const cards = carousel.querySelectorAll<HTMLDivElement>("[data-card]");
+      if (cards.length === 0) return;
+
+      const carouselRect = carousel.getBoundingClientRect();
+      const carouselCenter = carouselRect.left + carouselRect.width / 2;
+
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const distance = Math.abs(cardCenter - carouselCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveIndex(closestIndex);
+    };
+
+    // Initial update
+    updateActiveIndex();
+
+    // Update on scroll
+    carousel.addEventListener("scroll", updateActiveIndex);
+    // Update on resize
+    window.addEventListener("resize", updateActiveIndex);
+
+    return () => {
+      carousel.removeEventListener("scroll", updateActiveIndex);
+      window.removeEventListener("resize", updateActiveIndex);
+    };
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     const carousel = carouselRef.current;
@@ -70,23 +114,31 @@ const ClientFeedback: React.FC = () => {
   };
 
   return (
-    <section className="relative overflow-hidden py-16 bg-gradient-to-r from-[#f9ede6] to-[#fef9f7]">
+    <section className="relative overflow-hidden py-0 bg-gradient-to-r from-[#f9ede6] to-[#fef9f7]">
       {/* Decorative background circles */}
       <div className="pointer-events-none absolute top-8 right-6 w-40 h-40 rounded-full bg-[#f4cdbf] opacity-30 blur-[1px]" />
       <div className="pointer-events-none absolute left-6 bottom-6 w-36 h-36 rounded-full bg-[#f4cdbf] opacity-20 blur-[1px]" />
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Heading */}
-        <h2 className="text-center text-3xl italic text-gray-700 font-serif mb-3">
+        <h2 className="text-center text-3xl italic text-gray-700 font-serif mb-4">
           Client Feedback
         </h2>
 
-        {/* Dots below heading */}
-        <div className="flex items-center justify-center gap-2 mb-10">
-          <span className="w-2 h-2 bg-orange-200 rounded-full" />
-          <span className="w-2 h-2 bg-orange-200 rounded-full" />
-          <span className="w-2 h-2 bg-orange-200 rounded-full" />
-          <span className="w-2 h-2 bg-orange-200 rounded-full" />
+        {/* Dots below heading - Active indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {feedbacks.map((_, index) => (
+            <span
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === activeIndex ? "w-8" : ""
+              }`}
+              style={{
+                backgroundColor: "var(--theme-primary, #8B5E3C)",
+                opacity: index === activeIndex ? "1" : "0.3"
+              }}
+            />
+          ))}
         </div>
 
         <div className="relative">
@@ -102,7 +154,7 @@ const ClientFeedback: React.FC = () => {
           {/* Carousel */}
           <div
             ref={carouselRef}
-            className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 py-2 no-scrollbar"
+            className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 py-4 no-scrollbar"
             // hide native scrollbar visually (add the .no-scrollbar rule to your CSS)
             style={{ WebkitOverflowScrolling: "touch" }}
           >
@@ -115,7 +167,10 @@ const ClientFeedback: React.FC = () => {
               >
                 {/* quote icon + title */}
                 <div className="mb-4">
-                  <span className="text-3xl text-orange-300 font-serif mr-2">“</span>
+                  <span 
+                    className="text-3xl font-serif mr-2"
+                    style={{ color: "var(--theme-primary)" }}
+                  >"</span>
                   <h3 className="text-lg font-semibold text-gray-800 inline-block align-middle">
                     {item.title}
                   </h3>
@@ -133,8 +188,8 @@ const ClientFeedback: React.FC = () => {
                   />
                   <div>
                     <p className="text-sm font-semibold text-gray-800">
-                      {item.name} <span className="text-orange-500 font-normal">/</span>{" "}
-                      <span className="text-xs text-orange-500 font-medium"> {item.role}</span>
+                      {item.name} <span className="font-normal" style={{ color: "var(--theme-primary)" }}>/</span>{" "}
+                      <span className="text-xs font-medium" style={{ color: "var(--theme-primary)" }}> {item.role}</span>
                     </p>
                   </div>
                 </div>

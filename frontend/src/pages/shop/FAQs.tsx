@@ -54,21 +54,66 @@ export default function FAQs() {
 
   return (
     <div className="min-h-screen bg-white">
+      <style>{`
+        /* Force text-align from inline styles - override any other rules */
+        .content-area p[style*="text-align"],
+        .content-area div[style*="text-align"],
+        .content-area h1[style*="text-align"],
+        .content-area h2[style*="text-align"],
+        .content-area h3[style*="text-align"],
+        .content-area h4[style*="text-align"],
+        .content-area h5[style*="text-align"],
+        .content-area h6[style*="text-align"],
+        .content-area span[style*="text-align"],
+        .content-area [style*="text-align"] {
+          text-align: inherit !important;
+        }
+        .content-area [style*="text-align: center"],
+        .content-area [style*="text-align:center"],
+        .content-area [style*="text-align: center;"],
+        .content-area [style*="text-align:center;"] {
+          text-align: center !important;
+        }
+        .content-area [style*="text-align: right"],
+        .content-area [style*="text-align:right"],
+        .content-area [style*="text-align: right;"],
+        .content-area [style*="text-align:right;"] {
+          text-align: right !important;
+        }
+        .content-area [style*="text-align: justify"],
+        .content-area [style*="text-align:justify"],
+        .content-area [style*="text-align: justify;"],
+        .content-area [style*="text-align:justify;"] {
+          text-align: justify !important;
+        }
+        .content-area [style*="text-align: left"],
+        .content-area [style*="text-align:left"],
+        .content-area [style*="text-align: left;"],
+        .content-area [style*="text-align:left;"] {
+          text-align: left !important;
+        }
+      `}</style>
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
-          Frequently Asked Questions
-        </h1>
-        
-        {/* Subtitle */}
-        <p className="text-lg text-gray-600 mb-6 text-center">
-          Find answers to common questions
-        </p>
+      {/* Title Section - Full width container */}
+      <div className="w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-0">
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+            Frequently Asked Questions
+          </h1>
+          
+          {/* Subtitle */}
+          <p className="text-lg text-gray-600 mb-0 text-center">
+            Find answers to common questions
+          </p>
+        </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gray-300 mb-8"></div>
+        {/* Divider - Full Width, no gap */}
+        <div className="w-full h-px bg-gray-300"></div>
+      </div>
 
+      {/* Content Section - Inner area like landing page */}
+      <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
         {/* FAQs List */}
         <div className="space-y-3">
           {content.faqs && content.faqs.length > 0 ? (
@@ -96,8 +141,7 @@ export default function FAQs() {
                 {expandedIndex === index && (
                   <div className="px-4 pb-4 pt-0">
                     <div
-                      className="prose prose-sm max-w-none text-gray-700 text-sm"
-                      style={{ textAlign: 'inherit' }}
+                      className="prose prose-sm max-w-none text-gray-700 text-sm content-area"
                       dangerouslySetInnerHTML={{ __html: faq.answer || "<p>No answer available.</p>" }}
                     />
                   </div>
