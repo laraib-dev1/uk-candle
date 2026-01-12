@@ -92,7 +92,15 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none flex items-center justify-between bg-white"
+        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none flex items-center justify-between bg-white"
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "var(--theme-primary)";
+          e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "";
+          e.currentTarget.style.boxShadow = "";
+        }}
       >
         <div className="flex items-center gap-2">
           {SelectedIcon ? (
@@ -127,9 +135,13 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
                     }}
                     className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center gap-1 ${
                       value === iconName
-                        ? "border-[#A8734B] bg-[#FDF8F4]"
+                        ? "border-gray-200"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
+                    style={value === iconName ? {
+                      borderColor: "var(--theme-primary)",
+                      backgroundColor: "var(--theme-primary-light, rgba(168, 115, 75, 0.1))",
+                    } : {}}
                   >
                     <IconComponent size={20} className="text-gray-700" />
                     <span className="text-xs text-gray-600 truncate w-full text-center">

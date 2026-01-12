@@ -216,7 +216,16 @@ useEffect(() => {
           placeholder="Search"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full md:w-64 border-[#C4A484] text-gray-900"
+          className="w-full md:w-64 text-gray-900"
+          style={{ borderColor: "var(--theme-primary)" }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+            e.currentTarget.style.boxShadow = "";
+          }}
         />
       </div>
     </div>

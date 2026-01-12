@@ -26,9 +26,30 @@ export default function Input({
       <input
         {...(register as any)} // cast to any here to avoid typing conflicts when spreading
         {...rest}
-        className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-1 ${
+        className={`w-full rounded-md border px-3 py-2 focus:outline-none ${
           error ? "border-red-500" : "border-gray-300"
         } ${className}`}
+        style={{
+          ...(rest.style as any),
+          ...(error ? {} : {
+            '--focus-ring': 'var(--theme-primary)',
+            '--focus-border': 'var(--theme-primary)',
+          })
+        }}
+        onFocus={(e) => {
+          if (!error) {
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+          }
+          rest.onFocus?.(e as any);
+        }}
+        onBlur={(e) => {
+          if (!error) {
+            e.currentTarget.style.borderColor = "";
+            e.currentTarget.style.boxShadow = "";
+          }
+          rest.onBlur?.(e as any);
+        }}
       />
 
       {error && <p className="text-sm text-red-600 mt-1">{error}</p>}

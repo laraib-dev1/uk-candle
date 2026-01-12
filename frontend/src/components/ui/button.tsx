@@ -52,6 +52,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         {...props}
+        onFocus={(e) => {
+          if (!asChild && !isDisabled) {
+            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+          }
+          props.onFocus?.(e as any);
+        }}
+        onBlur={(e) => {
+          if (!asChild && !isDisabled) {
+            e.currentTarget.style.boxShadow = "";
+          }
+          props.onBlur?.(e as any);
+        }}
       >
         {loading ? (
           <>

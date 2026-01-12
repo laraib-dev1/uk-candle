@@ -678,7 +678,19 @@ const handleSubmit = () => {
 
         {!isView && (
           <DialogFooter>
-            <Button className="bg-[#C69C6D] hover:bg-[#b88b5f] text-white" onClick={handleSubmit}>
+            <Button 
+              className="text-white" 
+              style={{ 
+                backgroundColor: "var(--theme-primary)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+              }}
+              onClick={handleSubmit}
+            >
               {mode === "add" ? "Add" : "Update"}
             </Button>
           </DialogFooter>

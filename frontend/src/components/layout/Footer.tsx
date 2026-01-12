@@ -60,7 +60,15 @@ export default function Footer() {
           
           // If it's a base64 data URL, return as is (shouldn't happen after upload, but handle it)
           if (trimmed.startsWith('data:')) {
-            return trimmed;
+            return "";
+          }
+          
+          // Exclude Facebook CDN URLs (they give 403 errors due to hotlink protection)
+          const imageLower = trimmed.toLowerCase();
+          if (imageLower.includes('fbcdn.net') || 
+              imageLower.includes('scontent.') ||
+              (imageLower.includes('facebook.com') && imageLower.includes('scontent'))) {
+            return ""; // Return empty string to filter out
           }
           
           // If it's already a full URL (Cloudinary or http/https), return as is
@@ -86,11 +94,25 @@ export default function Footer() {
         
         const validSocialPosts = (company.socialPosts || [])
           .filter((post: any) => {
-            return post && 
-                   post.image && 
-                   typeof post.image === 'string' && 
-                   post.image.trim() !== "" &&
-                   !post.image.startsWith('data:'); // Exclude base64 (should be uploaded by now)
+            if (!post || !post.image || typeof post.image !== 'string' || post.image.trim() === "") {
+              return false;
+            }
+            
+            // Exclude base64 (should be uploaded by now)
+            if (post.image.startsWith('data:')) {
+              return false;
+            }
+            
+            // Exclude Facebook CDN URLs (they give 403 errors due to hotlink protection)
+            const imageLower = post.image.toLowerCase();
+            if (imageLower.includes('fbcdn.net') || 
+                imageLower.includes('scontent.') ||
+                (imageLower.includes('facebook.com') && imageLower.includes('scontent'))) {
+              console.warn("Filtering out Facebook CDN URL (403 error):", post.image);
+              return false;
+            }
+            
+            return true;
           })
           .map((post: any) => {
             const imageUrl = getImageUrl(post.image);
@@ -111,10 +133,25 @@ export default function Footer() {
           rawPosts: company.socialPosts
         }); // Debug log
         
+        // Double check - filter out any Facebook URLs that might have slipped through
+        const finalValidPosts = validSocialPosts.filter((post: any) => {
+          if (!post || !post.image) return false;
+          const imageLower = post.image.toLowerCase();
+          return !imageLower.includes('fbcdn.net') && 
+                 !imageLower.includes('scontent.') &&
+                 !(imageLower.includes('facebook.com') && imageLower.includes('scontent'));
+        });
+        
+        console.log("Final filtered social posts:", {
+          before: validSocialPosts.length,
+          after: finalValidPosts.length,
+          filtered: validSocialPosts.length - finalValidPosts.length
+        });
+        
         setCompanyData({
           company: company.company || "VERES",
           copyright: company.copyright || "",
-          socialPosts: validSocialPosts,
+          socialPosts: finalValidPosts,
         });
 
         // Use copyright from company first, then footer, then default
@@ -195,31 +232,40 @@ export default function Footer() {
           {companyData.socialPosts && companyData.socialPosts.length > 0 && (
             <div className="lg:ml-auto">
               <div className="grid grid-cols-4 gap-2">
-                {companyData.socialPosts.map((post, index) => (
-                  <a
-                    key={index}
-                    href={post.url || "#"}
-                    target={post.url && post.url !== "#" ? "_blank" : undefined}
-                    rel={post.url && post.url !== "#" ? "noopener noreferrer" : undefined}
-                    className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
-                  >
-                    <img
-                      src={post.image}
-                      alt={`Social post ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        console.error("Failed to load social post image:", post.image, "for post:", post);
-                        target.style.display = "none";
-                      }}
-                      onLoad={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        console.log("Successfully loaded social post image:", post.image);
-                        target.style.display = "block";
-                      }}
-                    />
-                  </a>
-                ))}
+                {companyData.socialPosts
+                  .filter((post: any) => {
+                    // Final filter - don't even render the component for Facebook URLs
+                    if (!post || !post.image) return false;
+                    const imageLower = post.image.toLowerCase();
+                    return !imageLower.includes('fbcdn.net') && 
+                           !imageLower.includes('scontent.') &&
+                           !(imageLower.includes('facebook.com') && imageLower.includes('scontent'));
+                  })
+                  .map((post, index) => (
+                    <a
+                      key={index}
+                      href={post.url || "#"}
+                      target={post.url && post.url !== "#" ? "_blank" : undefined}
+                      rel={post.url && post.url !== "#" ? "noopener noreferrer" : undefined}
+                      className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
+                    >
+                      <img
+                        src={post.image}
+                        alt={`Social post ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          console.error("Failed to load social post image:", post.image, "for post:", post);
+                          target.style.display = "none";
+                        }}
+                        onLoad={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          console.log("Successfully loaded social post image:", post.image);
+                          target.style.display = "block";
+                        }}
+                      />
+                    </a>
+                  ))}
               </div>
             </div>
           )}

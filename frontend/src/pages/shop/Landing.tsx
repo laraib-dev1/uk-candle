@@ -207,12 +207,21 @@ export default function () {
         </section>
         {/* Banner at bottom of services section - Full width */}
         <section className="w-full py-10">
-          <Hero
-          title="Discover your natural glow"
-          subtitle="Pure essentials for body and mind."
-          image="/hero.png"
-          imagePosition="left"
-          />
+          {bannersBySlot["hero-last"] ? (
+            <Hero
+              title="Discover your natural glow"
+              subtitle="Pure essentials for body and mind."
+              image={bannersBySlot["hero-last"].imageUrl}
+              imagePosition="left"
+            />
+          ) : (
+            <Hero
+              title="Discover your natural glow"
+              subtitle="Pure essentials for body and mind."
+              image="/hero.png"
+              imagePosition="left"
+            />
+          )}
         </section>
         <section className="w-full py-10">
           <FeatureSection />

@@ -74,12 +74,14 @@ export default function AssetsPage() {
     "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-last": { targetUrl: "", imageFile: null, imagePreview: null },
     "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
   });
   const [bannerOriginalData, setBannerOriginalData] = useState<Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }>>({
     "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+    "hero-last": { targetUrl: "", imageFile: null, imagePreview: null },
     "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
   });
   const [showImageCropper, setShowImageCropper] = useState(false);
@@ -127,6 +129,7 @@ export default function AssetsPage() {
         "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
         "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
         "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
+        "hero-last": { targetUrl: "", imageFile: null, imagePreview: null },
         "shop-main": { targetUrl: "", imageFile: null, imagePreview: null },
       };
       data.forEach((banner) => {
@@ -390,6 +393,7 @@ export default function AssetsPage() {
     { slot: "hero-main", label: "Hero Main" },
     { slot: "hero-secondary", label: "Hero Secondary" },
     { slot: "hero-tertiary", label: "Hero Tertiary" },
+    { slot: "hero-last", label: "Hero Last (Above Feedback)" },
     { slot: "shop-main", label: "Shop Main" },
   ];
 

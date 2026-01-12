@@ -310,7 +310,15 @@ export default function ProfilePagesPage() {
                             );
                             setPages(updatedPages);
                           }}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "var(--theme-primary)";
+                            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = "";
+                            e.currentTarget.style.boxShadow = "";
+                          }}
                         />
                       </div>
                       <div>
@@ -326,7 +334,15 @@ export default function ProfilePagesPage() {
                             );
                             setPages(updatedPages);
                           }}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                          onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "var(--theme-primary)";
+                            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.borderColor = "";
+                            e.currentTarget.style.boxShadow = "";
+                          }}
                         />
                       </div>
                     </div>

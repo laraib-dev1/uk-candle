@@ -26,8 +26,8 @@ const Hero2 = ({
 
   return (
     <section className="py-0 bg-gray-200">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        {fullWidthText ? (
+      {fullWidthText ? (
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col justify-center py-10 text-center">
             <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
@@ -53,61 +53,54 @@ const Hero2 = ({
               >Shop More</Button>
             </div>
           </div>
-        ) : (
-          <div
-            // className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-center ${
-            //   imagePosition === "left" ? "md:flex-row-reverse" : ""
-            // }`}
-            className={`grid grid-cols-1 md:grid-cols-[1fr_1.6fr] gap-6 items-center`}
-          >
-            {imagePosition === "left" && image && (
-              <div className="w-full h-72 md:h-[380px] overflow-hidden rounded-l-2xl md:rounded-l-2xl md:rounded-r-none">
-                <img
-                  src={heroImage}
-                  alt="hero"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            )}
-
-            <div className="flex flex-col justify-center">
-              <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
-                {title || "Welcome to Our Store"}
-              </h1>
-              <p className="mt-2.5 text-gray-600 text-sm md:text-base max-w-lg">
-                {subtitle || "Explore our latest collections and exclusive deals."}
-              </p>
-              <div className="mt-2.5">
-                <Button 
-                  onClick={handleShopMore}
-                  style={{ 
-                    backgroundColor: "var(--theme-primary)",
-                    borderColor: "var(--theme-primary)"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-                    e.currentTarget.style.opacity = "0.9";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-                    e.currentTarget.style.opacity = "1";
-                  }}
-                >Shop More</Button>
-              </div>
+        </div>
+      ) : (
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
+          {imagePosition === "left" && image && (
+            <div className="w-full h-80 md:h-[500px] overflow-hidden">
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${heroImage})` }}
+              ></div>
             </div>
+          )}
 
-            {imagePosition === "right" && image && (
-              <div className="w-full h-72 md:h-[380px] overflow-hidden rounded-r-2xl md:rounded-r-2xl md:rounded-l-none">
-                <img
-                  src={heroImage}
-                  alt="hero"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            )}
+          <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col justify-center`}>
+            <h1 className="text-2xl md:text-4xl font-serif leading-tight tracking-tight">
+              {title || "Welcome to Our Store"}
+            </h1>
+            <p className="mt-2.5 text-gray-600 text-sm md:text-base max-w-lg">
+              {subtitle || "Explore our latest collections and exclusive deals."}
+            </p>
+            <div className="mt-2.5">
+              <Button 
+                onClick={handleShopMore}
+                style={{ 
+                  backgroundColor: "var(--theme-primary)",
+                  borderColor: "var(--theme-primary)"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  e.currentTarget.style.opacity = "0.9";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  e.currentTarget.style.opacity = "1";
+                }}
+              >Shop More</Button>
+            </div>
           </div>
-        )}
-      </div>
+
+          {imagePosition === "right" && image && (
+            <div className={`w-full h-80 md:h-[500px] overflow-hidden ${imagePosition === "left" ? "order-1 md:order-2" : "order-2"}`}>
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${heroImage})` }}
+              ></div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 };

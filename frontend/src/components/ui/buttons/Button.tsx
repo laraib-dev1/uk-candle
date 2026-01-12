@@ -29,7 +29,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
         // Remove focus/active outlines if needed
         noFocusRing
           ? "focus:outline-none focus:ring-0 active:outline-none active:ring-0"
-          : "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black",
+          : "focus:outline-none focus:ring-2 focus:ring-offset-2",
 
         loading && "opacity-70 cursor-not-allowed",
         className

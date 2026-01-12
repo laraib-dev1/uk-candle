@@ -27,6 +27,18 @@ export default function TextArea({
         placeholder={placeholder}
         rows={rows}
         className={`w-full rounded-md border px-3 py-2 focus:outline-none ${error ? "border-red-500" : "border-gray-300"}`}
+        onFocus={(e) => {
+          if (!error) {
+            e.currentTarget.style.borderColor = "var(--theme-primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+          }
+        }}
+        onBlur={(e) => {
+          if (!error) {
+            e.currentTarget.style.borderColor = "";
+            e.currentTarget.style.boxShadow = "";
+          }
+        }}
       />
       {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>

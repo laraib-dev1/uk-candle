@@ -60,7 +60,15 @@ export default function ContactUs() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Enter here"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none text-gray-900"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   required
                 />
               </div>
@@ -74,7 +82,15 @@ export default function ContactUs() {
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   placeholder="Enter here"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none text-gray-900"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   required
                 />
               </div>
@@ -88,7 +104,15 @@ export default function ContactUs() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter here"
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] resize-none text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none resize-none text-gray-900"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
                   required
                 />
               </div>

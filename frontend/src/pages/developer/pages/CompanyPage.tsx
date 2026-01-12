@@ -99,14 +99,35 @@ export default function CompanyPage() {
   const loadCompanyData = async () => {
     try {
       const data = await getCompany();
-      // Ensure socialPosts have url field
-      if (data.socialPosts) {
-        data.socialPosts = data.socialPosts.map((post: any) => ({
-          ...post,
-          url: post.url || "",
-          image: post.image || "",
-        }));
+      console.log("Loaded company data:", data);
+      console.log("Social posts from API:", data.socialPosts);
+      
+      // Ensure socialPosts have proper structure
+      if (data.socialPosts && Array.isArray(data.socialPosts)) {
+        // Filter out completely empty posts (posts with no image, no url, and empty strings)
+        const validPosts = data.socialPosts
+          .filter((post: any) => {
+            if (!post) return false;
+            const hasImage = post.image && post.image.trim() !== "";
+            const hasUrl = post.url && post.url.trim() !== "";
+            return hasImage || hasUrl;
+          })
+          .map((post: any, index: number) => ({
+            ...post,
+            url: post.url || "",
+            image: post.image || "",
+            order: post.order !== undefined ? post.order : index,
+          }));
+        
+        // If no valid posts, start with empty array (not INITIAL_SOCIAL_POSTS)
+        data.socialPosts = validPosts;
+        console.log("Processed social posts (filtered empty):", data.socialPosts);
+        console.log("Original count:", data.socialPosts.length, "Filtered count:", validPosts.length);
+      } else {
+        // If no socialPosts in data, start with empty array
+        data.socialPosts = [];
       }
+      
       setCompanyData(data);
       setOriginalData(data);
       // Initialize refs array to match the number of social posts
@@ -254,12 +275,17 @@ export default function CompanyPage() {
   };
 
   const removeSocialPost = (index: number) => {
+    console.log("Removing social post at index:", index);
+    console.log("Current social posts:", companyData.socialPosts);
     const newPosts = companyData.socialPosts.filter((_, i) => i !== index);
+    console.log("After filtering:", newPosts);
     // Reorder remaining posts
     const reorderedPosts = newPosts.map((post, i) => ({ ...post, order: i }));
+    console.log("After reordering:", reorderedPosts);
     handleChange("socialPosts", reorderedPosts);
     // Update refs array
     socialPostInputRefs.current = socialPostInputRefs.current.filter((_, i) => i !== index);
+    console.log("Social post removed, new count:", reorderedPosts.length);
   };
 
   const handlePrimaryColorChange = (color: string) => {
@@ -328,49 +354,71 @@ export default function CompanyPage() {
       console.log("Preparing social posts for upload:", companyData.socialPosts);
       console.log("Stored social post files:", Array.from(socialPostFiles.entries()));
       
-      companyData.socialPosts.forEach((post: any, index: number) => {
+      // IMPORTANT: Only save posts that have content (image or url or file)
+      // Empty posts will NOT be saved to database
+      const postsToSave = companyData.socialPosts.filter((post: any, index: number) => {
+        if (!post) return false;
+        const hasImage = post.image && post.image.trim() !== "";
+        const hasUrl = post.url && post.url.trim() !== "";
+        const hasFile = socialPostFiles.has(index);
+        const shouldSave = hasImage || hasUrl || hasFile;
+        if (!shouldSave) {
+          console.log(`Post ${index}: Skipping empty post (no image, no url, no file)`);
+        }
+        return shouldSave;
+      });
+      
+      console.log("Posts to save (filtered empty):", {
+        total: companyData.socialPosts.length,
+        toSave: postsToSave.length,
+        filtered: companyData.socialPosts.length - postsToSave.length
+      });
+      
+      // Process only posts that have content
+      postsToSave.forEach((post: any, newIndex: number) => {
+        const originalIndex = companyData.socialPosts.indexOf(post);
+        
         // Check if we have a stored file for this post
-        const storedFile = socialPostFiles.get(index);
+        const storedFile = socialPostFiles.get(originalIndex);
         if (storedFile) {
-          console.log(`Post ${index}: Using stored file`);
-          socialPostFilesToUpload.set(index, storedFile);
-          // Store post data without base64 image (file will be uploaded separately)
+          console.log(`Post ${newIndex} (original ${originalIndex}): Using stored file`);
+          socialPostFilesToUpload.set(newIndex, storedFile);
           socialPostsData.push({
             url: post.url || "",
-            order: post.order || index,
+            order: newIndex,
             image: "" // Will be set by backend after upload
           });
         } else if (post.image && post.image.startsWith('data:')) {
-          console.log(`Post ${index}: Converting base64 to file`);
-          // Convert base64 to file
-          const file = base64ToFile(post.image, `social-post-${index}.png`);
+          console.log(`Post ${newIndex} (original ${originalIndex}): Converting base64 to file`);
+          const file = base64ToFile(post.image, `social-post-${newIndex}.png`);
           if (file) {
-            console.log(`Post ${index}: Base64 converted to file successfully`);
-            socialPostFilesToUpload.set(index, file);
+            console.log(`Post ${newIndex}: Base64 converted to file successfully`);
+            socialPostFilesToUpload.set(newIndex, file);
             socialPostsData.push({
               url: post.url || "",
-              order: post.order || index,
+              order: newIndex,
               image: "" // Will be set by backend after upload
             });
           } else {
-            console.warn(`Post ${index}: Base64 conversion failed, keeping original`);
-            // Keep existing post data if conversion fails
+            console.warn(`Post ${newIndex}: Base64 conversion failed, keeping original`);
             socialPostsData.push({
               url: post.url || "",
-              order: post.order || index,
+              order: newIndex,
               image: post.image
             });
           }
         } else {
-          console.log(`Post ${index}: Already a URL or empty, keeping as is:`, post.image);
-          // Already a URL or empty, keep as is
+          console.log(`Post ${newIndex} (original ${originalIndex}): Already a URL, keeping as is:`, post.image);
+          // Save the URL (even if it's Facebook - backend will try to convert it)
           socialPostsData.push({
             url: post.url || "",
-            order: post.order || index,
+            order: newIndex,
             image: post.image || ""
           });
         }
       });
+      
+      console.log("Final social posts data to save (only non-empty):", socialPostsData);
       
       console.log("Social posts data to send:", socialPostsData);
       console.log("Social post files to upload:", Array.from(socialPostFilesToUpload.entries()).map(([idx, file]) => ({ index: idx, fileName: file.name, fileSize: file.size })));
@@ -391,8 +439,28 @@ export default function CompanyPage() {
 
       const updated = await updateCompany(formData);
       console.log("Company updated - Social Posts:", updated.socialPosts); // Debug log
-      setCompanyData(updated);
-      setOriginalData(updated);
+      
+      // Clear cache to ensure fresh data is loaded
+      removeCachedData(CACHE_KEYS.COMPANY);
+      
+      // Ensure we use the updated data from backend (which should have Cloudinary URLs)
+      // Backend processes URLs and converts them to Cloudinary, so use that data
+      if (updated && updated.socialPosts) {
+        console.log("Updated social posts from backend:", updated.socialPosts);
+        // Ensure socialPosts have proper structure
+        const processedSocialPosts = updated.socialPosts.map((post: any) => ({
+          ...post,
+          url: post.url || "",
+          image: post.image || "",
+          order: post.order || 0
+        }));
+        setCompanyData({ ...updated, socialPosts: processedSocialPosts });
+        setOriginalData({ ...updated, socialPosts: processedSocialPosts });
+      } else {
+        // Fallback - use what we sent if backend doesn't return updated data
+        setCompanyData({ ...companyData, socialPosts: socialPostsData });
+        setOriginalData({ ...companyData, socialPosts: socialPostsData });
+      }
       // Clear social post files after successful upload
       setSocialPostFiles(new Map());
       if (updated.brandTheme) {
@@ -536,8 +604,16 @@ export default function CompanyPage() {
                 type="text"
                 value={companyData.company}
                 onChange={(e) => handleChange("company", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Company name"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
             <div>
@@ -548,8 +624,16 @@ export default function CompanyPage() {
                 type="text"
                 value={companyData.slogan}
                 onChange={(e) => handleChange("slogan", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Slogan"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
             <div>
@@ -560,8 +644,16 @@ export default function CompanyPage() {
                 type="email"
                 value={companyData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Email"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
             <div>
@@ -572,8 +664,16 @@ export default function CompanyPage() {
                 type="tel"
                 value={companyData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Phone"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
             <div>
@@ -584,8 +684,16 @@ export default function CompanyPage() {
                 type="email"
                 value={companyData.supportEmail}
                 onChange={(e) => handleChange("supportEmail", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Support Email"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
             <div>
@@ -596,8 +704,16 @@ export default function CompanyPage() {
                 type="text"
                 value={companyData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Address"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
           </div>
@@ -611,8 +727,16 @@ export default function CompanyPage() {
               type="text"
               value={companyData.copyright}
               onChange={(e) => handleChange("copyright", e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
               placeholder="© 2026 Grace By Anu. All Rights Reserved."
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--theme-primary)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "";
+                e.currentTarget.style.boxShadow = "";
+              }}
             />
             <p className="text-xs text-gray-500 mt-1">
               This text will appear in the footer. If empty, default copyright will be shown.
@@ -636,8 +760,16 @@ export default function CompanyPage() {
                 type="url"
                 value={value}
                 onChange={(e) => handleChange(`socialLinks.${key}`, e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder={`${key} URL`}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
               />
             </div>
           ))}
@@ -670,7 +802,16 @@ export default function CompanyPage() {
               />
               <button
                 onClick={() => openPostEditor(index)}
-                className="w-full text-black aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center relative overflow-hidden"
+                className="w-full text-black aspect-square border-2 border-dashed border-gray-300 rounded-lg transition-colors flex items-center justify-center relative overflow-hidden"
+                style={{
+                  '--hover-border': 'var(--theme-primary)',
+                } as any}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                }}
               >
                 {post.image ? (
                   <>
@@ -725,8 +866,16 @@ export default function CompanyPage() {
                     type="url"
                     value={postUrl}
                     onChange={(e) => handlePostUrlChange(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                     placeholder="https://example.com/image.jpg or https://instagram.com/p/..."
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = "var(--theme-primary)";
+                      e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = "";
+                      e.currentTarget.style.boxShadow = "";
+                    }}
                   />
                   <p className="text-xs text-gray-500 mt-1">Enter image URL or post link</p>
                 </div>
@@ -752,7 +901,13 @@ export default function CompanyPage() {
                   </label>
                   <button
                     onClick={() => socialPostInputRefs.current[editingPostIndex]?.click()}
-                    className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#A8734B] transition-colors flex items-center justify-center gap-2 text-gray-700"
+                    className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg transition-colors flex items-center justify-center gap-2 text-gray-700"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "";
+                    }}
                   >
                     <Upload size={18} />
                     Choose File
@@ -820,7 +975,15 @@ export default function CompanyPage() {
                           handleChange(`brandTheme.${key}`, e.target.value);
                         }
                       }}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A8734B] focus:border-[#A8734B] outline-none text-sm font-mono"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none text-sm font-mono"
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = "var(--theme-primary)";
+                        e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = "";
+                        e.currentTarget.style.boxShadow = "";
+                      }}
                       placeholder="#000000"
                     />
                   </div>

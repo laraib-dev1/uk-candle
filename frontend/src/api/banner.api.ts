@@ -6,8 +6,9 @@ const BASE_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
 export type BannerSlot =
   | "hero-main" // big hero banner for Landing page
-  | "hero-secondary" // second banner on admin Assets page (optional use later)
-  | "hero-tertiary" // third banner on admin Assets page (optional use later)
+  | "hero-secondary" // second banner on Landing page
+  | "hero-tertiary" // third banner on Landing page
+  | "hero-last" // last banner on Landing page (above feedback section)
   | "shop-main"; // banner at the top of Shop page
 
 export interface Banner {

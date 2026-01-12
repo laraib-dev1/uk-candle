@@ -3,6 +3,8 @@ import connectDB from "../config/db.js";
 import cloudinary from "cloudinary";
 import fs from "fs";
 import path from "path";
+import https from "https";
+import http from "http";
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -45,6 +47,128 @@ const uploadImage = async (file, folder = "company") => {
   return "";
 };
 
+// Helper to download image from URL and upload to Cloudinary
+const downloadAndUploadImage = async (imageUrl, folder = "company/social-posts") => {
+  if (!imageUrl || typeof imageUrl !== 'string') return "";
+  
+  // If already a Cloudinary URL, return as is
+  if (imageUrl.includes('cloudinary.com') || imageUrl.includes('res.cloudinary.com')) {
+    return imageUrl;
+  }
+  
+  // If it's a data URL (base64), skip
+  if (imageUrl.startsWith('data:')) {
+    return "";
+  }
+  
+  try {
+    console.log(`Downloading image from URL: ${imageUrl}`);
+    
+    let imageBuffer;
+    
+    // Use fetch (Node 18+ has built-in fetch)
+    try {
+      // For Facebook URLs, use more realistic headers
+      const isFacebookUrl = imageUrl.includes('fbcdn.net') || imageUrl.includes('scontent.');
+      const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'image',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'cross-site'
+      };
+      
+      if (isFacebookUrl) {
+        headers['Referer'] = 'https://www.facebook.com/';
+        headers['Origin'] = 'https://www.facebook.com';
+      }
+      
+      const response = await fetch(imageUrl, {
+        headers: headers,
+        redirect: 'follow'
+      });
+      
+      if (!response.ok) {
+        console.error(`Failed to download image: ${response.status} ${response.statusText}`);
+        return "";
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      imageBuffer = Buffer.from(arrayBuffer);
+    } catch (fetchError) {
+      // Fallback to http/https for older Node versions or if fetch fails
+      console.log("Fetch failed, trying http/https:", fetchError.message);
+      imageBuffer = await new Promise((resolve) => {
+        try {
+          const urlObj = new URL(imageUrl);
+          const client = urlObj.protocol === 'https:' ? https : http;
+          
+          const isFacebookUrl = imageUrl.includes('fbcdn.net') || imageUrl.includes('scontent.');
+          const httpHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9'
+          };
+          
+          if (isFacebookUrl) {
+            httpHeaders['Referer'] = 'https://www.facebook.com/';
+            httpHeaders['Origin'] = 'https://www.facebook.com';
+          }
+          
+          client.get(imageUrl, {
+            headers: httpHeaders
+          }, (res) => {
+            if (res.statusCode !== 200) {
+              console.error(`Failed to download image: ${res.statusCode}`);
+              return resolve(null);
+            }
+            
+            const chunks = [];
+            res.on('data', (chunk) => chunks.push(chunk));
+            res.on('end', () => {
+              resolve(Buffer.concat(chunks));
+            });
+          }).on('error', (err) => {
+            console.error(`Error downloading image:`, err);
+            resolve(null);
+          });
+        } catch (urlError) {
+          console.error("Invalid URL:", urlError);
+          resolve(null);
+        }
+      });
+    }
+    
+    if (!imageBuffer || imageBuffer.length === 0) {
+      console.error("Downloaded image buffer is empty");
+      return "";
+    }
+    
+    // Upload to Cloudinary
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.v2.uploader.upload_stream(
+        { folder },
+        (err, result) => {
+          if (err) {
+            console.error("Error uploading to Cloudinary:", err);
+            return reject(err);
+          }
+          console.log(`Successfully uploaded image to Cloudinary: ${result.secure_url}`);
+          resolve(result.secure_url);
+        }
+      );
+      stream.end(imageBuffer);
+    });
+    
+  } catch (error) {
+    console.error("Error in downloadAndUploadImage:", error);
+    return "";
+  }
+};
+
 // GET company data (or create default if none exists)
 export const getCompany = async (req, res) => {
   try {
@@ -57,8 +181,55 @@ export const getCompany = async (req, res) => {
       company = await Company.create({});
     }
     
+    // Auto-migrate Facebook CDN URLs to Cloudinary URLs
+    if (company.socialPosts && Array.isArray(company.socialPosts) && company.socialPosts.length > 0) {
+      let needsUpdate = false;
+      const updatedSocialPosts = await Promise.all(
+        company.socialPosts.map(async (post) => {
+          if (!post || !post.image || typeof post.image !== 'string') {
+            return post;
+          }
+          
+          // Check if it's a Facebook CDN URL
+          const isFacebookUrl = post.image.includes('fbcdn.net') || post.image.includes('scontent.');
+          const isCloudinaryUrl = post.image.includes('cloudinary.com') || post.image.includes('res.cloudinary.com');
+          
+          // Skip if already Cloudinary or not Facebook URL
+          if (isCloudinaryUrl || !isFacebookUrl) {
+            return post;
+          }
+          
+          // Download and upload to Cloudinary
+          console.log(`Auto-migrating Facebook URL to Cloudinary: ${post.image}`);
+          const cloudinaryUrl = await downloadAndUploadImage(post.image, "company/social-posts");
+          
+          if (cloudinaryUrl) {
+            needsUpdate = true;
+            return {
+              ...post,
+              image: cloudinaryUrl
+            };
+          }
+          
+          // If upload failed, keep original
+          return post;
+        })
+      );
+      
+      // Update database if any URLs were migrated
+      if (needsUpdate) {
+        console.log("Updating company with migrated Cloudinary URLs");
+        company = await Company.findByIdAndUpdate(
+          company._id,
+          { $set: { socialPosts: updatedSocialPosts } },
+          { new: true }
+        );
+      }
+    }
+    
     res.json({ success: true, data: company });
   } catch (error) {
+    console.error("Error in getCompany:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -159,7 +330,7 @@ export const updateCompany = async (req, res) => {
           }
         }
 
-        // Upload social post images
+        // Upload social post images from files
         console.log("File indices to process:", fileIndices);
         for (const index of fileIndices) {
           const fileKey = `socialPost_${index}`;
@@ -178,6 +349,47 @@ export const updateCompany = async (req, res) => {
             console.warn(`No file found for social post ${index}, fileKey: ${fileKey}`);
           }
         }
+        
+        // Process URLs in social posts (download and upload to Cloudinary)
+        console.log("Processing URLs in social posts...");
+        for (let index = 0; index < updateData.socialPosts.length; index++) {
+          const post = updateData.socialPosts[index];
+          // Skip if already processed by file upload or if no image URL
+          if (!post || !post.image || post.image.trim() === "") continue;
+          
+          // Skip if already a Cloudinary URL
+          if (post.image.includes('cloudinary.com') || post.image.includes('res.cloudinary.com')) {
+            console.log(`Post ${index}: Already a Cloudinary URL, skipping`);
+            continue;
+          }
+          
+          // Skip if it's a base64 data URL (should be handled by file upload)
+          if (post.image.startsWith('data:')) {
+            console.log(`Post ${index}: Base64 data URL, skipping (should be handled by file upload)`);
+            continue;
+          }
+          
+          // Skip if this index was in fileIndices (already processed)
+          if (fileIndices.includes(index)) {
+            console.log(`Post ${index}: Already processed via file upload, skipping URL download`);
+            continue;
+          }
+          
+          // Download and upload URL image
+          console.log(`Post ${index}: Downloading and uploading image from URL: ${post.image}`);
+          const cloudinaryUrl = await downloadAndUploadImage(post.image, "company/social-posts");
+          if (cloudinaryUrl) {
+            updateData.socialPosts[index].image = cloudinaryUrl;
+            console.log(`Post ${index}: Successfully uploaded to Cloudinary: ${cloudinaryUrl}`);
+          } else {
+            console.warn(`Post ${index}: Failed to download/upload image from URL, keeping original URL`);
+            // Keep the original URL if download/upload fails
+            // This way the URL is still saved in database
+            // Frontend will handle filtering if needed
+            updateData.socialPosts[index].image = post.image;
+          }
+        }
+        
         console.log("Final social posts after upload:", JSON.stringify(updateData.socialPosts, null, 2));
       }
     }
@@ -196,6 +408,9 @@ export const updateCompany = async (req, res) => {
       // Create new
       company = await Company.create(updateData);
     }
+    
+    // Ensure we return the updated company with all processed URLs
+    console.log("Returning company data with social posts:", company.socialPosts);
 
     res.json({ success: true, data: company });
   } catch (error) {

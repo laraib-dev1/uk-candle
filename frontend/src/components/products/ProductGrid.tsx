@@ -18,21 +18,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ items, limit }) => {
   const displayedItems = limit ? items.slice(0, limit) : items;
 
   return (
-    <section className="py-0 px-4">
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-        {displayedItems.map((product, index) => (
-          <ProductCard
-  key={product.id || index}
-  id={product.id}
-  name={product.name}
-  price={product.price}
-  image={product.image && product.image.trim() !== "" ? product.image : "/product.png"}
-  offer={product.discount?.toString()}
-/>
-
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      {displayedItems.map((product, index) => (
+        <ProductCard
+          key={product.id || index}
+          id={product.id}
+          name={product.name}
+          price={product.price}
+          image={product.image && product.image.trim() !== "" ? product.image : "/product.png"}
+          offer={product.discount?.toString()}
+        />
+      ))}
+    </div>
   );
 };
 

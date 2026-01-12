@@ -469,7 +469,7 @@ export default function FooterPage() {
                   onChange={(e) => setNewSectionTitle(e.target.value)}
                   placeholder="Enter group name (e.g., Quick Links, Support, etc.)"
                   required
-                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)]"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none"
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = "var(--theme-primary)";
                     e.currentTarget.style.boxShadow = "0 0 0 2px rgba(var(--theme-primary-rgb), 0.2)";
