@@ -169,15 +169,41 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     });
   };
 
-  // Scroll to section
+  // Scroll to section with slow, smooth animation
   const scrollToSection = (id: string) => {
     const element = contentRef?.current?.querySelector(`#${id}`);
     if (element) {
       const yOffset = -120; // Offset for fixed header/navbar
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-      // Update active ID after a short delay to ensure scroll completes
-      setTimeout(() => setActiveId(id), 100);
+      const targetY = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const startY = window.pageYOffset;
+      const distance = targetY - startY;
+      const duration = 1000; // 1 second for smooth, slow scroll
+      let startTime: number | null = null;
+
+      // Easing function for smooth acceleration/deceleration
+      const easeInOutCubic = (t: number): number => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      };
+
+      const animateScroll = (currentTime: number) => {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        
+        const ease = easeInOutCubic(progress);
+        const currentY = startY + distance * ease;
+        
+        window.scrollTo(0, Math.max(0, currentY));
+
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        } else {
+          // Update active ID after scroll completes
+          setActiveId(id);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
     }
   };
 
