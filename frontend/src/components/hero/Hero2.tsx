@@ -92,7 +92,7 @@ const Hero2 = ({
           </div>
 
           {imagePosition === "right" && image && (
-            <div className={`w-full h-80 md:h-[500px] overflow-hidden ${imagePosition === "left" ? "order-1 md:order-2" : "order-2"}`}>
+            <div className="w-full h-80 md:h-[500px] overflow-hidden order-2">
               <div
                 className="w-full h-full bg-cover bg-center"
                 style={{ backgroundImage: `url(${heroImage})` }}
