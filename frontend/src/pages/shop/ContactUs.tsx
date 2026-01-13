@@ -120,7 +120,7 @@ export default function ContactUs() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-6 py-3 text-white rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-6 h-12 text-white rounded-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
                   backgroundColor: "var(--theme-primary)",
                 }}

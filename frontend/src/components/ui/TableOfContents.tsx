@@ -177,7 +177,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
       const targetY = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       const startY = window.pageYOffset;
       const distance = targetY - startY;
-      const duration = 1000; // 1 second for smooth, slow scroll
+      const duration = 2000; // 2 seconds for smooth, slow scroll
       let startTime: number | null = null;
 
       // Easing function for smooth acceleration/deceleration

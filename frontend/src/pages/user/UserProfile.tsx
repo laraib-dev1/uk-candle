@@ -559,7 +559,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 theme-button rounded-lg"
+              className="flex items-center gap-2 px-4 h-12 theme-button rounded-lg"
             >
               <Edit size={16} /> Edit
             </button>
@@ -598,7 +598,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
             <div className="flex gap-2">
               <button
                 onClick={handleUpdateProfile}
-                className="px-4 py-2 theme-button rounded-lg"
+                className="px-4 h-12 theme-button rounded-lg"
               >
                 Save
               </button>
@@ -686,7 +686,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
           <button
             type="submit"
             disabled={isChangingPassword}
-            className="theme-button px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="theme-button px-4 h-12 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isChangingPassword ? "Changing Password..." : "Change Password"}
           </button>
@@ -815,7 +815,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
         <h2 className="text-2xl font-bold theme-heading">Saved Addresses</h2>
         <button
           onClick={() => setShowAddForm(true)}
-          className="theme-button flex items-center gap-2 px-4 py-2 rounded-lg"
+          className="theme-button flex items-center gap-2 px-4 h-12 rounded-lg"
         >
           <Plus size={16} /> Add Address
         </button>
@@ -1029,7 +1029,7 @@ function AddressForm({
       <div className="flex gap-2">
         <button
           onClick={onSave}
-          className="theme-button px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="theme-button px-4 h-12 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Saving..." : "Save"}
@@ -1152,7 +1152,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                   )}
                   <button
                     onClick={() => handleViewDetails(order._id)}
-                    className="px-4 py-2 theme-button rounded-lg text-sm"
+                    className="px-4 h-12 theme-button rounded-lg text-sm"
                   >
                     View Details
                   </button>
@@ -1402,7 +1402,7 @@ function QueriesTab() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-2 theme-button rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full px-4 h-12 theme-button rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? "Submitting..." : "Submit"}
             </button>
@@ -1528,7 +1528,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                     </div>
                     <button
                       onClick={() => handleWriteReview(item, order._id)}
-                      className="px-4 py-2 theme-button rounded-lg text-sm"
+                      className="px-4 h-12 theme-button rounded-lg text-sm"
                     >
                       Write Review
                     </button>
@@ -1607,7 +1607,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
               <button
                 onClick={handleSubmitReview}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 theme-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 h-12 theme-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? "Submitting..." : "Submit Review"}
               </button>

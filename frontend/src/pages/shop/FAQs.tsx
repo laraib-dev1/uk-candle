@@ -112,8 +112,8 @@ export default function FAQs() {
         <div className="w-full h-px bg-gray-300"></div>
       </div>
 
-      {/* Content Section - Inner area like landing page */}
-      <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+      {/* Content Section - Centered */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
         {/* FAQs List */}
         <div className="space-y-3">
           {content.faqs && content.faqs.length > 0 ? (

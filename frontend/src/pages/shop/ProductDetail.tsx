@@ -475,7 +475,7 @@ export default function ProductDetail() {
       <button
         onClick={handleWishlistToggle}
         disabled={wishlistLoading}
-        className="flex items-center justify-center w-10 h-10 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center justify-center w-12 h-12 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
           borderColor: "var(--theme-primary)",
           color: "var(--theme-primary)",
@@ -541,7 +541,7 @@ export default function ProductDetail() {
       <Navbar />
 
       <div className="bg-white text-black min-h-screen pt-20 pb-0">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}

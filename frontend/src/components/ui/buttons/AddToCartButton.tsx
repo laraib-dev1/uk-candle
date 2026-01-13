@@ -33,7 +33,7 @@ export default function AddToCartButton({ product }: Props) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`w-full md:w-auto px-8 text-white font-semibold py-3 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${
+      className={`w-full md:w-auto px-8 text-white font-semibold h-12 rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${
         loading ? "opacity-70 cursor-not-allowed" : ""
       }`}
       style={{
