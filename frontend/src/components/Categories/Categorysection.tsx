@@ -34,28 +34,31 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
   return (
     <section className="py-10 bg-white text-black">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-2xl font-semibold mb-2.5 tracking-wide">
-          ALL GIFT IDEAS
-        </h2>
+        {/* Heading and Handlers in one row */}
+        <div className="flex justify-between items-center mb-4 px-2">
+          <h2 className="text-2xl font-semibold tracking-wide">
+            ALL GIFT IDEAS
+          </h2>
 
-        {/* Handlers above categories - side by side */}
-        <div className="flex justify-end gap-2 mb-4 px-2">
-          <button
-            onClick={scrollLeft}
-            className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
-            aria-label="Scroll left"
-            style={{ cursor: "pointer" }}
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-700" />
-          </button>
-          <button
-            onClick={scrollRight}
-            className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
-            aria-label="Scroll right"
-            style={{ cursor: "pointer" }}
-          >
-            <ChevronRight className="w-6 h-6 text-gray-700" />
-          </button>
+          {/* Handlers on the right */}
+          <div className="flex gap-2">
+            <button
+              onClick={scrollLeft}
+              className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              aria-label="Scroll left"
+              style={{ cursor: "pointer" }}
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <button
+              onClick={scrollRight}
+              className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              aria-label="Scroll right"
+              style={{ cursor: "pointer" }}
+            >
+              <ChevronRight className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
         </div>
 
         {/* Categories Container - Centered and contained within margins */}
