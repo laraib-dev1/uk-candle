@@ -1,6 +1,5 @@
 import React from "react";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
-import { FaTiktok } from "react-icons/fa6";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 
 interface SocialShareProps {
   productName: string;
@@ -17,21 +16,20 @@ export default function SocialShare({
 }: SocialShareProps) {
   const encodedUrl = encodeURIComponent(productUrl);
   const encodedTitle = encodeURIComponent(productName);
+  const encodedDesc = encodeURIComponent(productDescription || "");
 
-  // Facebook share URL with OG image
+  // Facebook share URL - Facebook uses OG tags from the page, so just pass the URL
+  // The image will come from og:image meta tag
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
-  // Instagram share (opens Instagram app or web)
-  const instagramShare = `https://www.instagram.com/`;
-  
-  // TikTok share
-  const tiktokShare = `https://www.tiktok.com/`;
+  // WhatsApp share with text and URL
+  const whatsappShare = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
 
   const iconColor = "white";
   const iconSize = 20;
 
   const sharedClass =
-    "flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-200 hover:scale-110 hover:opacity-80";
+    "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 hover:scale-110";
 
   return (
     <div className="mt-4">
@@ -44,30 +42,33 @@ export default function SocialShare({
           rel="noopener noreferrer"
           className={sharedClass}
           style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark, #6B4A2C)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary, #8B5E3C)";
+          }}
+          title="Share on Facebook"
         >
           <FaFacebookF size={iconSize} color={iconColor} />
         </a>
 
-        {/* Instagram */}
+        {/* WhatsApp */}
         <a
-          href={instagramShare}
+          href={whatsappShare}
           target="_blank"
           rel="noopener noreferrer"
           className={sharedClass}
           style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-dark, #6B4A2C)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--theme-primary, #8B5E3C)";
+          }}
+          title="Share on WhatsApp"
         >
-          <FaInstagram size={iconSize} color={iconColor} />
-        </a>
-
-        {/* TikTok */}
-        <a
-          href={tiktokShare}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={sharedClass}
-          style={{ backgroundColor: "var(--theme-primary, #8B5E3C)" }}
-        >
-          <FaTiktok size={iconSize} color={iconColor} />
+          <FaWhatsapp size={iconSize} color={iconColor} />
         </a>
       </div>
     </div>
