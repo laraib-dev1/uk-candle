@@ -159,9 +159,9 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
         </div>
 
         <div className="flex justify-end mt-4 gap-2">
-          <button className="px-4 py-2 bg-gray-200 rounded text-black" onClick={onClose} disabled={loading}>Close</button>
+          <button className="px-4 h-12 bg-gray-200 rounded text-black" onClick={onClose} disabled={loading}>Close</button>
           <button 
-            className="px-4 py-2 text-white rounded theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" 
+            className="px-4 h-12 text-white rounded theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" 
             onClick={handleSave}
             disabled={loading}
           >

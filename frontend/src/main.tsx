@@ -39,6 +39,7 @@ if (import.meta.env.DEV) {
   
   console.error = (...args) => {
     const message = args[0]?.toString() || '';
+    const fullMessage = args.map(a => String(a)).join(' ');
     // Filter out known third-party library errors that are actually warnings
     if (
       message.includes('minWidth') ||
@@ -47,7 +48,16 @@ if (import.meta.env.DEV) {
       message.includes('non-boolean attribute') ||
       message.includes('unknown prop') ||
       message.includes('React does not recognize') ||
-      message.includes('Received `true` for a non-boolean')
+      message.includes('Received `true` for a non-boolean') ||
+      message.includes('401') ||
+      message.includes('Unauthorized') ||
+      fullMessage.includes('401') ||
+      fullMessage.includes('Unauthorized') ||
+      fullMessage.includes('/user/wishlist') ||
+      fullMessage.includes('/user/profile') ||
+      fullMessage.includes('/user/addresses') ||
+      fullMessage.includes('/user/orders') ||
+      message.includes('Failed to load') && (message.includes('wishlist') || message.includes('profile') || message.includes('addresses') || message.includes('orders'))
     ) {
       return; // Suppress these errors
     }

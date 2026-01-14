@@ -180,7 +180,7 @@ ref={(el) => {
           <button
             onClick={handleContinue}
             disabled={isLoading}
-            className="theme-button w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+            className="theme-button w-full h-12 rounded-lg font-medium flex items-center justify-center gap-2"
             style={{
               opacity: isLoading ? 0.6 : 1,
               cursor: isLoading ? "not-allowed" : "pointer",

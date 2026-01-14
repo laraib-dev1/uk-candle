@@ -5,7 +5,17 @@ type Props = {
 };
 
 export default function ProductImageGallery({ images }: Props) {
-  const [selected, setSelected] = useState(images[0] || "/product.png");
+  // Filter out empty, null, undefined, or placeholder images
+  const validImages = images.filter(img => 
+    img && 
+    img.trim() !== "" && 
+    img !== "/product.png" && 
+    !img.includes("placeholder") &&
+    !img.includes("wqwwwq")
+  );
+  
+  const displayImages = validImages.length > 0 ? validImages : ["/product.png"];
+  const [selected, setSelected] = useState(displayImages[0] || "/product.png");
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -23,7 +33,7 @@ export default function ProductImageGallery({ images }: Props) {
 
       {/* Thumbnails - 4 small square boxes below main image - Shorter but keep 3:4 ratio */}
       <div className="grid grid-cols-4 gap-2 w-full max-w-sm">
-        {images.slice(0, 4).map((img, i) => (
+        {displayImages.slice(0, 4).map((img, i) => (
           <div
             key={i}
             onClick={() => setSelected(img)}
@@ -39,15 +49,6 @@ export default function ProductImageGallery({ images }: Props) {
                 (e.target as HTMLImageElement).src = "/product.png";
               }}
             />
-          </div>
-        ))}
-        {/* Fill remaining slots if less than 4 images */}
-        {images.length < 4 && Array.from({ length: 4 - images.length }).map((_, i) => (
-          <div
-            key={`placeholder-${i}`}
-            className="w-full aspect-square bg-gray-100 rounded-lg border-2 border-gray-200 flex items-center justify-center"
-          >
-            <span className="text-gray-400 text-xs">No image</span>
           </div>
         ))}
       </div>

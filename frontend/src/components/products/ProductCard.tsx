@@ -26,7 +26,9 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
   // Check wishlist status on mount
   useEffect(() => {
     const checkWishlistStatus = async () => {
-      if (!user) {
+      // Check both user and token to prevent unnecessary API calls
+      const token = localStorage.getItem("token");
+      if (!user || !token) {
         setIsInWishlist(false);
         return;
       }
@@ -37,8 +39,8 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
           item._id === productId || item.product?._id === productId || item === productId || String(item) === productId
         );
         setIsInWishlist(isInList);
-      } catch (err) {
-        console.error("Failed to check wishlist status:", err);
+      } catch (err: any) {
+        // Silently handle all errors - getUserWishlist already handles 401s
         setIsInWishlist(false);
       }
     };
@@ -82,7 +84,10 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
         success("Added to wishlist");
       }
     } catch (err: any) {
-      error(err.message || "Failed to update wishlist");
+      // Silently handle 401 errors (user not logged in) - already shown error message above
+      if (err?.response?.status !== 401) {
+        error(err.message || "Failed to update wishlist");
+      }
     } finally {
       setWishlistLoading(false);
     }
@@ -98,39 +103,37 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
               alt={name}
               className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
             />
-            {/* Wishlist Button - Top Right Corner - Show on hover or always if showHeartAlways */}
-            {user && (
-              <button
-                onClick={handleWishlistToggle}
-                disabled={wishlistLoading}
-                className={`absolute top-3 right-3 transition-all duration-300 ${
-                  showHeartAlways ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                } transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 z-10 ${
-                  isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
-                } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
-                title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-                style={isInWishlist ? { color: 'var(--theme-primary)' } : {}}
-              >
-                {wishlistLoading ? (
-                  <div className="w-6 h-6 flex items-center justify-center bg-white/80 rounded-full p-1">
-                    <CircularLoader 
-                      size={16} 
-                      color={isInWishlist ? 'var(--theme-primary)' : 'var(--theme-primary)'}
-                    />
-                  </div>
-                ) : (
-                  <Heart 
-                    size={24} 
-                    className={isInWishlist ? 'fill-current' : ''}
-                    strokeWidth={2.5}
-                    style={{ 
-                      color: isInWishlist ? 'var(--theme-primary)' : 'white',
-                      fill: isInWishlist ? 'var(--theme-primary)' : 'transparent'
-                    }}
+            {/* Wishlist Button - Top Right Corner - Show on hover or always if showHeartAlways - Show for all users */}
+            <button
+              onClick={handleWishlistToggle}
+              disabled={wishlistLoading}
+              className={`absolute top-3 right-3 transition-all duration-300 ${
+                showHeartAlways ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              } transform translate-y-[-5px] group-hover:translate-y-0 hover:scale-110 z-10 ${
+                isInWishlist ? 'theme-text-primary' : 'text-white drop-shadow-lg'
+              } ${wishlistLoading ? 'cursor-not-allowed' : ''}`}
+              title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+              style={isInWishlist ? { color: 'var(--theme-primary)' } : {}}
+            >
+              {wishlistLoading ? (
+                <div className="w-6 h-6 flex items-center justify-center bg-white/80 rounded-full p-1">
+                  <CircularLoader 
+                    size={16} 
+                    color={isInWishlist ? 'var(--theme-primary)' : 'var(--theme-primary)'}
                   />
-                )}
-              </button>
-            )}
+                </div>
+              ) : (
+                <Heart 
+                  size={24} 
+                  className={isInWishlist ? 'fill-current' : ''}
+                  strokeWidth={2.5}
+                  style={{ 
+                    color: isInWishlist ? 'var(--theme-primary)' : 'white',
+                    fill: isInWishlist ? 'var(--theme-primary)' : 'transparent'
+                  }}
+                />
+              )}
+            </button>
           </div>
         </div>
 

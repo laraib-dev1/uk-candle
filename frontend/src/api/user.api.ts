@@ -95,19 +95,44 @@ export const cancelOrder = async (orderId: string): Promise<Order> => {
 
 // Wishlist APIs
 export const getUserWishlist = async () => {
-  const res = await API.get("/user/wishlist");
-  // Backend returns wishlist.map(item => item.productId), so data is array of products
-  const wishlist = res.data.data || res.data || [];
-  console.log("Wishlist API response:", wishlist);
-  return Array.isArray(wishlist) ? wishlist : [];
+  // Check token before making request to prevent unnecessary 401 errors
+  const token = localStorage.getItem("token");
+  if (!token) {
+    // Return empty array instead of throwing error to prevent network request
+    return [];
+  }
+  try {
+    const res = await API.get("/user/wishlist");
+    // Backend returns wishlist.map(item => item.productId), so data is array of products
+    const wishlist = res.data.data || res.data || [];
+    console.log("Wishlist API response:", wishlist);
+    return Array.isArray(wishlist) ? wishlist : [];
+  } catch (error: any) {
+    // Silently handle 401 errors - return empty array
+    if (error?.response?.status === 401 || error?.message === 'Unauthorized' || error?.name === 'SilentError') {
+      return [];
+    }
+    // Re-throw other errors
+    throw error;
+  }
 };
 
 export const addToWishlist = async (productId: string) => {
+  // Check token before making request to prevent unnecessary 401 errors
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
   const res = await API.post("/user/wishlist", { productId });
   return res.data.data;
 };
 
 export const removeFromWishlist = async (productId: string) => {
+  // Check token before making request to prevent unnecessary 401 errors
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
   const res = await API.delete(`/user/wishlist/${productId}`);
   return res.data;
 };

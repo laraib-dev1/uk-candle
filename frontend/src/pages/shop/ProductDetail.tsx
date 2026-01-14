@@ -56,6 +56,7 @@ export default function ProductDetail() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
   const [heroBannerImage, setHeroBannerImage] = useState<string | undefined>(undefined);
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | undefined>(undefined);
 
   /* =======================
      Fetch Single Product
@@ -78,7 +79,13 @@ export default function ProductDetail() {
           data.image4,
           data.image5,
           data.image6,
-        ].filter(Boolean);
+        ].filter(img => 
+          img && 
+          img.trim() !== "" && 
+          img !== "/product.png" && 
+          !img.includes("placeholder") &&
+          !img.includes("wqwwwq")
+        );
 
         const categoryName = data.categoryName || data.category?.name || data.category || null;
         setProduct({
@@ -145,7 +152,7 @@ export default function ProductDetail() {
   }, []);
 
   /* =======================
-     Fetch Company Name
+     Fetch Company Name and Logo
   ======================= */
   useEffect(() => {
     const fetchCompany = async () => {
@@ -153,6 +160,9 @@ export default function ProductDetail() {
         const data = await getCompany();
         if (data?.company) {
           setCompanyName(data.company);
+        }
+        if (data?.logo) {
+          setCompanyLogoUrl(data.logo);
         }
       } catch (err) {
         console.error("Failed to load company:", err);
@@ -425,7 +435,9 @@ export default function ProductDetail() {
     useEffect(() => {
       // Check if product is in wishlist
       const checkWishlistStatus = async () => {
-        if (!user) {
+        // Check both user and token to prevent unnecessary API calls
+        const token = localStorage.getItem("token");
+        if (!user || !token) {
           setIsInWishlist(false);
           return;
         }
@@ -435,8 +447,8 @@ export default function ProductDetail() {
             item._id === productId || item.product?._id === productId || item === productId
           );
           setIsInWishlist(isInList);
-        } catch (err) {
-          console.error("Failed to check wishlist status:", err);
+        } catch (err: any) {
+          // Silently handle all errors - getUserWishlist already handles 401s
           setIsInWishlist(false);
         }
       };
@@ -463,13 +475,16 @@ export default function ProductDetail() {
           success("Added to wishlist");
         }
       } catch (err: any) {
-        error(err.message || "Failed to update wishlist");
+        // Silently handle 401 errors (user not logged in) - already shown error message above
+        if (err?.response?.status !== 401) {
+          error(err.message || "Failed to update wishlist");
+        }
       } finally {
         setWishlistLoading(false);
       }
     };
 
-    if (!user) return null;
+    // Show button for all users - will prompt login if not authenticated
 
     return (
       <button
@@ -561,7 +576,7 @@ export default function ProductDetail() {
                 {product.categoryName || product.category?.name || (typeof product.category === 'string' ? product.category : 'Category')}
               </span>
 
-              <h1 className="text-2xl sm:text-3xl font-bold theme-heading">{product.name || "Product Name"}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>{product.name || "Product Name"}</h1>
 
               <div className="flex gap-3 items-center flex-wrap">
                 <span className="text-xl sm:text-2xl font-bold">
@@ -591,13 +606,13 @@ export default function ProductDetail() {
                 <WishlistButtonComponent productId={product._id} />
               </div>
 
-              {/* Social Share - Hidden/Commented */}
-              {/* <SocialShare
+              {/* Social Share */}
+              <SocialShare
                 productName={product.name}
                 productUrl={window.location.href}
-                productImage={heroBannerImage || product.images?.[0]}
+                productImage={companyLogoUrl || heroBannerImage || product.images?.[0]}
                 productDescription={product.description}
-              /> */}
+              />
             </div>
           </div>
 
@@ -653,7 +668,7 @@ export default function ProductDetail() {
                     >
                       {hasMetaFeatures && (
                         <div className="bg-transparent meta-features-container">
-                          <h3 className="text-2xl font-bold mb-6 theme-heading">Meta Features</h3>
+                          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>Meta Features</h3>
                           <div
                             className="max-w-none meta-info-content text-black"
                             dangerouslySetInnerHTML={{
@@ -665,7 +680,7 @@ export default function ProductDetail() {
 
                       {hasMetaInfo && (
                         <div className="bg-transparent meta-features-container">
-                          <h3 className="text-2xl font-bold mb-6 theme-heading">Meta Info</h3>
+                          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>Meta Info</h3>
                           <div
                             className="max-w-none meta-info-content text-black"
                             dangerouslySetInnerHTML={{
@@ -730,7 +745,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-2xl font-bold mb-6 theme-heading">
+          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
             Similar Products
           </h3>
 

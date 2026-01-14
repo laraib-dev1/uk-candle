@@ -81,12 +81,18 @@ export default function UserProfile() {
     try {
       setLoading(true);
       const [profileData, addressesData, ordersData, wishlistData, profilePagesData, baseTabsData] = await Promise.all([
-        getUserProfile().catch((err) => {
-          console.error("Failed to load profile:", err);
+        getUserProfile().catch((err: any) => {
+          // Silently handle 401 errors (user not logged in) - this is expected
+          if (err?.response?.status !== 401) {
+            console.error("Failed to load profile:", err);
+          }
           return null;
         }),
-        getUserAddresses().catch((err) => {
-          console.error("Failed to load addresses:", err);
+        getUserAddresses().catch((err: any) => {
+          // Silently handle 401 errors (user not logged in) - this is expected
+          if (err?.response?.status !== 401) {
+            console.error("Failed to load addresses:", err);
+          }
           // Fallback to localStorage if backend fails
           try {
             const savedAddresses = localStorage.getItem("savedAddresses");
@@ -99,12 +105,18 @@ export default function UserProfile() {
           }
           return [];
         }),
-        getUserOrders().catch((err) => {
-          console.error("Failed to load orders:", err);
+        getUserOrders().catch((err: any) => {
+          // Silently handle 401 errors (user not logged in) - this is expected
+          if (err?.response?.status !== 401) {
+            console.error("Failed to load orders:", err);
+          }
           return [];
         }),
-        getUserWishlist().catch((err) => {
-          console.error("Failed to load wishlist:", err);
+        getUserWishlist().catch((err: any) => {
+          // Silently handle 401 errors (user not logged in) - this is expected
+          if (err?.response?.status !== 401) {
+            console.error("Failed to load wishlist:", err);
+          }
           return [];
         }),
         getEnabledProfilePages().catch((err) => {
