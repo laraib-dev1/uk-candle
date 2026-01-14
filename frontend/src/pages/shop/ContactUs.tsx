@@ -41,10 +41,11 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-8">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="grid md:grid-cols-2 gap-8">
           {/* Left: Form */}
           <div>
             <h2 className="text-2xl font-bold mb-6 theme-heading">You have any query!</h2>
@@ -159,8 +160,9 @@ export default function ContactUs() {
               }}
             />
           </div>
+          </div>
         </div>
-      </main>
+      </div>
       <Footer />
     </div>
   );

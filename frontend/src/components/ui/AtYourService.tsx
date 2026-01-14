@@ -40,17 +40,17 @@ const AtYourService = () => {
           AT YOUR SERVICE
         </h2>
 
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 justify-items-center">
           {services.map((service, index) => (
             <div key={index} className="flex flex-col items-center space-y-2">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
                 <img
                   src={service.img}
                   alt={service.text}
-                  className="w-16 h-16 object-cover"
+                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover"
                 />
               </div>
-              <p className="text-[10px] text-gray-600 max-w-[100px] leading-tight text-center">
+              <p className="text-[9px] sm:text-[10px] text-gray-600 max-w-[90px] sm:max-w-[100px] leading-tight text-center">
                 {service.text}
               </p>
             </div>

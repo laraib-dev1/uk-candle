@@ -204,14 +204,28 @@ export default function ProductDetail() {
           });
         }
         
-        // Remove backgrounds and set text color to black in meta features container
+        // Remove backgrounds and set headings to theme primary color in meta features container
         if (metaFeaturesContainer) {
           const allElements = metaFeaturesContainer.querySelectorAll('*');
           allElements.forEach((el) => {
             (el as HTMLElement).style.backgroundColor = 'transparent';
             (el as HTMLElement).style.background = 'transparent';
             (el as HTMLElement).style.backgroundImage = 'none';
-            (el as HTMLElement).style.color = 'black';
+            // Set headings to theme primary color
+            const tagName = el.tagName?.toLowerCase();
+            if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6') {
+              (el as HTMLElement).style.color = 'var(--theme-primary)';
+            } else {
+              (el as HTMLElement).style.color = 'black';
+            }
+          });
+        }
+        
+        // Also set headings in meta-info-content to theme primary color
+        if (metaInfoDiv) {
+          const headings = metaInfoDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
+          headings.forEach((heading) => {
+            (heading as HTMLElement).style.color = 'var(--theme-primary)';
           });
         }
       }, 100);
@@ -555,8 +569,9 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="bg-white text-black min-h-screen pt-20 pb-0">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
+      <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
+        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
@@ -760,6 +775,7 @@ export default function ProductDetail() {
                 offer={p.discount ? `${p.discount}% OFF` : undefined}
               />
             ))}
+          </div>
           </div>
         </div>
         <Footer />
