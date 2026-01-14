@@ -12,10 +12,11 @@ export const getAdminTabs = async (req, res) => {
       { label: "Orders", path: "/admin/orders", icon: "ShoppingCart", order: 1, subInfo: "Manage customer orders" },
       { label: "Categories", path: "/admin/categories", icon: "FolderTree", order: 2, subInfo: "Manage categories" },
       { label: "Products", path: "/admin/products", icon: "Package", order: 3, subInfo: "Manage products" },
-      { label: "Assets Panel", path: "/admin/assets", icon: "ImageIcon", order: 4, subInfo: "Manage banners and assets" },
-      { label: "Queries", path: "/admin/queries", icon: "MessageSquare", order: 5, subInfo: "Manage customer queries" },
-      { label: "Reviews", path: "/admin/reviews", icon: "Star", order: 6, subInfo: "Manage product reviews" },
-      { label: "Settings", path: "/admin/settings", icon: "Settings", order: 7, subInfo: "System settings" },
+      { label: "Blogs", path: "/admin/blogs", icon: "FileText", order: 4, subInfo: "Manage blog posts" },
+      { label: "Assets Panel", path: "/admin/assets", icon: "ImageIcon", order: 5, subInfo: "Manage banners and assets" },
+      { label: "Queries", path: "/admin/queries", icon: "MessageSquare", order: 6, subInfo: "Manage customer queries" },
+      { label: "Reviews", path: "/admin/reviews", icon: "Star", order: 7, subInfo: "Manage product reviews" },
+      { label: "Settings", path: "/admin/settings", icon: "Settings", order: 8, subInfo: "System settings" },
     ];
 
     // Auto-create missing tabs
@@ -73,10 +74,11 @@ export const getEnabledAdminTabs = async (req, res) => {
       { label: "Orders", path: "/admin/orders", icon: "ShoppingCart", order: 1, subInfo: "Manage customer orders" },
       { label: "Categories", path: "/admin/categories", icon: "FolderTree", order: 2, subInfo: "Manage categories" },
       { label: "Products", path: "/admin/products", icon: "Package", order: 3, subInfo: "Manage products" },
-      { label: "Assets Panel", path: "/admin/assets", icon: "ImageIcon", order: 4, subInfo: "Manage banners and assets" },
-      { label: "Queries", path: "/admin/queries", icon: "MessageSquare", order: 5, subInfo: "Manage customer queries" },
-      { label: "Reviews", path: "/admin/reviews", icon: "Star", order: 6, subInfo: "Manage product reviews" },
-      { label: "Settings", path: "/admin/settings", icon: "Settings", order: 7, subInfo: "System settings" },
+      { label: "Blogs", path: "/admin/blogs", icon: "FileText", order: 4, subInfo: "Manage blog posts" },
+      { label: "Assets Panel", path: "/admin/assets", icon: "ImageIcon", order: 5, subInfo: "Manage banners and assets" },
+      { label: "Queries", path: "/admin/queries", icon: "MessageSquare", order: 6, subInfo: "Manage customer queries" },
+      { label: "Reviews", path: "/admin/reviews", icon: "Star", order: 7, subInfo: "Manage product reviews" },
+      { label: "Settings", path: "/admin/settings", icon: "Settings", order: 8, subInfo: "System settings" },
     ];
 
     // Auto-create missing tabs

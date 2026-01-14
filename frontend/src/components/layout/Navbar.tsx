@@ -242,8 +242,8 @@ let user = null;
               </SheetTrigger>
 
               <SheetContent
-                side="right"
-                className="fixed top-0 right-0 h-full w-64 bg-white text-black p-6 shadow-lg flex flex-col z-50"
+                side="left"
+                className="fixed top-0 left-0 h-full w-64 bg-white text-black p-6 shadow-lg flex flex-col z-50"
               >
                 <nav className="flex flex-col gap-4 mt-4">
                   <Link
@@ -262,40 +262,58 @@ let user = null;
                   </Link>
                 </nav>
 
-                {/* <Button className="mt-auto border border-gray-300 text-gray-700 bg-white dark:bg-gray-900 dark:text-white hover:bg-gray-100">
-                  Sign In
-                </Button> */}
-                {!user ? (
-  <Button
-    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-    onClick={async () => {
-      if (navLoading) return;
-      setNavLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setOpen(false);
-        navigate("/login");
-      } finally {
-        setNavLoading(false);
-      }
-    }}
-    loading={navLoading}
-  >
-    Sign In
-  </Button>
-) : (
-  <Button
-    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-    onClick={() => {
-      setOpen(false);
-      navigate("/profile");
-    }}
-  >
-    Profile
-  </Button>
-)}
+                {/* Profile and Logout buttons */}
+                <div className="mt-auto space-y-2">
+                  {!user ? (
+                    <Button
+                      className="w-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
+                      onClick={async () => {
+                        if (navLoading) return;
+                        setNavLoading(true);
+                        try {
+                          await new Promise(resolve => setTimeout(resolve, 200));
+                          setOpen(false);
+                          navigate("/login");
+                        } finally {
+                          setNavLoading(false);
+                        }
+                      }}
+                      loading={navLoading}
+                    >
+                      Sign In
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        className="w-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
+                        onClick={() => {
+                          setOpen(false);
+                          navigate("/profile");
+                        }}
+                      >
+                        Profile
+                      </Button>
+                      <Button
+                        className="w-full border border-red-300 text-red-600 bg-white hover:bg-red-50"
+                        onClick={() => {
+                          localStorage.removeItem("user");
+                          localStorage.removeItem("token");
+                          setOpen(false);
+                          navigate("/login");
+                        }}
+                      >
+                        <LogOut size={16} className="mr-2" /> Logout
+                      </Button>
+                    </>
+                  )}
+                </div>
 
-                
+                {/* Mini Footer */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 text-center">
+                    © {new Date().getFullYear()} Grace By Anu
+                  </p>
+                </div>
               </SheetContent>
             </Sheet>
           </div>

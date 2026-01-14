@@ -67,14 +67,14 @@ const total = subtotal - discount;
         <img src={item.image || "/product.png"} className="w-20 h-20 object-cover rounded-lg" />
         <div className="flex-1">
           <h3 className="font-semibold theme-heading">{item.name}</h3>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             {itemDiscount > 0 ? (
               <>
                 <span className="text-sm text-gray-500 line-through">${itemPrice.toFixed(2)}</span>
-                <span className="text-lg font-bold">${itemFinalPrice.toFixed(2)}</span>
+                <span className="text-base sm:text-lg font-bold break-words">${itemFinalPrice.toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-bold">${itemPrice.toFixed(2)}</span>
+              <span className="text-base sm:text-lg font-bold break-words">${itemPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
@@ -142,24 +142,24 @@ const rightContent = (
 
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
 
-      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
+          <h2 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>Purchase List</h2>
 
-        {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
+          <TwoColumnLayout left={leftContent} right={rightContent} />
+          <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
 
-        <TwoColumnLayout left={leftContent} right={rightContent} />
-        <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
-
-        {/* Shop Banner after Purchase List and Order Summary */}
-        {shopBanner && (
-          <div className="mt-30">
-            <Banner imageSrc={shopBanner.imageUrl} />
-          </div>
-        )}
-
+          {/* Shop Banner after Purchase List and Order Summary */}
+          {shopBanner && (
+            <div className="mt-8">
+              <Banner imageSrc={shopBanner.imageUrl} />
+            </div>
+          )}
+        </div>
       </div>
 
       <Footer />

@@ -148,8 +148,8 @@ export default function ContactUs() {
             </form>
           </div>
 
-          {/* Right: Logo Image */}
-          <div className="flex items-center justify-center min-h-[400px]">
+          {/* Right: Logo Image - Hidden on mobile */}
+          <div className="hidden md:flex items-center justify-center min-h-[400px]">
             <img 
               src="/logo.png" 
               alt="Logo" 

@@ -138,6 +138,7 @@ export default function AdminLayout() {
             { label: "Orders", icon: ShoppingCart, path: "/admin/orders" },
             { label: "Categories", icon: FolderTree, path: "/admin/categories" },
             { label: "Products", icon: Package, path: "/admin/products" },
+            { label: "Blogs", icon: FileText, path: "/admin/blogs" },
             { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
             { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
             { label: "Reviews", icon: Star, path: "/admin/reviews" },

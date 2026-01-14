@@ -57,7 +57,7 @@ const Hero2 = ({
       ) : (
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
           {imagePosition === "left" && image && (
-            <div className="w-full h-80 md:h-[500px] overflow-hidden">
+            <div className="w-full aspect-[4/3] md:aspect-[5/4] overflow-hidden">
               <div
                 className="w-full h-full bg-cover bg-center"
                 style={{ backgroundImage: `url(${heroImage})` }}
@@ -92,7 +92,7 @@ const Hero2 = ({
           </div>
 
           {imagePosition === "right" && image && (
-            <div className="w-full h-80 md:h-[500px] overflow-hidden order-2">
+            <div className="w-full aspect-[4/3] md:aspect-[5/4] overflow-hidden order-2">
               <div
                 className="w-full h-full bg-cover bg-center"
                 style={{ backgroundImage: `url(${heroImage})` }}

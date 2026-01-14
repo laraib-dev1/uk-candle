@@ -27,7 +27,7 @@ const handleShopMore = () => {
   if (variant === "full-background") {
     return (
       <section
-        className="relative bg-cover bg-center bg-no-repeat  h-[500px]"
+        className="relative bg-cover bg-center bg-no-repeat aspect-[16/9] md:aspect-[21/9] min-h-[300px] md:min-h-[500px]"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="bg-black/40 w-full h-full absolute inset-0"></div>
@@ -96,9 +96,9 @@ const handleShopMore = () => {
           </div>
         </div>
 
-        {/* Side Image */}
+        {/* Side Image - Responsive with aspect ratio */}
         <div
-          className={`w-full h-80 md:h-[500px] bg-cover bg-center ${
+          className={`w-full aspect-[4/3] md:aspect-[5/4] bg-cover bg-center ${
             imagePosition === "left" ? "order-1 md:order-2" : "order-2"
           }`}
           style={{ backgroundImage: `url(${heroImage})` }}

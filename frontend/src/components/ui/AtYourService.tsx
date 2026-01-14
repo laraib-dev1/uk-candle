@@ -32,15 +32,15 @@ const AtYourService = () => {
     <section className="py-0 text-center">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Decorative border lines */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-1 sm:mb-2 md:mb-4">
           <div className="w-full border-t border-gray-400"></div>
         </div>
 
-        <h2 className="text-xl font-semibold tracking-wide mb-2.5">
+        <h2 className="text-xl font-semibold tracking-wide mb-0.5 sm:mb-1 md:mb-2.5">
           AT YOUR SERVICE
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 justify-items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 sm:gap-1.5 md:gap-3 justify-items-center">
           {services.map((service, index) => (
             <div key={index} className="flex flex-col items-center space-y-2">
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
@@ -58,7 +58,7 @@ const AtYourService = () => {
         </div>
 
         {/* Decorative border line at bottom */}
-        <div className="flex justify-center mt-5">
+        <div className="flex justify-center mt-2.5 sm:mt-5">
           <div className="w-full border-t border-gray-400"></div>
         </div>
       </div>

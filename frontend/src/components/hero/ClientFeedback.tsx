@@ -146,7 +146,8 @@ const ClientFeedback: React.FC = () => {
           <button
             aria-label="Scroll left"
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-md hover:bg-gray-100"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-md hover:bg-gray-100"
+            style={{ marginLeft: "0" }}
           >
             <ChevronLeft className="w-6 h-6 text-gray-700" />
           </button>
@@ -154,7 +155,7 @@ const ClientFeedback: React.FC = () => {
           {/* Carousel */}
           <div
             ref={carouselRef}
-            className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 py-4 no-scrollbar"
+            className="flex gap-8 overflow-x-auto scroll-smooth snap-x snap-mandatory px-12 py-4 no-scrollbar"
             // hide native scrollbar visually (add the .no-scrollbar rule to your CSS)
             style={{ WebkitOverflowScrolling: "touch" }}
           >
@@ -201,7 +202,8 @@ const ClientFeedback: React.FC = () => {
           <button
             aria-label="Scroll right"
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-md hover:bg-gray-100"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white shadow-md hover:bg-gray-100"
+            style={{ marginRight: "0" }}
           >
             <ChevronRight className="w-6 h-6 text-gray-700" />
           </button>

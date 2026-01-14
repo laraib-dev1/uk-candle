@@ -103,7 +103,7 @@ export default function () {
       <Navbar />
       <main>
         {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
-        <section className="py-10">
+        <section className="py-3 sm:py-5 md:py-10">
           {bannersBySlot["hero-main"] ? (
             <Hero
               title="Welcome to our store"
@@ -120,7 +120,7 @@ export default function () {
             />
           )}
         </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-10">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
           {loading ? (
             <ProductGridSkeleton count={5} />
@@ -150,11 +150,11 @@ export default function () {
           }))}
         />
         {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
-        <section className="py-10">
+        <section className="py-3 sm:py-5 md:py-10">
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-10">
           {loading ? (
             <ProductGridSkeleton count={15} />
           ) : (
@@ -194,19 +194,19 @@ export default function () {
           <OfferSection />
         </section> */}
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
-         <section className="py-10">
-           <Hero2
+        <section className="py-3 sm:py-5 md:py-10">
+          <Hero2
              title="Discover new scents"
              subtitle="A selection of fragrances to brighten your mood."
              image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
              imagePosition="right"
            />
          </section>
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <AtYourService />
         </section>
         {/* Banner at bottom of services section - Full width */}
-        <section className="w-full py-10">
+        <section className="w-full py-5">
           {bannersBySlot["hero-last"] ? (
             <Hero
               title="Discover your natural glow"
@@ -223,11 +223,11 @@ export default function () {
             />
           )}
         </section>
-        <section className="w-full py-10">
+        <section className="w-full py-5">
           <FeatureSection />
         </section>
         {/* Feedback Section - Full Width */}
-        <section className="w-full py-10 pb-0 bg-white">
+        <section className="w-full py-3 sm:py-5 md:py-10 pb-0 bg-white">
           <ClientFeedback />
         </section>
         

@@ -21,6 +21,7 @@ import profilepageRoutes from "./src/routes/profilepage.routes.js";
 import queryRoutes from "./src/routes/query.routes.js";
 import userRoutes from "./src/routes/user.routes.js";
 import reviewRoutes from "./src/routes/review.routes.js";
+import blogRoutes from "./src/routes/blog.routes.js";
 
 dotenv.config();
 
@@ -86,6 +87,7 @@ const startServer = async () => {
     app.use("/api/queries", queryRoutes);
     app.use("/api/user", userRoutes);
     app.use("/api/reviews", reviewRoutes);
+    app.use("/api/blogs", blogRoutes);
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

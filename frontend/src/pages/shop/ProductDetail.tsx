@@ -221,11 +221,32 @@ export default function ProductDetail() {
           });
         }
         
-        // Also set headings in meta-info-content to theme primary color
+        // Also set headings in meta-info-content to theme primary color and ensure all text is readable
         if (metaInfoDiv) {
           const headings = metaInfoDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
           headings.forEach((heading) => {
             (heading as HTMLElement).style.color = 'var(--theme-primary)';
+          });
+          
+          // Ensure all text elements are readable (not white on white background)
+          const allTextElements = metaInfoDiv.querySelectorAll('p, span, div, li, td, th, a');
+          allTextElements.forEach((el) => {
+            const computedStyle = window.getComputedStyle(el);
+            const color = computedStyle.color;
+            const bgColor = computedStyle.backgroundColor;
+            
+            // If text color is white or very light, make it black
+            if (color === 'rgb(255, 255, 255)' || color === 'white' || 
+                (color.includes('rgb') && color.includes('255, 255, 255'))) {
+              (el as HTMLElement).style.color = '#000000';
+            }
+            
+            // If background is white and text is white, make text black
+            if (bgColor === 'rgb(255, 255, 255)' || bgColor === 'white') {
+              if (color === 'rgb(255, 255, 255)' || color === 'white') {
+                (el as HTMLElement).style.color = '#000000';
+              }
+            }
           });
         }
       }, 100);
@@ -594,7 +615,7 @@ export default function ProductDetail() {
               <h1 className="text-2xl sm:text-3xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>{product.name || "Product Name"}</h1>
 
               <div className="flex gap-3 items-center flex-wrap">
-                <span className="text-xl sm:text-2xl font-bold">
+                <span className="text-xl sm:text-2xl font-bold text-gray-900">
                   {discountedPrice} Rs
                 </span>
                 {product.discount && (
@@ -743,15 +764,15 @@ export default function ProductDetail() {
           </Tabs>
 
           {/* Services */}
-          <div className="grid md:grid-cols-4 gap-6 my-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 my-6 md:my-12">
             {[Flag, RotateCcw, Headphones, Truck].map(
               (Icon, i) => (
                 <div
                   key={i}
-                  className=" p-6 text-center"
+                  className="p-3 md:p-6 text-center"
                 >
-                  <Icon className="mx-auto mb-2 theme-text-primary" />
-                  <p className="font-semibold">
+                  <Icon className="mx-auto mb-2 w-6 h-6 md:w-8 md:h-8" style={{ color: "var(--theme-primary)" }} />
+                  <p className="font-semibold text-sm md:text-base text-gray-900">
                     {["Locally Owned", "Easy Return", "24/7 Support", "Fast Delivery"][i]}
                   </p>
                 </div>
@@ -760,11 +781,11 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
+          <h3 className="text-2xl font-bold mb-3 md:mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
             Similar Products
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {similarProducts.map((p) => (
               <ProductCard
                 key={p._id}
