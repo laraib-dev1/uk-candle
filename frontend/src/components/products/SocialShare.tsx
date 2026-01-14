@@ -17,33 +17,9 @@ export default function SocialShare({
 }: SocialShareProps) {
   const encodedUrl = encodeURIComponent(productUrl);
   const encodedTitle = encodeURIComponent(productName);
-  const encodedDesc = encodeURIComponent(productDescription || "");
 
   // Facebook share URL with OG image
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-
-  // WhatsApp share text + URL
-  const whatsappShare = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
-
-  const iconColor = "white";
-  const iconSize = 20;
-
-  const sharedClass =
-    "flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-200 hover:scale-110 hover:opacity-80";
-
-  const handleNativeShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: productName,
-          text: productDescription,
-          url: productUrl,
-        })
-        .catch((err) => console.error("Share failed:", err));
-    } else {
-      alert("Your browser does not support sharing.");
-    }
-  };
 
   // Instagram share (opens Instagram app or web)
   const instagramShare = `https://www.instagram.com/`;
@@ -51,8 +27,14 @@ export default function SocialShare({
   // TikTok share
   const tiktokShare = `https://www.tiktok.com/`;
 
+  const iconColor = "white";
+  const iconSize = 20;
+
+  const sharedClass =
+    "flex items-center justify-center w-10 h-10 rounded-full transition-transform duration-200 hover:scale-110 hover:opacity-80";
+
   return (
-    <div>
+    <div className="mt-4">
       <span className="text-sm text-gray-700 mb-3 block">Share this on social media</span>
       <div className="flex items-center gap-3">
         {/* Facebook */}

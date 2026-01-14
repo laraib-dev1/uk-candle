@@ -41,12 +41,12 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f8f8f8" }}>
+    <div className="min-h-screen bg-white">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-8">
           {/* Left: Form */}
-          <div className="rounded-2xl p-8 bg-white">
+          <div>
             <h2 className="text-2xl font-bold mb-6 theme-heading">You have any query!</h2>
             <p className="text-gray-600 mb-6">Fill the form to send us.</p>
             
@@ -148,7 +148,7 @@ export default function ContactUs() {
           </div>
 
           {/* Right: Logo Image */}
-          <div className="rounded-2xl flex items-center justify-center min-h-[400px] p-8 bg-white">
+          <div className="flex items-center justify-center min-h-[400px]">
             <img 
               src="/logo.png" 
               alt="Logo" 

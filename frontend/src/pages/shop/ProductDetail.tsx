@@ -266,7 +266,7 @@ export default function ProductDetail() {
   useEffect(() => {
     if (!product) return;
 
-    // Use hero banner image for social sharing, fallback to product image
+    // Use hero banner image for social sharing (priority), fallback to product image
     const imageToUse = heroBannerImage || product.images?.[0];
     const ogImageUrl = getAbsoluteImageUrl(imageToUse);
     const ogDescription = cleanDescription(product.description, product.name);
@@ -358,7 +358,7 @@ export default function ProductDetail() {
         console.error("💡 Solution: You need server-side rendering (SSR) or pre-rendering for social media sharing to work.");
       }
     }, 100);
-  }, [product, companyName]);
+  }, [product, companyName, heroBannerImage]);
 
   if (initialLoad && (loading || !product)) {
     return <PageLoader message="Loading product..." />;
