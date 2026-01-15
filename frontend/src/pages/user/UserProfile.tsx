@@ -1143,7 +1143,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-700">
                     <strong className="text-gray-900">Total:</strong> ${order.bill.toFixed(2)}
@@ -1152,12 +1152,12 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                     <strong className="text-gray-900">Payment:</strong> {order.payment}
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2">
                   {order.status === "Pending" && (
                     <button
                       onClick={() => handleCancelOrder(order._id)}
                       disabled={isCancelling}
-                      className="px-4 py-2 h-12 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isCancelling ? "Cancelling..." : "Cancel Order"}
                     </button>

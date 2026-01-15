@@ -53,7 +53,7 @@ export default function FAQs() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
+    <div className="min-h-screen bg-white">
       <style>{`
         /* Force text-align from inline styles - override any other rules */
         .content-area p[style*="text-align"],
@@ -94,23 +94,26 @@ export default function FAQs() {
         }
       `}</style>
       <Navbar />
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          {/* Title Section */}
-          <div className="mb-6">
-            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center" style={{ color: "var(--theme-primary)" }}>
-              Frequently Asked Questions
-            </h1>
-            <p className="text-lg text-gray-600 mb-0 text-center">
-              Find answers to common questions
-            </p>
-          </div>
+      {/* Title Section - Full width container */}
+      <div className="w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-0">
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+            Frequently Asked Questions
+          </h1>
+          
+          {/* Subtitle */}
+          <p className="text-lg text-gray-600 mb-0 text-center">
+            Find answers to common questions
+          </p>
+        </div>
 
-          {/* Divider */}
-          <div className="w-full h-px bg-gray-300 mb-6"></div>
+        {/* Divider - Full Width, no gap */}
+        <div className="w-full h-px bg-gray-300"></div>
+      </div>
 
-          {/* Content Section */}
-          <div>
+      {/* Content Section - Centered */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
         {/* FAQs List */}
         <div className="space-y-3">
           {content.faqs && content.faqs.length > 0 ? (
@@ -158,9 +161,7 @@ export default function FAQs() {
             Updated: {formatDate(content.lastUpdated)}
           </div>
         )}
-          </div>
-        </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

@@ -52,6 +52,7 @@ export default function AdminLayout() {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [activeTabIndex, setActiveTabIndex] = useState(-1);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -71,40 +72,11 @@ export default function AdminLayout() {
 
         if (userData) {
           // Use avatar URL as-is if it's already a full URL (Cloudinary), otherwise prepend API URL
-          // Use same logic as axios.ts to get correct API URL for production
-          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
-          const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
-          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
-          
-          console.log("Admin Layout - User data:", userData.user);
-          console.log("Admin Layout - Avatar from API:", userData.user.avatar);
-          console.log("Admin Layout - API Base URL:", API_BASE_URL);
-          console.log("Admin Layout - API Base without /api:", apiBaseWithoutApi);
-          
-          // Handle avatar URL - fix localhost URLs in production
-          let avatarUrl = userData.user.avatar;
-          if (avatarUrl) {
-            // If it's a localhost URL (from development), replace with production API URL
-            if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
-              // Extract the path from localhost URL
-              const urlPath = avatarUrl.replace(/^https?:\/\/[^\/]+/, '');
-              avatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
-            } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
-              // Already a full URL (Cloudinary or production) - use directly
-              avatarUrl = avatarUrl;
-            } else {
-              // Relative path - construct full URL
-              avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
-            }
-          }
-          
-          console.log("Admin Layout - Final avatar URL:", avatarUrl);
-          console.log("Admin Layout - Avatar URL type check:", {
-            original: userData.user.avatar,
-            isCloudinary: userData.user.avatar?.includes('cloudinary'),
-            final: avatarUrl
-          });
+          const avatarUrl = userData.user.avatar 
+            ? (userData.user.avatar.startsWith('http://') || userData.user.avatar.startsWith('https://')
+                ? userData.user.avatar 
+                : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
+            : undefined;
           
           const fullUser = {
             ...userData.user,
@@ -138,7 +110,6 @@ export default function AdminLayout() {
             { label: "Orders", icon: ShoppingCart, path: "/admin/orders" },
             { label: "Categories", icon: FolderTree, path: "/admin/categories" },
             { label: "Products", icon: Package, path: "/admin/products" },
-            { label: "Blogs", icon: FileText, path: "/admin/blogs" },
             { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
             { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
             { label: "Reviews", icon: Star, path: "/admin/reviews" },
@@ -156,6 +127,47 @@ export default function AdminLayout() {
     loadAll();
   }, [navigate]);
 
+  // Update active tab index when location changes (must be before early return)
+  useEffect(() => {
+    if (menu.length > 0) {
+      // Normalize paths for comparison
+      const currentPath = loc.pathname.toLowerCase().trim();
+      
+      // First try exact match
+      let activeIndex = menu.findIndex(item => {
+        const itemPath = item.path.toLowerCase().trim();
+        return currentPath === itemPath;
+      });
+      
+      // If no exact match, try startsWith (for nested routes)
+      if (activeIndex < 0) {
+        activeIndex = menu.findIndex(item => {
+          const itemPath = item.path.toLowerCase().trim();
+          // Check if current path starts with item path followed by / or end of string
+          return currentPath.startsWith(itemPath + '/') || currentPath.startsWith(itemPath);
+        });
+      }
+      
+      // If still no match, try matching the last segment (e.g., /admin/orders matches "orders")
+      if (activeIndex < 0) {
+        const currentSegments = currentPath.split('/').filter(Boolean);
+        const lastSegment = currentSegments[currentSegments.length - 1];
+        
+        activeIndex = menu.findIndex(item => {
+          const itemSegments = item.path.toLowerCase().split('/').filter(Boolean);
+          const itemLastSegment = itemSegments[itemSegments.length - 1];
+          return lastSegment === itemLastSegment && itemSegments.length > 1;
+        });
+      }
+      
+      if (activeIndex >= 0) {
+        setActiveTabIndex(activeIndex);
+      } else {
+        // Reset if no match found
+        setActiveTabIndex(-1);
+      }
+    }
+  }, [loc.pathname, menu]);
 
   if (initialLoading) {
     return <PageLoader message="GraceByAnu" />;
@@ -163,6 +175,14 @@ export default function AdminLayout() {
 
   // Sidebar content component (reusable for both desktop and mobile)
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
+    // py-2.5 = 10px top + 10px bottom = 20px total vertical padding
+    // Icon size 18px + text ~20px = ~38px content height
+    // Total: 20px padding + 38px content = 58px, but we use 50px to account for line-height
+    const itemHeight = 50; // Full height including padding (py-2.5 = 10px top + 10px bottom + content)
+    const itemGap = 8; // gap-2 = 8px
+    // Calculate indicator position - only show if we have a valid active index
+    const hasActiveTab = activeTabIndex >= 0 && activeTabIndex < menu.length;
+    const indicatorTop = hasActiveTab ? activeTabIndex * (itemHeight + itemGap) : -100;
 
     return (
     <div className="flex flex-col h-full">
@@ -190,8 +210,26 @@ export default function AdminLayout() {
       </div>
 
       {/* MENU */}
-      <nav className="flex flex-col gap-2 mt-6 px-2 flex-1 overflow-y-auto">
-        {menu.map((item) => {
+      <nav className="flex flex-col gap-2 mt-6 px-2 flex-1 overflow-y-auto relative">
+        {/* Sliding background indicator - More visible with shadow and border */}
+        {menu.length > 0 && (
+          <div 
+            key={`indicator-${activeTabIndex}-${loc.pathname}`}
+            className="absolute left-2 right-2 rounded-lg pointer-events-none"
+            style={{
+              height: `${itemHeight}px`,
+              backgroundColor: "var(--theme-dark)",
+              transform: `translateY(${indicatorTop}px)`,
+              zIndex: 0,
+              opacity: hasActiveTab ? 1 : 0,
+              willChange: 'transform',
+              transition: 'transform 700ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease-out',
+              boxShadow: hasActiveTab ? '0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none',
+              border: hasActiveTab ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
+            }}
+          />
+        )}
+        {menu.map((item, index) => {
           const Icon = item.icon;
           const active = loc.pathname.startsWith(item.path);
 
@@ -200,14 +238,34 @@ export default function AdminLayout() {
               key={item.path}
               to={item.path}
               onClick={onLinkClick}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition
-              ${active ? "text-white font-semibold shadow-md" : "hover:bg-white/10"}`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg relative z-10
+              ${active ? "text-white font-semibold" : "hover:bg-white/10 text-white/80"}`}
               style={{
-                backgroundColor: active ? "var(--theme-dark)" : "transparent",
+                backgroundColor: "transparent",
+                minHeight: "50px",
+                transition: "all 300ms ease-out",
               }}
             >
-              <Icon size={18} />
-              {item.label}
+              <div
+                className="relative z-10"
+                style={{
+                  transform: active ? "scale(1.15)" : "scale(1)",
+                  transition: "transform 300ms ease-out",
+                }}
+              >
+                <Icon size={18} />
+              </div>
+              <span className="relative z-10" style={{ transition: "all 300ms ease-out" }}>{item.label}</span>
+              {/* Left border indicator for active tab */}
+              {active && (
+                <div 
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
+                  style={{
+                    backgroundColor: "white",
+                    transition: "all 300ms ease-out",
+                  }}
+                />
+              )}
             </Link>
           );
         })}
@@ -302,14 +360,13 @@ export default function AdminLayout() {
       </aside>
 
       {/* ============ MAIN CONTENT ============ */}
-      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8 text-black">
+      <main className="flex-1 w-full lg:ml-64 pt-16 lg:pt-8 p-4 lg:p-8">
          <React.Suspense fallback={<PageLoader message="GraceByAnu" />}>
           <div 
             key={loc.pathname} 
-            className="animate-fade-in text-black"
+            className="animate-fade-in"
             style={{
               animation: "fadeInSlide 0.5s ease-out",
-              color: "#000000",
             }}
           >
             <Outlet />

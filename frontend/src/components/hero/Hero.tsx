@@ -27,16 +27,16 @@ const handleShopMore = () => {
   if (variant === "full-background") {
     return (
       <section
-        className="relative bg-cover bg-center bg-no-repeat aspect-[16/9] md:aspect-[21/9] min-h-[300px] md:min-h-[500px]"
+        className="relative bg-cover bg-center bg-no-repeat h-[150px] sm:h-[200px] md:h-[300px] lg:h-[400px] xl:h-[500px]"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="bg-black/40 w-full h-full absolute inset-0"></div>
 
-        <div className="relative max-w-8xl mx-auto px-6 py-24 text-white  flex flex-col justify-center h-full">
-          <h1 className="text-4xl md:text-5xl font-serif leading-tight ">
+        <div className="relative max-w-8xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8 md:py-16 lg:py-24 text-white flex flex-col justify-center h-full">
+          <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-serif leading-tight">
             {title || "Welcome to Our Store"}
           </h1>
-          <p className="mt-2.5 text-gray-200 max-w-xl">
+          <p className="mt-1 sm:mt-1.5 md:mt-2.5 text-xs sm:text-sm md:text-base text-gray-200 max-w-xl">
             {subtitle || "Explore our latest collections and exclusive deals."}
           </p>
 
@@ -68,12 +68,12 @@ const handleShopMore = () => {
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
 
         {/* Text */}
-        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
-          <h1 className="text-4xl md:text-5xl font-serif leading-tight tracking-tight">
+        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8`}>
+          <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif leading-tight tracking-tight">
             {title || "Welcome to Our Store"}
           </h1>
 
-          <p className="mt-2.5 text-gray-600 max-w-xl">
+          <p className="mt-1 sm:mt-1.5 md:mt-2 text-xs sm:text-sm md:text-base text-gray-600 max-w-xl">
             {subtitle || "Explore our latest collections and exclusive deals."}
           </p>
 
@@ -96,9 +96,9 @@ const handleShopMore = () => {
           </div>
         </div>
 
-        {/* Side Image - Responsive with aspect ratio */}
+        {/* Side Image */}
         <div
-          className={`w-full aspect-[4/3] md:aspect-[5/4] bg-cover bg-center ${
+          className={`w-full h-[120px] sm:h-[160px] md:h-[250px] lg:h-[350px] xl:h-[450px] bg-cover bg-center ${
             imagePosition === "left" ? "order-1 md:order-2" : "order-2"
           }`}
           style={{ backgroundImage: `url(${heroImage})` }}

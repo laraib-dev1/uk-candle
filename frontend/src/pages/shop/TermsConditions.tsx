@@ -62,7 +62,7 @@ export default function TermsConditions() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
+    <div className="min-h-screen bg-white">
       <style>{`
         /* Force text-align from inline styles - override any other rules */
         .content-area p[style*="text-align"],
@@ -103,45 +103,48 @@ export default function TermsConditions() {
         }
       `}</style>
       <Navbar />
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          {/* Title Section */}
-          <div className="mb-6">
-            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center" style={{ color: "var(--theme-primary)" }}>
-              {content.title || "Terms & Conditions"}
-            </h1>
-            <p className="text-lg text-gray-600 mb-0 text-center">
-              {content.subTitle || "Legal page related Sub Title"}
-            </p>
+      {/* Title Section - Full width container */}
+      <div className="w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-0">
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+            {content.title || "Terms & Conditions"}
+          </h1>
+          
+          {/* Subtitle */}
+          <p className="text-lg text-gray-600 mb-0 text-center">
+            {content.subTitle || "Legal page related Sub Title"}
+          </p>
+        </div>
+
+        {/* Divider - Full Width, no gap */}
+        <div className="w-full h-px bg-gray-300"></div>
+      </div>
+
+      {/* Content Section - Centered with TOC */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Table of Contents - Left Sidebar */}
+          <div className="lg:w-64 flex-shrink-0">
+            <TableOfContents htmlContent={content.description} contentRef={contentRef} />
           </div>
 
-          {/* Divider */}
-          <div className="w-full h-px bg-gray-300 mb-6"></div>
+          {/* Main Content - Centered content area */}
+          <div className="flex-1">
+            {/* Content */}
+            <div 
+              ref={contentRef}
+              className="prose prose-lg max-w-none text-gray-700 mb-8 relative content-area"
+              dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
+            />
 
-          {/* Content Section - Sidebar + Content */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Table of Contents - Left Sidebar */}
-            <div className="lg:w-64 flex-shrink-0">
-              <TableOfContents htmlContent={content.description} contentRef={contentRef} />
-            </div>
-
-            {/* Main Content - Centered content area */}
-            <div className="flex-1">
-              {/* Content */}
-              <div 
-                ref={contentRef}
-                className="prose prose-lg max-w-none text-gray-700 mb-8 relative content-area"
-                dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
-              />
-
-              {/* Last Updated - Bottom Right */}
-              <div className="text-right text-sm text-gray-500 mt-12">
-                Updated: {formatDate(content.lastUpdated)}
-              </div>
+            {/* Last Updated - Bottom Right */}
+            <div className="text-right text-sm text-gray-500 mt-12">
+              Updated: {formatDate(content.lastUpdated)}
             </div>
           </div>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

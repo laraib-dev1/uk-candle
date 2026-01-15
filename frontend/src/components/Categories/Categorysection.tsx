@@ -32,11 +32,11 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
   };
 
   return (
-    <section className="py-10 bg-white text-black">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-3 sm:py-5 md:py-8 lg:py-10 bg-white text-black">
+      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Heading and Handlers in one row */}
-        <div className="flex justify-between items-center mb-4 px-2">
-          <h2 className="text-2xl font-semibold tracking-wide">
+        <div className="flex justify-between items-center mb-2 sm:mb-3 md:mb-4 px-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide">
             ALL GIFT IDEAS
           </h2>
 
@@ -65,7 +65,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
         <div className="w-full overflow-hidden px-2 justify-center">
           <div
             ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide justify-start"
+            className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-2 sm:pb-3 md:pb-4 scrollbar-hide justify-start"
             style={{ 
               scrollbarWidth: "none", 
               msOverflowStyle: "none"
@@ -94,7 +94,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
                   }}
                 />
               </div>
-              <p className="mt-3 text-sm md:text-lg text-gray-800 font-medium italic">
+              <p className="mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm md:text-lg text-gray-800 font-medium italic">
                 {cat.title}
               </p>
             </div>

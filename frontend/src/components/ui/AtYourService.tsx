@@ -32,25 +32,25 @@ const AtYourService = () => {
     <section className="py-0 text-center">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Decorative border lines */}
-        <div className="flex justify-center mb-1 sm:mb-2 md:mb-4">
+        <div className="flex justify-center mb-4">
           <div className="w-full border-t border-gray-400"></div>
         </div>
 
-        <h2 className="text-xl font-semibold tracking-wide mb-0.5 sm:mb-1 md:mb-2.5">
+        <h2 className="text-xl font-semibold tracking-wide mb-2.5">
           AT YOUR SERVICE
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 sm:gap-1.5 md:gap-3 justify-items-center">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-8">
           {services.map((service, index) => (
             <div key={index} className="flex flex-col items-center space-y-2">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-300 flex items-center justify-center">
                 <img
                   src={service.img}
                   alt={service.text}
-                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover"
+                  className="w-16 h-16 object-cover"
                 />
               </div>
-              <p className="text-[9px] sm:text-[10px] text-gray-600 max-w-[90px] sm:max-w-[100px] leading-tight text-center">
+              <p className="text-[10px] text-gray-600 max-w-[100px] leading-tight text-center">
                 {service.text}
               </p>
             </div>
@@ -58,7 +58,7 @@ const AtYourService = () => {
         </div>
 
         {/* Decorative border line at bottom */}
-        <div className="flex justify-center mt-2.5 sm:mt-5">
+        <div className="flex justify-center mt-5">
           <div className="w-full border-t border-gray-400"></div>
         </div>
       </div>

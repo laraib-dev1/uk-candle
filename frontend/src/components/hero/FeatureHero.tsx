@@ -9,13 +9,13 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
   
   return (
     <section className="bg-white text-black py-0">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 text-center">
         {/* Text content */}
-        <div className="max-w-3xl mx-auto mb-2.5">
-          <h2 className="text-2xl md:text-4xl font-semibold mb-2.5 text-gray-900">
+        <div className="max-w-3xl mx-auto mb-2 sm:mb-2.5">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold mb-1.5 sm:mb-2 md:mb-2.5 text-gray-900">
             An alchemy of gold and perfume
           </h2>
-          <p className="text-sm md:text-base text-gray-600">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600">
             The Maison's iconic fragrance, adorned in gold to celebrate the
             brilliance of the holidays.
           </p>
@@ -26,7 +26,7 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
           <img
             src={bannerImage}
             alt="Perfume collection"
-            className="w-full max-w-full h-100 object-cover rounded-2xl mx-auto"
+            className="w-full max-w-full h-[120px] sm:h-[160px] md:h-[250px] lg:h-[350px] xl:h-[450px] object-cover rounded-lg sm:rounded-xl md:rounded-2xl mx-auto"
           />
         </div>
       </div>

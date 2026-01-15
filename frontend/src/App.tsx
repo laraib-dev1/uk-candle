@@ -29,7 +29,6 @@ const AdminDashboard = React.lazy(() => import("./pages/admin/pages/DashboardPag
 const AdminOrders = React.lazy(() => import("./pages/admin/pages/OrdersPage"));
 const AdminQueries = React.lazy(() => import("./pages/admin/pages/QueriesPage"));
 const AdminReviews = React.lazy(() => import("./pages/admin/pages/ReviewsPage"));
-const AdminBlogs = React.lazy(() => import("./pages/admin/pages/BlogPage"));
 const SpConsolePage = React.lazy(() => import("./pages/admin/pages/SpConsolePage"));
 const DeveloperLayout = React.lazy(() => import("./pages/developer/layout/DeveloperLayout"));
 const AdminTabsPage = React.lazy(() => import("./pages/developer/pages/AdminTabsPage"));
@@ -110,7 +109,6 @@ export default function App() {
           <Route path="reviews" element={<AdminReviews />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
-            <Route path="blogs" element={<AdminBlogs />} />
             <Route path="assets" element={<AdminAssets />} />
             <Route path="settings" element={<AdminSettings />} />
             <Route path="sp-console" element={<SpConsolePage />} />

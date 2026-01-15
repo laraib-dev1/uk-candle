@@ -204,49 +204,14 @@ export default function ProductDetail() {
           });
         }
         
-        // Remove backgrounds and set headings to theme primary color in meta features container
+        // Remove backgrounds and set text color to black in meta features container
         if (metaFeaturesContainer) {
           const allElements = metaFeaturesContainer.querySelectorAll('*');
           allElements.forEach((el) => {
             (el as HTMLElement).style.backgroundColor = 'transparent';
             (el as HTMLElement).style.background = 'transparent';
             (el as HTMLElement).style.backgroundImage = 'none';
-            // Set headings to theme primary color
-            const tagName = el.tagName?.toLowerCase();
-            if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6') {
-              (el as HTMLElement).style.color = 'var(--theme-primary)';
-            } else {
-              (el as HTMLElement).style.color = 'black';
-            }
-          });
-        }
-        
-        // Also set headings in meta-info-content to theme primary color and ensure all text is readable
-        if (metaInfoDiv) {
-          const headings = metaInfoDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
-          headings.forEach((heading) => {
-            (heading as HTMLElement).style.color = 'var(--theme-primary)';
-          });
-          
-          // Ensure all text elements are readable (not white on white background)
-          const allTextElements = metaInfoDiv.querySelectorAll('p, span, div, li, td, th, a');
-          allTextElements.forEach((el) => {
-            const computedStyle = window.getComputedStyle(el);
-            const color = computedStyle.color;
-            const bgColor = computedStyle.backgroundColor;
-            
-            // If text color is white or very light, make it black
-            if (color === 'rgb(255, 255, 255)' || color === 'white' || 
-                (color.includes('rgb') && color.includes('255, 255, 255'))) {
-              (el as HTMLElement).style.color = '#000000';
-            }
-            
-            // If background is white and text is white, make text black
-            if (bgColor === 'rgb(255, 255, 255)' || bgColor === 'white') {
-              if (color === 'rgb(255, 255, 255)' || color === 'white') {
-                (el as HTMLElement).style.color = '#000000';
-              }
-            }
+            (el as HTMLElement).style.color = 'black';
           });
         }
       }, 100);
@@ -590,9 +555,8 @@ export default function ProductDetail() {
 
       <Navbar />
 
-      <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
-        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+      <div className="bg-white text-black min-h-screen pt-20 pb-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 pb-0">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
@@ -615,7 +579,7 @@ export default function ProductDetail() {
               <h1 className="text-2xl sm:text-3xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>{product.name || "Product Name"}</h1>
 
               <div className="flex gap-3 items-center flex-wrap">
-                <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                <span className="text-xl sm:text-2xl font-bold">
                   {discountedPrice} Rs
                 </span>
                 {product.discount && (
@@ -764,15 +728,15 @@ export default function ProductDetail() {
           </Tabs>
 
           {/* Services */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 my-6 md:my-12">
+          <div className="grid md:grid-cols-4 gap-6 my-12">
             {[Flag, RotateCcw, Headphones, Truck].map(
               (Icon, i) => (
                 <div
                   key={i}
-                  className="p-3 md:p-6 text-center"
+                  className=" p-6 text-center"
                 >
-                  <Icon className="mx-auto mb-2 w-6 h-6 md:w-8 md:h-8" style={{ color: "var(--theme-primary)" }} />
-                  <p className="font-semibold text-sm md:text-base text-gray-900">
+                  <Icon className="mx-auto mb-2 theme-text-primary" />
+                  <p className="font-semibold">
                     {["Locally Owned", "Easy Return", "24/7 Support", "Fast Delivery"][i]}
                   </p>
                 </div>
@@ -781,11 +745,11 @@ export default function ProductDetail() {
           </div>
 
           {/* Similar Products */}
-          <h3 className="text-2xl font-bold mb-3 md:mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
+          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
             Similar Products
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {similarProducts.map((p) => (
               <ProductCard
                 key={p._id}
@@ -796,7 +760,6 @@ export default function ProductDetail() {
                 offer={p.discount ? `${p.discount}% OFF` : undefined}
               />
             ))}
-          </div>
           </div>
         </div>
         <Footer />
