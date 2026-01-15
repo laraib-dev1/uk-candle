@@ -66,7 +66,7 @@ const Hero2 = ({
             </div>
           )}
 
-          <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 flex flex-col justify-center`}>
+          <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 flex flex-col justify-center`}>
             <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
             </h1>

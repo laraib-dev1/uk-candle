@@ -144,18 +144,18 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
           
           {/* Pricing Information with Discount Badge */}
           <div className="flex items-baseline gap-2 justify-between">
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-nowrap min-w-0">
               {discountPercent > 0 ? (
                 <>
-                  <span className="text-base text-gray-600 line-through">
+                  <span className="text-base text-gray-600 line-through whitespace-nowrap">
                     {Math.round(originalPrice)}
                   </span>
-                  <span className="text-base font-semibold theme-text-primary">
+                  <span className="text-base font-semibold theme-text-primary whitespace-nowrap">
                     Rs: {Math.round(discountedPrice)}
                   </span>
                 </>
               ) : (
-                <span className="text-base font-semibold theme-text-primary">
+                <span className="text-base font-semibold theme-text-primary whitespace-nowrap">
                   Rs: {Math.round(numericPrice)}
                 </span>
               )}

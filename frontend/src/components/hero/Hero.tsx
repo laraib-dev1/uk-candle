@@ -68,7 +68,7 @@ const handleShopMore = () => {
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
 
         {/* Text */}
-        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8`}>
+        <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8`}>
           <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif leading-tight tracking-tight">
             {title || "Welcome to Our Store"}
           </h1>

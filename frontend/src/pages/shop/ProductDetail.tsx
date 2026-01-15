@@ -578,12 +578,12 @@ export default function ProductDetail() {
 
               <h1 className="text-2xl sm:text-3xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>{product.name || "Product Name"}</h1>
 
-              <div className="flex gap-3 items-center flex-wrap">
-                <span className="text-xl sm:text-2xl font-bold">
+              <div className="flex gap-3 items-center flex-nowrap">
+                <span className="text-xl sm:text-2xl font-bold whitespace-nowrap">
                   {discountedPrice} Rs
                 </span>
                 {product.discount && (
-                  <span className="line-through text-gray-400 text-lg sm:text-xl">
+                  <span className="line-through text-gray-400 text-lg sm:text-xl whitespace-nowrap">
                     {product.price} Rs
                   </span>
                 )}
@@ -593,7 +593,7 @@ export default function ProductDetail() {
                 {product.description}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-row items-center gap-3 sm:gap-4">
                 <AddToCartButton
                   product={{
                     id: product._id,
@@ -728,15 +728,15 @@ export default function ProductDetail() {
           </Tabs>
 
           {/* Services */}
-          <div className="grid md:grid-cols-4 gap-6 my-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 my-12">
             {[Flag, RotateCcw, Headphones, Truck].map(
               (Icon, i) => (
                 <div
                   key={i}
-                  className=" p-6 text-center"
+                  className="p-4 md:p-6 text-center"
                 >
-                  <Icon className="mx-auto mb-2 theme-text-primary" />
-                  <p className="font-semibold">
+                  <Icon className="mx-auto mb-2 theme-text-primary w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
+                  <p className="font-semibold text-sm sm:text-base">
                     {["Locally Owned", "Easy Return", "24/7 Support", "Fast Delivery"][i]}
                   </p>
                 </div>
