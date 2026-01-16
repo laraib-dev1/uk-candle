@@ -21,13 +21,17 @@ interface Blog {
   _id?: string;
   title: string;
   subTag?: string;
-  description: string;
+  description?: string;
   image?: string;
-  category: string;
-  niche?: string;
-  author: string;
+  category: string | { _id: string; name: string };
+  niche?: string | { _id: string; name: string };
+  author: string | { _id: string; name: string; email: string; avatar?: string };
   tags?: string[];
   status: "published" | "unpublished" | "draft";
+  views?: number;
+  shares?: number;
+  comments?: number;
+  links?: number;
 }
 
 interface BlogModalProps {
@@ -48,14 +52,29 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedFileForCrop, setSelectedFileForCrop] = useState<File | null>(null);
 
+  const getCategoryId = (cat: string | { _id: string; name: string } | undefined): string => {
+    if (!cat) return "";
+    return typeof cat === "object" ? cat._id : cat;
+  };
+
+  const getNicheId = (niche: string | { _id: string; name: string } | undefined): string => {
+    if (!niche) return "";
+    return typeof niche === "object" ? niche._id : niche;
+  };
+
+  const getAuthorId = (author: string | { _id: string; name: string; email: string; avatar?: string } | undefined): string => {
+    if (!author) return "";
+    return typeof author === "object" ? author._id : author;
+  };
+
   const [form, setForm] = useState({
     title: data?.title || "",
     subTag: data?.subTag || "",
     description: data?.description || "",
     image: data?.image || "",
-    category: data?.category || "",
-    niche: data?.niche || "",
-    author: data?.author || "",
+    category: getCategoryId(data?.category),
+    niche: getNicheId(data?.niche),
+    author: getAuthorId(data?.author),
     tags: data?.tags?.join(", ") || "",
     status: data?.status || "draft",
     imageFile: null as File | null,
@@ -69,9 +88,9 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
         subTag: data?.subTag || "",
         description: data?.description || "",
         image: data?.image || "",
-        category: data?.category || "",
-        niche: data?.niche || "",
-        author: data?.author || "",
+        category: getCategoryId(data?.category),
+        niche: getNicheId(data?.niche),
+        author: getAuthorId(data?.author),
         tags: data?.tags?.join(", ") || "",
         status: data?.status || "draft",
         imageFile: null,
@@ -388,7 +407,7 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
           setSelectedFileForCrop(null);
         }}
         onCropDone={handleCropDone}
-        imageFile={selectedFileForCrop}
+        file={selectedFileForCrop}
         aspect={16 / 9}
       />
     </>

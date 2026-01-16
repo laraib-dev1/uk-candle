@@ -6,11 +6,21 @@ interface Blog {
   id?: string;
   _id?: string;
   title: string;
+  subTag?: string;
+  description?: string;
   image?: string;
+  category: string | { _id: string; name: string };
+  categoryName?: string;
+  niche?: string | { _id: string; name: string };
+  nicheName?: string;
+  author: string | { _id: string; name: string; email: string; avatar?: string };
+  authorName?: string;
+  tags?: string[];
   status: "published" | "unpublished" | "draft";
   views: number;
   comments: number;
-  categoryName?: string;
+  shares?: number;
+  links?: number;
   createdAt?: string;
 }
 

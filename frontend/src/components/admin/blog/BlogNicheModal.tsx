@@ -17,7 +17,7 @@ interface Niche {
   id?: string;
   _id?: string;
   name: string;
-  category: string;
+  category: string | { _id: string; name: string };
   categoryName?: string;
   blogs: number;
 }
@@ -41,9 +41,14 @@ export default function BlogNicheModal({
   const isView = mode === "view";
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [form, setForm] = useState({
+  const getCategoryId = (cat: string | { _id: string; name: string } | undefined): string => {
+    if (!cat) return "";
+    return typeof cat === "object" ? cat._id : cat;
+  };
+
+  const [form, setForm] = useState<{ name: string; category: string }>({
     name: data?.name || "",
-    category: data?.category || "",
+    category: getCategoryId(data?.category),
   });
 
   useEffect(() => {
@@ -51,7 +56,7 @@ export default function BlogNicheModal({
       fetchCategories();
       setForm({
         name: data?.name || "",
-        category: data?.category || "",
+        category: getCategoryId(data?.category),
       });
     }
   }, [data, open]);

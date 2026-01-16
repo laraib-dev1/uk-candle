@@ -16,7 +16,7 @@ interface Blog {
   _id?: string;
   title: string;
   subTag?: string;
-  description: string;
+  description?: string;
   image?: string;
   category: string | { _id: string; name: string };
   categoryName?: string;
@@ -27,9 +27,9 @@ interface Blog {
   tags?: string[];
   status: "published" | "unpublished" | "draft";
   views: number;
-  shares: number;
+  shares?: number;
   comments: number;
-  links: number;
+  links?: number;
 }
 
 export default function BlogsTab() {

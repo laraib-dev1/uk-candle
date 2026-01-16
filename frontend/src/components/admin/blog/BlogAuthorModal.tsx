@@ -322,7 +322,7 @@ export default function BlogAuthorModal({
           setSelectedFileForCrop(null);
         }}
         onCropDone={handleCropDone}
-        imageFile={selectedFileForCrop}
+        file={selectedFileForCrop}
         aspect={1}
       />
     </>
