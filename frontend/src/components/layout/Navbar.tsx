@@ -262,40 +262,59 @@ let user = null;
                   </Link>
                 </nav>
 
-                {/* <Button className="mt-auto border border-gray-300 text-gray-700 bg-white dark:bg-gray-900 dark:text-white hover:bg-gray-100">
-                  Sign In
-                </Button> */}
-                {!user ? (
-  <Button
-    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-    onClick={async () => {
-      if (navLoading) return;
-      setNavLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setOpen(false);
-        navigate("/login");
-      } finally {
-        setNavLoading(false);
-      }
-    }}
-    loading={navLoading}
-  >
-    Sign In
-  </Button>
-) : (
-  <Button
-    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-    onClick={() => {
-      setOpen(false);
-      navigate("/profile");
-    }}
-  >
-    Profile
-  </Button>
-)}
+                {/* User Profile Section */}
+                {user ? (
+                  <div className="mt-auto flex flex-col gap-2">
+                    <Button
+                      className="w-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 flex items-center gap-2 justify-start"
+                      onClick={() => {
+                        setOpen(false);
+                        navigate("/profile");
+                      }}
+                    >
+                      <User size={16} /> Profile
+                    </Button>
+                    <Button
+                      className="w-full border border-gray-300 text-red-500 bg-white hover:bg-red-50 flex items-center gap-2 justify-start"
+                      onClick={() => {
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("token");
+                        setOpen(false);
+                        navigate("/login");
+                      }}
+                    >
+                      <LogOut size={16} /> Logout
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
+                    onClick={async () => {
+                      if (navLoading) return;
+                      setNavLoading(true);
+                      try {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        setOpen(false);
+                        navigate("/login");
+                      } finally {
+                        setNavLoading(false);
+                      }
+                    }}
+                    loading={navLoading}
+                  >
+                    Sign In
+                  </Button>
+                )}
 
-                
+                {/* Mini Footer */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-xs text-gray-500 text-center">
+                    <p className="font-semibold mb-1" style={{ color: "var(--theme-primary)" }}>
+                      {company.company || "Grace by Anu"}
+                    </p>
+                    <p>© {new Date().getFullYear()} All rights reserved</p>
+                  </div>
+                </div>
               </SheetContent>
             </Sheet>
           </div>

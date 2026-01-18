@@ -220,7 +220,7 @@ export default function UserProfile() {
   const allBaseTabs = [
     { id: "dashboard" as TabType, label: "Dashboard", icon: LayoutDashboard },
     { id: "profile" as TabType, label: "Profile", icon: User },
-    { id: "addresses" as TabType, label: "Addresses", icon: MapPin },
+    { id: "addresses" as TabType, label: "Address", icon: MapPin },
     { id: "wishlist" as TabType, label: "Wishlist", icon: Heart },
     { id: "orders" as TabType, label: "Orders", icon: Package },
     { id: "reviews" as TabType, label: "Reviews", icon: Star },
@@ -424,7 +424,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
           <p className="text-2xl font-bold text-gray-900">{pendingOrders}</p>
         </div>
         <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="text-sm text-gray-600 mb-1">Saved Addresses</h3>
+          <h3 className="text-sm text-gray-600 mb-1">Saved Address</h3>
           <p className="text-2xl font-bold text-gray-900">{addresses.length}</p>
         </div>
       </div>
@@ -824,18 +824,18 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
         cancelText="Cancel"
       />
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold theme-heading">Saved Addresses</h2>
+        <h2 className="text-2xl font-bold theme-heading">Address</h2>
         <button
           onClick={() => setShowAddForm(true)}
           className="theme-button flex items-center gap-2 px-4 h-12 rounded-lg"
         >
-          <Plus size={16} /> Add Address
+          <Plus size={16} /> Add
         </button>
       </div>
 
       {showAddForm && (
         <div className="mb-6 p-4 border rounded-lg">
-          <h3 className="font-semibold mb-4 text-gray-900">Add New Address</h3>
+          <h3 className="font-semibold mb-4 text-gray-900">Add</h3>
           <AddressForm
             formData={formData}
             setFormData={setFormData}

@@ -155,14 +155,16 @@ const rightContent = (
 
         {/* Shop Banner after Purchase List and Order Summary */}
         {shopBanner && (
-          <div className="mt-30">
+          <div className="mt-4 md:mt-8">
             <Banner imageSrc={shopBanner.imageUrl} />
           </div>
         )}
 
       </div>
 
-      <Footer />
+      <div className="mt-4 md:mt-8">
+        <Footer />
+      </div>
     </div>
   );
 };

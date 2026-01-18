@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 type Props = {
   images: string[];
@@ -16,6 +16,12 @@ export default function ProductImageGallery({ images }: Props) {
   
   const displayImages = validImages.length > 0 ? validImages : ["/product.png"];
   const [selected, setSelected] = useState(displayImages[0] || "/product.png");
+
+  // Reset selected image when images prop changes (product changes)
+  useEffect(() => {
+    const firstImage = displayImages[0] || "/product.png";
+    setSelected(firstImage);
+  }, [displayImages.length, displayImages[0]]); // Use displayImages length and first image as dependency
 
   return (
     <div className="flex flex-col gap-2 w-full">
