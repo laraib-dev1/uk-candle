@@ -312,7 +312,7 @@ export default function BlogDetail() {
                 >
                   <FaPinterest size={20} />
                 </a>
-                {navigator.share && (
+                {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
                   <button
                     onClick={handleNativeShare}
                     className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 transition-colors"
