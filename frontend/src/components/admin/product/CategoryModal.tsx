@@ -129,7 +129,7 @@ const handleSubmit = async () => {
         <div className="space-y-4">
           {/* Name */}
           <div>
-            <label className="text-sm font-medium">Name</label>
+            <label className="text-sm font-medium text-gray-900">Name</label>
             <Input
               value={form.name}
               disabled={isView}
@@ -141,7 +141,7 @@ const handleSubmit = async () => {
 
           {/* Products */}
           <div>
-            <label className="text-sm font-medium">Products</label>
+            <label className="text-sm font-medium text-gray-900">Products</label>
             <Input
               type="number"
               value={form.products}
@@ -156,7 +156,7 @@ const handleSubmit = async () => {
 
           {/* Icon */}
           <div>
-            <label className="text-sm font-medium">Icon (1:1) *</label>
+            <label className="text-sm font-medium text-gray-900">Icon (1:1) *</label>
             {isView ? (
               <img
                 src={(form.icon && form.icon.trim() !== "") ? form.icon : "/category.png"}

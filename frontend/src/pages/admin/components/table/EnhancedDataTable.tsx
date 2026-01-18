@@ -103,9 +103,10 @@ export default function EnhancedDataTable<T extends { id?: string }>({
       if (!hasActions) return null;
 
       return (
-        <div className="enhanced-table-actions w-8">
+        <div className="enhanced-table-actions">
           <div className="flex items-center gap-1 flex-nowrap">
-            <div className="flex items-center justify-center w-8 h-8 flex-shrink-0">
+            {/* 3 dots icon - always visible */}
+            <div className="flex items-center justify-center w-8 h-8 flex-shrink-0 dots-icon">
               <svg
                 width="16"
                 height="16"
@@ -118,6 +119,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
                 <circle cx="8" cy="12" r="1.5" fill="currentColor" />
               </svg>
             </div>
+            {/* Action buttons - shown on hover */}
             <div className="action-buttons items-center gap-2 flex-nowrap ml-1">
               {onView && (
                 <button
@@ -163,8 +165,8 @@ export default function EnhancedDataTable<T extends { id?: string }>({
     ignoreRowClick: true,
     allowOverflow: true,
     button: true,
-    minWidth: "60px",
-    width: "60px",
+    minWidth: "140px",
+    width: "140px",
   };
 
   const enhancedColumns: TableColumn<T>[] = [
@@ -196,6 +198,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
         paddingRight: "12px",
         fontSize: "0.875rem",
         color: "#000000",
+        overflow: "visible !important",
       },
     },
     rows: {

@@ -109,23 +109,29 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
   const fetchData = async () => {
     try {
       const [cats, auths] = await Promise.all([getBlogCategories(), getBlogAuthors()]);
-      setCategories(cats);
-      setAuthors(auths);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setAuthors(Array.isArray(auths) ? auths : []);
       if (form.category) {
         const nics = await getBlogNiches(form.category);
-        setNiches(nics);
+        setNiches(Array.isArray(nics) ? nics : []);
       }
     } catch (err) {
       console.error("Failed to fetch data:", err);
+      error("Failed to load categories or authors");
     }
   };
 
   const fetchNiches = async (categoryId: string) => {
     try {
+      if (!categoryId) {
+        setNiches([]);
+        return;
+      }
       const nics = await getBlogNiches(categoryId);
-      setNiches(nics);
+      setNiches(Array.isArray(nics) ? nics : []);
     } catch (err) {
       console.error("Failed to fetch niches:", err);
+      setNiches([]);
     }
   };
 
@@ -190,13 +196,31 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
       if (mode === "add") {
         await createBlog(blogData);
         success("Blog created successfully!");
-      } else if (mode === "edit" && data?.id) {
-        await updateBlog(data.id, blogData);
+      } else if (mode === "edit" && (data?.id || data?._id)) {
+        const blogId = data.id || data._id;
+        await updateBlog(blogId, blogData);
         success("Blog updated successfully!");
       }
 
-      onSubmit();
+      // Reset form
+      setForm({
+        title: "",
+        subTag: "",
+        description: "",
+        image: "",
+        category: "",
+        niche: "",
+        author: "",
+        tags: "",
+        status: "draft",
+        imageFile: null,
+      });
+      
       onClose();
+      // Call onSubmit after a small delay to ensure modal is closed
+      setTimeout(() => {
+        onSubmit();
+      }, 100);
     } catch (err: any) {
       error(err.response?.data?.message || "Failed to save blog");
     } finally {
@@ -253,11 +277,15 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat._id} value={cat._id} className="text-gray-900">
-                        {cat.name}
-                      </SelectItem>
-                    ))}
+                    {categories.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-gray-500">No categories available</div>
+                    ) : (
+                      categories.map((cat) => (
+                        <SelectItem key={cat._id || cat.id} value={cat._id || cat.id} className="text-gray-900">
+                          {cat.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -266,24 +294,40 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
             {/* Sub Niche */}
             {form.category && (
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">Sub Niche</label>
-                <Select
-                  value={form.niche}
-                  onValueChange={(value) => setForm({ ...form, niche: value })}
-                  disabled={isView}
-                >
-                  <SelectTrigger className="text-gray-900">
-                    <SelectValue placeholder="Select niche" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="" className="text-gray-900">None</SelectItem>
-                    {niches.map((niche) => (
-                      <SelectItem key={niche._id} value={niche._id} className="text-gray-900">
-                        {niche.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="block text-sm font-medium mb-1 text-gray-900">Sub Niche (Optional)</label>
+                <div className="flex gap-2">
+                  <Select
+                    value={form.niche || undefined}
+                    onValueChange={(value) => setForm({ ...form, niche: value })}
+                    disabled={isView}
+                    className="flex-1"
+                  >
+                    <SelectTrigger className="text-gray-900">
+                      <SelectValue placeholder="Select niche (optional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {niches.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-gray-500">No niches available for this category</div>
+                      ) : (
+                        niches.map((niche) => (
+                          <SelectItem key={niche._id || niche.id} value={niche._id || niche.id} className="text-gray-900">
+                            {niche.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {form.niche && !isView && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setForm({ ...form, niche: "" })}
+                      className="text-gray-900"
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -343,11 +387,15 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
                     <SelectValue placeholder="Select author" />
                   </SelectTrigger>
                   <SelectContent className="bg-white">
-                    {authors.map((author) => (
-                      <SelectItem key={author._id} value={author._id} className="text-gray-900">
-                        {author.name}
-                      </SelectItem>
-                    ))}
+                    {authors.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-gray-500">No authors available</div>
+                    ) : (
+                      authors.map((author) => (
+                        <SelectItem key={author._id || author.id} value={author._id || author.id} className="text-gray-900">
+                          {author.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -407,7 +455,7 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
           setSelectedFileForCrop(null);
         }}
         onCropDone={handleCropDone}
-        file={selectedFileForCrop}
+        file={selectedFileForCrop || null}
         aspect={16 / 9}
       />
     </>

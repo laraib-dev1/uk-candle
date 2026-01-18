@@ -130,21 +130,34 @@ main[class*="developer"] a:not([class*="theme"]) {
 
 /* Enhanced DataTable row hover */
 .enhanced-table-actions {
-  transition: width 0.2s ease;
-  overflow: hidden;
+  transition: all 0.2s ease;
+  overflow: visible !important;
+  width: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .rdt_TableRow:hover .enhanced-table-actions {
-  width: auto !important;
-  min-width: 100px;
+  width: 100% !important;
+  min-width: 140px;
 }
 
 .rdt_TableRow:hover .enhanced-table-actions .action-buttons {
   display: flex !important;
 }
 
+.rdt_TableRow:hover .enhanced-table-actions .dots-icon {
+  display: none !important;
+}
+
 .enhanced-table-actions .action-buttons {
   display: none;
+}
+
+.enhanced-table-actions .dots-icon {
+  display: flex;
 }
 
 /* Address truncation */

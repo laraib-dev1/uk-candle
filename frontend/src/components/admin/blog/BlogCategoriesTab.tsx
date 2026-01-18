@@ -53,23 +53,23 @@ export default function BlogCategoriesTab() {
       setLoading(true);
       if (activeSubTab === "categories") {
         const data = await getBlogCategories();
-        setCategories(data.map((cat: any) => ({ id: cat._id, _id: cat._id, name: cat.name, blogs: cat.blogs || 0 })));
+        setCategories(Array.isArray(data) ? data.map((cat: any) => ({ id: cat._id, _id: cat._id, name: cat.name, blogs: cat.blogs || 0 })) : []);
       } else {
-        const data = await getBlogNiches();
+        const data = await getBlogNiches(); // Get all niches without category filter
         setNiches(
-          data.map((niche: any) => ({
+          Array.isArray(data) ? data.map((niche: any) => ({
             id: niche._id,
             _id: niche._id,
             name: niche.name,
             category: typeof niche.category === "object" ? niche.category._id : niche.category,
             categoryName: typeof niche.category === "object" ? niche.category.name : "",
             blogs: niche.blogs || 0,
-          }))
+          })) : []
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch data:", err);
-      error("Failed to load data");
+      error(err.response?.data?.message || "Failed to load data");
     } finally {
       setLoading(false);
     }

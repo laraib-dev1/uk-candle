@@ -55,12 +55,12 @@ export default function BlogsTab() {
       setLoading(true);
       const data = await getBlogs(statusFilter === "all" ? undefined : statusFilter);
       const mapped = data.map((blog: any) => ({
-        id: blog._id,
-        _id: blog._id,
-        title: blog.title,
-        subTag: blog.subTag,
-        description: blog.description,
-        image: blog.image,
+        id: blog._id || blog.id,
+        _id: blog._id || blog.id,
+        title: blog.title || "",
+        subTag: blog.subTag || "",
+        description: blog.description || "",
+        image: blog.image || "",
         category: typeof blog.category === "object" ? blog.category._id : blog.category,
         categoryName: typeof blog.category === "object" ? blog.category.name : "",
         niche: blog.niche ? (typeof blog.niche === "object" ? blog.niche._id : blog.niche) : null,
@@ -68,7 +68,7 @@ export default function BlogsTab() {
         author: typeof blog.author === "object" ? blog.author._id : blog.author,
         authorName: typeof blog.author === "object" ? blog.author.name : "",
         tags: blog.tags || [],
-        status: blog.status,
+        status: blog.status || "draft",
         views: blog.views || 0,
         shares: blog.shares || 0,
         comments: blog.comments || 0,

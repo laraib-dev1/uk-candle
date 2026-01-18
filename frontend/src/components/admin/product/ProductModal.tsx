@@ -338,22 +338,22 @@ const handleSubmit = () => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white text-gray-900 max-h-[90vh] overflow-y-auto overflow-x-hidden">
+      <DialogContent className="bg-white text-black max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-gray-900">
             {mode === "add" && "Add Product"}
             {mode === "edit" && "Edit Product"}
             {mode === "view" && "View Product"}
             
           </DialogTitle>
         </DialogHeader>
-<DialogDescription>
+<DialogDescription className="text-gray-700">
       Fill in all product details below.
     </DialogDescription>
         <div className="p-4 space-y-4">
           {/* Top row: name */}
           <div>
-            <label className="text-sm font-medium">Product Title</label>
+            <label className="text-sm font-medium text-gray-900">Product Title</label>
             <Input
               value={form.name}
               disabled={isView}
@@ -366,7 +366,7 @@ const handleSubmit = () => {
           {/* Category / Price */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-sm font-medium">Category</label>
+              <label className="text-sm font-medium text-gray-900">Category</label>
               <select
   value={typeof form.category === "string" ? form.category : form.category._id}
   onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -385,7 +385,7 @@ const handleSubmit = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Price</label>
+              <label className="text-sm font-medium text-gray-900">Price</label>
               <Input
                 type="number"
                 value={form.price}
@@ -397,7 +397,7 @@ const handleSubmit = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Currency</label>
+              <label className="text-sm font-medium text-gray-900">Currency</label>
               <select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
@@ -416,7 +416,7 @@ const handleSubmit = () => {
 
           {/* Description */}
           <div>
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium text-gray-900">Description</label>
             <Textarea
               value={form.description}
               disabled={isView}
@@ -436,7 +436,7 @@ const handleSubmit = () => {
   disabled={isView}
 />
 
-              <span className="text-sm font-medium">% Off</span>
+              <span className="text-sm font-medium text-gray-900">% Off</span>
             </label>
              {toggles.discount && (
             <div className="flex gap-3 mt-2">
@@ -468,7 +468,7 @@ const handleSubmit = () => {
     onChange={() => toggleSection("images")}
     disabled={isView}
   />
-  <label className="font-semibold">Images</label>
+  <label className="font-semibold text-gray-900">Images</label>
 </div>
   </label>
     {toggles.images && (
@@ -598,7 +598,7 @@ const handleSubmit = () => {
           onChange={() => toggleSection("metaFeatures")}
           disabled={isView}
         />
-        <label className="font-semibold">Meta Features</label>
+        <label className="font-semibold text-gray-900">Meta Features</label>
       </div>
     </div>
   </label>
@@ -607,7 +607,7 @@ const handleSubmit = () => {
     <div className="grid grid-cols-1 gap-3 mt-2">
       {/* Meta Features rich text editor */}
       <div>
-        <label className="font-medium mb-1">Meta Features</label>
+        <label className="font-medium mb-1 text-gray-900">Meta Features</label>
         <RichTextEditor
           value={form.metaFeatures || ""}
           readOnly={isView}
@@ -618,7 +618,7 @@ const handleSubmit = () => {
 
       {/* Meta Info rich text editor */}
       <div>
-        <label className="font-medium mb-1">Meta Info</label>
+        <label className="font-medium mb-1 text-gray-900">Meta Info</label>
         <RichTextEditor
   value={form.metaInfo || ""}
   readOnly={isView}
@@ -643,7 +643,7 @@ const handleSubmit = () => {
       onChange={() => toggleSection("videos")}
       disabled={isView}
     />
-    <label className="font-semibold">Demo Videos</label>
+    <label className="font-semibold text-gray-900">Demo Videos</label>
   </div>
 
   {toggles.videos && (

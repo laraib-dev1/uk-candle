@@ -29,10 +29,10 @@ export default function DeleteModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-white">
         <DialogHeader>
-          <DialogTitle className="text-red-600">{title}</DialogTitle>
+          <DialogTitle className="text-red-600 text-gray-900">{title}</DialogTitle>
         </DialogHeader>
 
-        <p className="text-gray-700">{message}</p>
+        <p className="text-gray-900">{message}</p>
 
         <DialogFooter className="mt-4">
           <Button

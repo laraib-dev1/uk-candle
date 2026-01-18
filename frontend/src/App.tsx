@@ -8,6 +8,8 @@ import PrivacyPolicy from "./pages/shop/PrivacyPolicy";
 import TermsConditions from "./pages/shop/TermsConditions";
 import FAQs from "./pages/shop/FAQs";
 import ContactUs from "./pages/shop/ContactUs";
+import Blogs from "./pages/shop/Blogs";
+import BlogDetail from "./pages/shop/BlogDetail";
 import UserProfile from "./pages/user/UserProfile";
 import { CartProvider } from "./components/products/CartContext";
 import AdminCategories from "@/pages/admin/pages/CategoriesPage";
@@ -77,6 +79,8 @@ export default function App() {
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blog/:id" element={<BlogDetail />} />
 
       {/* ---------- USER PROFILE ROUTE ---------- */}
         <Route

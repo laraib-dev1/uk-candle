@@ -70,26 +70,26 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50 text-black">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4 theme-heading">Order Details</h2>
+        <h2 className="text-xl font-bold mb-4 theme-heading text-gray-900">Order Details</h2>
 
         {fetchingOrder ? (
           <div className="text-center py-4">
-            <p className="text-gray-600">Loading order details...</p>
+            <p className="text-gray-900">Loading order details...</p>
           </div>
         ) : (
           <>
-            <p><strong>Customer:</strong> {currentOrder.customerName}</p>
-            <p><strong>Phone:</strong> {currentOrder.phoneNumber}</p>
-            <p>
+            <p className="text-gray-900"><strong>Customer:</strong> {currentOrder.customerName}</p>
+            <p className="text-gray-900"><strong>Phone:</strong> {currentOrder.phoneNumber}</p>
+            <p className="text-gray-900">
               <strong>Address:</strong>{" "}
               {currentOrder.address
                 ? `${currentOrder.address.line1 || ""}${currentOrder.address.area ? ", " + currentOrder.address.area : ""}, ${currentOrder.address.city || ""}, ${currentOrder.address.province || ""}, ${currentOrder.address.postalCode || ""}`
                 : "No address provided"}
             </p>
-            <p><strong>Items:</strong> {currentOrder.items.map(i => `${i.name} x ${i.quantity}`).join(", ")}</p>
-            <p><strong>Bill:</strong> ${currentOrder.bill}</p>
-            <p><strong>Payment:</strong> {currentOrder.payment}</p>
-            <p><strong>Order Date:</strong> {new Date(currentOrder.createdAt).toLocaleString()}</p>
+            <p className="text-gray-900"><strong>Items:</strong> {currentOrder.items.map(i => `${i.name} x ${i.quantity}`).join(", ")}</p>
+            <p className="text-gray-900"><strong>Bill:</strong> ${currentOrder.bill}</p>
+            <p className="text-gray-900"><strong>Payment:</strong> {currentOrder.payment}</p>
+            <p className="text-gray-900"><strong>Order Date:</strong> {new Date(currentOrder.createdAt).toLocaleString()}</p>
             
             {/* Show cancellation info if order was cancelled */}
             {(() => {
@@ -133,7 +133,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
         )}
 
         <div className="mt-4">
-          <label className="block mb-1">Status:</label>
+          <label className="block mb-1 text-gray-900">Status:</label>
           <select 
             value={status} 
             onChange={e => {

@@ -137,11 +137,15 @@ export default function BlogNicheModal({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent className="bg-white">
-                {categories.map((cat) => (
-                  <SelectItem key={cat._id} value={cat._id} className="text-gray-900">
-                    {cat.name}
-                  </SelectItem>
-                ))}
+                {categories.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-gray-500">No categories available. Please add a category first.</div>
+                ) : (
+                  categories.map((cat) => (
+                    <SelectItem key={cat._id || cat.id} value={cat._id || cat.id} className="text-gray-900">
+                      {cat.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
