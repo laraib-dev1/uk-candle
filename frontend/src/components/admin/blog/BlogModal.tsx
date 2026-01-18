@@ -306,21 +306,22 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
                       onValueChange={(value) => setForm({ ...form, niche: value })}
                       disabled={isView}
                     >
-                    <SelectTrigger className="text-gray-900">
-                      <SelectValue placeholder="Select niche (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      {niches.length === 0 ? (
-                        <div className="px-2 py-1.5 text-sm text-gray-500">No niches available for this category</div>
-                      ) : (
-                        niches.map((niche) => (
-                          <SelectItem key={niche._id || niche.id} value={niche._id || niche.id} className="text-gray-900">
-                            {niche.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger className="text-gray-900">
+                        <SelectValue placeholder="Select niche (optional)" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        {niches.length === 0 ? (
+                          <div className="px-2 py-1.5 text-sm text-gray-500">No niches available for this category</div>
+                        ) : (
+                          niches.map((niche) => (
+                            <SelectItem key={niche._id || niche.id} value={niche._id || niche.id} className="text-gray-900">
+                              {niche.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {form.niche && !isView && (
                     <Button
                       type="button"
