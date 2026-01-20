@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { PanelBottom, Save, Plus, Trash2, GripVertical, X } from "lucide-react";
+import { PanelBottom, Save, Plus, Trash2, GripVertical, X, ShoppingCart, FileText } from "lucide-react";
+import { getCompany } from "@/api/company.api";
+import { getCategories } from "@/api/category.api";
+import { getProducts } from "@/api/product.api";
 import { getFooter, updateFooter } from "@/api/footer.api";
 import { getEnabledWebPagesByLocation } from "@/api/webpage.api";
 import { useToast } from "@/components/ui/toast";
@@ -20,6 +23,77 @@ interface FooterSection {
   enabled?: boolean;
 }
 
+// Custom Grid Icon Component - shows bars representing grid count
+const GridIcon = ({ count, isSelected }: { count: number; isSelected: boolean }) => {
+  const color = isSelected ? "var(--theme-primary)" : "#6B7280";
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {count === 3 && (
+        <>
+          <rect x="2" y="2" width="6" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="10" y="2" width="6" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="18" y="2" width="4" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="2" y="10" width="6" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="10" y="10" width="6" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="18" y="10" width="4" height="6" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="2" y="18" width="6" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="10" y="18" width="6" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="18" y="18" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+        </>
+      )}
+      {count === 4 && (
+        <>
+          <rect x="1" y="1" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="7" y="1" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="13" y="1" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="19" y="1" width="4" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="1" y="7.5" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="7" y="7.5" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="13" y="7.5" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="19" y="7.5" width="4" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="1" y="14" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="7" y="14" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="13" y="14" width="4.5" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="19" y="14" width="4" height="4.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="1" y="20.5" width="4.5" height="3.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="7" y="20.5" width="4.5" height="3.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="13" y="20.5" width="4.5" height="3.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+          <rect x="19" y="20.5" width="4" height="3.5" stroke={color} strokeWidth="1.5" fill="none" rx="1"/>
+        </>
+      )}
+      {count === 5 && (
+        <>
+          <rect x="0.5" y="0.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="5" y="0.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="9.5" y="0.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="14" y="0.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="18.5" y="0.5" width="5" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="0.5" y="5.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="5" y="5.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="9.5" y="5.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="14" y="5.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="18.5" y="5.5" width="5" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="0.5" y="10.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="5" y="10.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="9.5" y="10.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="14" y="10.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="18.5" y="10.5" width="5" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="0.5" y="15.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="5" y="15.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="9.5" y="15.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="14" y="15.5" width="4" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="18.5" y="15.5" width="5" height="4" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="0.5" y="20.5" width="4" height="3" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="5" y="20.5" width="4" height="3" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="9.5" y="20.5" width="4" height="3" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="14" y="20.5" width="4" height="3" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+          <rect x="18.5" y="20.5" width="5" height="3" stroke={color} strokeWidth="1.5" fill="none" rx="0.5"/>
+        </>
+      )}
+    </svg>
+  );
+};
+
 export default function FooterPage() {
   const { success, error } = useToast();
   const [footer, setFooter] = useState<{
@@ -28,12 +102,28 @@ export default function FooterPage() {
     copyright: string;
     description: string;
     showPreview: boolean;
+    showCategories: boolean;
+    showProducts: boolean;
+    showSocialIcons: boolean;
+    showSocialLinks: boolean;
+    gridSettings: {
+      productsPerRow: number;
+      blogsPerRow: number;
+    };
   }>({
     sections: [],
     socialLinks: {},
     copyright: "",
     description: "",
     showPreview: true,
+    showCategories: false,
+    showProducts: false,
+    showSocialIcons: false,
+    showSocialLinks: false,
+    gridSettings: {
+      productsPerRow: 4,
+      blogsPerRow: 4,
+    },
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +133,9 @@ export default function FooterPage() {
   const [newSectionEnabled, setNewSectionEnabled] = useState(true);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [selectedPageIds, setSelectedPageIds] = useState<Set<string>>(new Set());
+  const [isSavingGrid, setIsSavingGrid] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
   const loadFooter = async () => {
     try {
@@ -92,6 +185,11 @@ export default function FooterPage() {
         showPreview: data.showPreview === undefined || data.showPreview === null 
           ? true 
           : (data.showPreview === true || data.showPreview === "true"),
+        showCategories: data.showCategories === true || data.showCategories === "true",
+        showProducts: data.showProducts === true || data.showProducts === "true",
+        showSocialIcons: data.showSocialIcons === true || data.showSocialIcons === "true",
+        showSocialLinks: data.showSocialLinks === true || data.showSocialLinks === "true",
+        gridSettings: data.gridSettings || { productsPerRow: 4, blogsPerRow: 4 },
       });
     } catch (error) {
       console.error("Failed to load footer:", error);
@@ -111,6 +209,12 @@ export default function FooterPage() {
     const loadAll = async () => {
       setInitialLoading(true);
       try {
+        const [cats, prods] = await Promise.all([
+          getCategories().catch(() => []),
+          getProducts().catch(() => []),
+        ]);
+        setCategories(cats || []);
+        setProducts(prods || []);
         await Promise.all([loadFooter(), loadPages()]);
       } finally {
         setInitialLoading(false);
@@ -135,6 +239,11 @@ export default function FooterPage() {
         copyright: footer.copyright,
         description: footer.description,
         showPreview: showPreviewValue, // Explicitly set as boolean
+        showCategories: footer.showCategories || false,
+        showProducts: footer.showProducts || false,
+        showSocialIcons: footer.showSocialIcons || false,
+        showSocialLinks: footer.showSocialLinks || false,
+        gridSettings: footer.gridSettings || { productsPerRow: 4, blogsPerRow: 4 },
       };
       
       console.log("Sending to backend - showPreview:", showPreviewValue, "full data:", JSON.stringify(saveData));
@@ -383,6 +492,196 @@ export default function FooterPage() {
           <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500">Add Section</p>
         </button>
+      </div>
+
+      {/* Permanent Columns - Categories and Products */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="font-semibold theme-heading">Permanent Columns</h2>
+          <p className="text-sm text-gray-600 mt-1">Show popular categories and products in footer</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Categories Column */}
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Categories</h3>
+                <p className="text-xs text-gray-500">Show 3 popular categories</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={footer.showCategories}
+                onChange={(e) => setFooter({ ...footer, showCategories: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--theme-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
+            </label>
+          </div>
+
+          {/* Products Column */}
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Products</h3>
+                <p className="text-xs text-gray-500">Show 3 popular products</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={footer.showProducts}
+                onChange={(e) => setFooter({ ...footer, showProducts: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--theme-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Social Icons and Links */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="font-semibold theme-heading">Social Media</h2>
+          <p className="text-sm text-gray-600 mt-1">Manage social icons and links display in footer</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Social Icons */}
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <PanelBottom className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Social Icons</h3>
+                <p className="text-xs text-gray-500">Show icons under company name</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={footer.showSocialIcons}
+                onChange={(e) => setFooter({ ...footer, showSocialIcons: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--theme-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
+            </label>
+          </div>
+
+          {/* Social Links */}
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <PanelBottom className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Social Links</h3>
+                <p className="text-xs text-gray-500">Show links column with platform names</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={footer.showSocialLinks}
+                onChange={(e) => setFooter({ ...footer, showSocialLinks: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--theme-primary)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid Settings */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold theme-heading">Grid Settings</h2>
+            <p className="text-sm text-gray-600 mt-1">Control the number of items displayed per row on the site</p>
+          </div>
+          <button
+            onClick={async () => {
+              setIsSavingGrid(true);
+              try {
+                await handleSave();
+                success("Grid settings saved successfully!");
+              } catch (err) {
+                error("Failed to save grid settings");
+              } finally {
+                setIsSavingGrid(false);
+              }
+            }}
+            disabled={isSavingGrid || initialLoading}
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 theme-button"
+          >
+            {isSavingGrid && <CircularLoader size={16} color="white" />}
+            <Save size={18} />
+            Save
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Product Grid */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <ShoppingCart size={18} />
+              Product Grid
+            </h3>
+            <div className="flex gap-3">
+              {[3, 4, 5].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setFooter({ 
+                    ...footer, 
+                    gridSettings: { ...footer.gridSettings, productsPerRow: num } 
+                  })}
+                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                    footer.gridSettings.productsPerRow === num
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/10"
+                      : "border-gray-300 bg-white hover:border-gray-400"
+                  }`}
+                  title={`${num} columns`}
+                >
+                  <GridIcon count={num} isSelected={footer.gridSettings.productsPerRow === num} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Blog Grid */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <FileText size={18} />
+              Blog Grid
+            </h3>
+            <div className="flex gap-3">
+              {[3, 4, 5].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setFooter({ 
+                    ...footer, 
+                    gridSettings: { ...footer.gridSettings, blogsPerRow: num } 
+                  })}
+                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                    footer.gridSettings.blogsPerRow === num
+                      ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/10"
+                      : "border-gray-300 bg-white hover:border-gray-400"
+                  }`}
+                  title={`${num} columns`}
+                >
+                  <GridIcon count={num} isSelected={footer.gridSettings.blogsPerRow === num} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Footer Preview */}

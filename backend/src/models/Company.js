@@ -29,6 +29,7 @@ const CompanySchema = new mongoose.Schema({
     light: { type: String, default: "" },
   },
   copyright: { type: String, default: "" },
+  description: { type: String, default: "" },
 }, { timestamps: true });
 
 export default mongoose.models.Company || mongoose.model("Company", CompanySchema);

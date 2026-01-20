@@ -198,10 +198,6 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
         success("Blog created successfully!");
       } else if (mode === "edit" && (data?.id || data?._id)) {
         const blogId = data.id || data._id;
-        if (!blogId) {
-          error("Blog ID is missing");
-          return;
-        }
         await updateBlog(blogId, blogData);
         success("Blog updated successfully!");
       }
@@ -300,28 +296,27 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-900">Sub Niche (Optional)</label>
                 <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Select
-                      value={form.niche || undefined}
-                      onValueChange={(value) => setForm({ ...form, niche: value })}
-                      disabled={isView}
-                    >
-                      <SelectTrigger className="text-gray-900">
-                        <SelectValue placeholder="Select niche (optional)" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        {niches.length === 0 ? (
-                          <div className="px-2 py-1.5 text-sm text-gray-500">No niches available for this category</div>
-                        ) : (
-                          niches.map((niche) => (
-                            <SelectItem key={niche._id || niche.id} value={niche._id || niche.id} className="text-gray-900">
-                              {niche.name}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Select
+                    value={form.niche || undefined}
+                    onValueChange={(value) => setForm({ ...form, niche: value })}
+                    disabled={isView}
+                    className="flex-1"
+                  >
+                    <SelectTrigger className="text-gray-900">
+                      <SelectValue placeholder="Select niche (optional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {niches.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-gray-500">No niches available for this category</div>
+                      ) : (
+                        niches.map((niche) => (
+                          <SelectItem key={niche._id || niche.id} value={niche._id || niche.id} className="text-gray-900">
+                            {niche.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                   {form.niche && !isView && (
                     <Button
                       type="button"

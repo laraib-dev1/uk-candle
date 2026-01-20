@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Package, Search, Check, Calendar, Clock, Image as ImageIcon, Globe, Heart, ShoppingCart, User, Star, MapPin, MessageSquare, Eye, Edit, Trash2, Plus } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,42 +10,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Textarea } from "@/components/ui/textarea";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ProductCard from "@/components/products/ProductCard";
-import CircularLoader from "@/components/ui/CircularLoader";
-
-// Color Picker Component with Hex Display
-const ColorPickerExample = () => {
-  const [color, setColor] = useState("#3b82f6");
-  
-  const rgbToHex = (rgb: string) => {
-    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (!match) return rgb;
-    const r = parseInt(match[1], 10).toString(16).padStart(2, '0');
-    const g = parseInt(match[2], 10).toString(16).padStart(2, '0');
-    const b = parseInt(match[3], 10).toString(16).padStart(2, '0');
-    return `#${r}${g}${b}`;
-  };
-  
-  return (
-    <div className="space-y-2">
-      <Label>Select Color</Label>
-      <div className="flex items-center gap-2">
-        <Input 
-          type="color" 
-          className="h-12 w-20 border-gray-300" 
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-        />
-        <Input 
-          type="text" 
-          value={color.toUpperCase()} 
-          readOnly
-          className="flex-1 border-gray-300 bg-gray-50"
-          placeholder="#000000"
-        />
-      </div>
-    </div>
-  );
-};
 
 // Component categories with examples
 const componentCategories = [
@@ -57,7 +21,7 @@ const componentCategories = [
       {
         name: "Outline Button",
         example: (
-          <button className="h-10 px-5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          <button className="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
             Add
           </button>
         ),
@@ -65,7 +29,7 @@ const componentCategories = [
       {
         name: "Grey Fill Button",
         example: (
-          <button className="h-10 px-5 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors">
+          <button className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">
             Add
           </button>
         ),
@@ -74,7 +38,7 @@ const componentCategories = [
         name: "Primary Button",
         example: (
           <button 
-            className="h-10 px-5 text-white rounded-lg transition-colors theme-button"
+            className="px-5 py-2 text-white rounded-lg transition-colors theme-button"
             style={{ backgroundColor: "var(--theme-primary)" }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--theme-dark)"}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--theme-primary)"}
@@ -85,136 +49,11 @@ const componentCategories = [
       },
       {
         name: "Button with Icon",
-        example: <Button className="theme-button h-10"><Plus className="w-4 h-4 mr-2" /> Add Item</Button>,
-      },
-      {
-        name: "Icon Button (Heart)",
-        example: (
-          <button
-            className="flex items-center justify-center w-10 h-10 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              borderColor: "var(--theme-primary)",
-              color: "var(--theme-primary)",
-              backgroundColor: "transparent",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--theme-light)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            <Heart size={20} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Heart - Loading)",
-        example: (
-          <button
-            className="flex items-center justify-center w-10 h-10 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
-            style={{
-              borderColor: "var(--theme-primary)",
-              color: "var(--theme-primary)",
-              backgroundColor: "transparent",
-            }}
-          >
-            <CircularLoader size={18} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Cart)",
-        example: (
-          <button
-            className="flex items-center justify-center w-10 h-10 rounded-lg transition-all relative"
-            style={{
-              color: "var(--theme-primary)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "0.8";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "1";
-            }}
-          >
-            <ShoppingCart size={20} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Edit)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-green-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Edit"
-          >
-            <Edit size={16} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Edit - Loading)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-green-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
-            title="Edit"
-          >
-            <CircularLoader size={14} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Delete)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-red-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Delete"
-          >
-            <Trash2 size={16} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (Delete - Loading)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-red-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
-            title="Delete"
-          >
-            <CircularLoader size={14} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (View)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            title="View"
-          >
-            <Eye size={16} />
-          </button>
-        ),
-      },
-      {
-        name: "Icon Button (View - Loading)",
-        example: (
-          <button
-            className="p-1.5 text-gray-600 hover:text-blue-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
-            title="View"
-          >
-            <CircularLoader size={14} />
-          </button>
-        ),
+        example: <Button className="theme-button"><Plus className="w-4 h-4" /> Add Item</Button>,
       },
       {
         name: "Loading Button",
-        example: <Button className="theme-button h-10" loading>Loading...</Button>,
+        example: <Button className="theme-button" loading>Loading...</Button>,
       },
     ],
   },
@@ -228,7 +67,7 @@ const componentCategories = [
         example: (
           <div className="space-y-2">
             <Label>Title</Label>
-            <Input placeholder="placeholder" className="border-gray-300" />
+            <Input placeholder="placeholder" />
           </div>
         ),
       },
@@ -237,16 +76,7 @@ const componentCategories = [
         example: (
           <div className="space-y-2">
             <Label>Title</Label>
-            <Input 
-              placeholder="placeholder" 
-              autoFocus 
-              className="border-gray-300"
-              style={{ 
-                borderWidth: "1px", 
-                borderStyle: "solid",
-                borderColor: "var(--theme-primary)"
-              }}
-            />
+            <Input placeholder="placeholder" autoFocus />
           </div>
         ),
       },
@@ -255,7 +85,7 @@ const componentCategories = [
         example: (
           <div className="space-y-2">
             <Label>Description</Label>
-            <Textarea placeholder="Enter description..." rows={4} className="border-gray-300" />
+            <Textarea placeholder="Enter description..." rows={4} />
           </div>
         ),
       },
@@ -304,7 +134,10 @@ const componentCategories = [
       {
         name: "Color Picker",
         example: (
-          <ColorPickerExample />
+          <div className="space-y-2">
+            <Label>Select Color</Label>
+            <Input type="color" className="h-12 w-full" />
+          </div>
         ),
       },
       {
@@ -486,8 +319,6 @@ export default function SpComponentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["buttons", "inputs"])); // Default expanded
-  const tabsRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   const categories = ["All", "Buttons", "Inputs", "Text", "Sidebar Tabs", "Options Menu", "Categories", "Product"];
 
@@ -508,60 +339,31 @@ export default function SpComponentsPage() {
     setExpandedCategories(newExpanded);
   };
 
-  // Update indicator position when tab changes
-  useEffect(() => {
-    if (tabsRef.current) {
-      const activeTab = tabsRef.current.querySelector(`[data-value="${selectedCategory}"]`) as HTMLElement;
-      if (activeTab) {
-        const container = tabsRef.current;
-        const containerRect = container.getBoundingClientRect();
-        const tabRect = activeTab.getBoundingClientRect();
-        setIndicatorStyle({
-          left: tabRect.left - containerRect.left,
-          width: tabRect.width,
-        });
-      }
-    }
-  }, [selectedCategory]);
-
   return (
     <div className="max-w-7xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold theme-heading">SP Components</h1>
       </div>
 
-      {/* Category Headings */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold theme-heading mb-4">Categories</h2>
-        
-        {/* Sliding Tab Component */}
-        <div className="relative" ref={tabsRef}>
-          {/* Sliding Indicator */}
-          <div
-            className="absolute bottom-0 h-0.5 bg-[var(--theme-primary)] transition-all duration-300 ease-out"
-            style={{
-              left: `${indicatorStyle.left}px`,
-              width: `${indicatorStyle.width}px`,
-            }}
-          />
-          
-          {/* Tabs */}
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-            <TabsList className="flex flex-wrap gap-2 border-b border-gray-200 pb-2 bg-transparent h-auto p-0 w-full justify-start">
-              {categories.map((cat) => (
-                <TabsTrigger
-                  key={cat}
-                  value={cat}
-                  data-value={cat}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all relative z-10 data-[state=active]:text-[var(--theme-primary)] data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:bg-gray-100 data-[state=active]:font-semibold`}
-                >
-                  {cat}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
+      {/* Category Tabs */}
+      <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
+        <TabsList className="flex flex-wrap gap-2 border-b border-gray-200 pb-2 bg-transparent h-auto p-0">
+          {categories.map((cat) => (
+            <TabsTrigger
+              key={cat}
+              value={cat}
+              className={`px-4 py-2 rounded-lg font-medium transition-all data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:bg-gray-100`}
+              style={
+                selectedCategory === cat
+                  ? { backgroundColor: "var(--theme-primary)" }
+                  : {}
+              }
+            >
+              {cat}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Components List */}
       <div className="space-y-6 mb-8">

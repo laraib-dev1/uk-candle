@@ -10,6 +10,7 @@ import { getCompany } from "@/api/company.api";
 import PageLoader from "@/components/ui/PageLoader";
 import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2 } from "lucide-react";
 import { FaPinterest } from "react-icons/fa";
+import FeatureCards from "@/components/ui/FeatureCards";
 
 interface Blog {
   _id: string;
@@ -40,6 +41,7 @@ export default function BlogDetail() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
   const [companyLogo, setCompanyLogo] = useState<string>("");
+  const [companyDescription, setCompanyDescription] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,11 +64,10 @@ export default function BlogDetail() {
       setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       setProducts(Array.isArray(productsData) ? productsData.slice(0, 4) : []);
       
-      if (companyData?.company) {
-        setCompanyName(companyData.company);
-      }
-      if (companyData?.logo) {
-        setCompanyLogo(companyData.logo);
+      if (companyData) {
+        setCompanyName(companyData.company || "Grace by Anu");
+        setCompanyLogo(companyData.logo || "");
+        setCompanyDescription(companyData.description || "");
       }
     } catch (err) {
       console.error("Failed to fetch blog:", err);
@@ -220,13 +221,23 @@ export default function BlogDetail() {
           {categoryName && (
             <>
               {" / "}
-              <span>{categoryName}</span>
+              <Link 
+                to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}`} 
+                className="hover:underline"
+              >
+                {categoryName}
+              </Link>
             </>
           )}
           {nicheName && (
             <>
               {" / "}
-              <span>{nicheName}</span>
+              <Link 
+                to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}&niche=${encodeURIComponent(typeof blog.niche === "object" ? blog.niche._id : blog.niche || "")}`} 
+                className="hover:underline"
+              >
+                {nicheName}
+              </Link>
             </>
           )}
           {" / "}
@@ -235,7 +246,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-20">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="flex-1">
@@ -272,8 +283,11 @@ export default function BlogDetail() {
               dangerouslySetInnerHTML={{ __html: blog.description || "<p>No content available.</p>" }}
             />
 
+            {/* Horizontal Line - End of Blog Content */}
+            <div className="border-t border-gray-300 my-8"></div>
+
             {/* Sharing Options */}
-            <div className="border-t border-gray-200 pt-6 mb-8">
+            <div className="pt-6 mb-8">
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Share Your Love!</h3>
               <div className="flex items-center gap-3 flex-wrap">
                 <a
@@ -312,7 +326,7 @@ export default function BlogDetail() {
                 >
                   <FaPinterest size={20} />
                 </a>
-                {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+                {navigator.share && (
                   <button
                     onClick={handleNativeShare}
                     className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 transition-colors"
@@ -324,8 +338,8 @@ export default function BlogDetail() {
               </div>
             </div>
 
-            {/* Author Profile */}
-            {typeof blog.author === "object" && (
+            {/* Author Profile - Commented out as requested, will use later */}
+            {/* {typeof blog.author === "object" && (
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-start gap-4">
                   {getAuthorAvatar(blog.author) && (
@@ -390,20 +404,21 @@ export default function BlogDetail() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
-          {/* Right Sidebar */}
-          <div className="lg:w-64 flex-shrink-0">
-            {/* Table of Contents */}
-            {blog.description && (
-              <div className="mb-6">
-                <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
-              </div>
-            )}
+          {/* Right Sidebar - Fixed on large screens */}
+          <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+            <div className="lg:sticky lg:top-20">
+              {/* Table of Contents */}
+              {blog.description && (
+                <div className="mb-6">
+                  <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
+                </div>
+              )}
 
-            {/* Share Options */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+              {/* Share Options */}
+              <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
               <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
                 Share Your Love!
               </h3>
@@ -463,7 +478,7 @@ export default function BlogDetail() {
                 />
               )}
               <p className="text-sm text-gray-600">
-                {companyName} - Your trusted source for quality products and insights.
+                {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
               </p>
             </div>
 
@@ -484,12 +499,18 @@ export default function BlogDetail() {
                 ))}
               </div>
             </div>
+            </div>
           </div>
         </div>
       </main>
 
+      {/* Feature Cards */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <FeatureCards />
+      </section>
+
       {/* Popular Products */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold theme-heading">Popular Products</h2>
         </div>

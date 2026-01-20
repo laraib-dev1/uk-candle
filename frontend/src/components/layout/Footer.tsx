@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCompany } from "@/api/company.api";
 import { getFooter } from "@/api/footer.api";
+import { getCategories } from "@/api/category.api";
+import { getProducts } from "@/api/product.api";
 import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
+import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
 
 interface FooterLink {
   label: string;
@@ -23,14 +26,25 @@ export default function Footer() {
     company: "VERES",
     copyright: "",
     socialPosts: [] as Array<{ image: string; url: string; order: number }>,
+    socialLinks: {} as Record<string, string>,
   });
   const [footerData, setFooterData] = useState<{
     sections: FooterSection[];
     copyright: string;
+    showCategories: boolean;
+    showProducts: boolean;
+    showSocialIcons: boolean;
+    showSocialLinks: boolean;
   }>({
     sections: [],
     copyright: "",
+    showCategories: false,
+    showProducts: false,
+    showSocialIcons: false,
+    showSocialLinks: false,
   });
+  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -152,14 +166,29 @@ export default function Footer() {
           company: company.company || "VERES",
           copyright: company.copyright || "",
           socialPosts: finalValidPosts,
+          socialLinks: company.socialLinks || {},
         });
 
         // Use copyright from company first, then footer, then default
         const copyrightText = company.copyright || footer.copyright || `© ${new Date().getFullYear()} ${company.company || "VERES"}. All rights reserved.`;
+        
+        // Debug: Log footer data to see what we're getting
+        console.log("Footer data from API:", footer);
+        console.log("showCategories:", footer.showCategories, typeof footer.showCategories);
+        console.log("showProducts:", footer.showProducts, typeof footer.showProducts);
+        console.log("showSocialIcons:", footer.showSocialIcons, typeof footer.showSocialIcons);
+        console.log("showSocialLinks:", footer.showSocialLinks, typeof footer.showSocialLinks);
+        
         setFooterData({
           sections: (footer.sections || []).filter((s: FooterSection) => s.enabled !== false).sort((a: FooterSection, b: FooterSection) => a.order - b.order),
           copyright: copyrightText,
+          showCategories: footer.showCategories === true || footer.showCategories === "true" || footer.showCategories === 1,
+          showProducts: footer.showProducts === true || footer.showProducts === "true" || footer.showProducts === 1,
+          showSocialIcons: footer.showSocialIcons === true || footer.showSocialIcons === "true" || footer.showSocialIcons === 1,
+          showSocialLinks: footer.showSocialLinks === true || footer.showSocialLinks === "true" || footer.showSocialLinks === 1,
         });
+        setCategories(categoriesData || []);
+        setProducts(productsData || []);
       } catch (err) {
         console.error("Failed to load footer data", err);
         // Try to use cached data as fallback
@@ -172,6 +201,7 @@ export default function Footer() {
             socialPosts: (cachedCompany.socialPosts || [])
               .filter((post: any) => post && post.image && post.image.trim() !== "")
               .slice(0, 8),
+            socialLinks: cachedCompany.socialLinks || {},
           });
         }
         if (cachedFooter) {
@@ -201,53 +231,145 @@ export default function Footer() {
 
   return (
     <footer className="text-gray-300" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-0">
         <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left side - Logo and Footer Sections */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          <div className="flex-1 flex flex-col sm:flex-col md:grid md:grid-cols-2 lg:grid lg:grid-cols-auto gap-4 sm:gap-6 lg:gap-8">
             {/* Logo */}
             <div className="flex flex-col space-y-4">
               <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
+              {/* Social Icons - show under company name if enabled */}
+              {footerData.showSocialIcons && companyData.socialLinks && (
+                <div className="flex gap-2 mt-2">
+                  {companyData.socialLinks.facebook && (
+                    <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                      <Facebook size={20} />
+                    </a>
+                  )}
+                  {companyData.socialLinks.instagram && (
+                    <a href={companyData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                      <Instagram size={20} />
+                    </a>
+                  )}
+                  {companyData.socialLinks.linkedin && (
+                    <a href={companyData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                      <Linkedin size={20} />
+                    </a>
+                  )}
+                  {companyData.socialLinks.youtube && (
+                    <a href={companyData.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                      <Youtube size={20} />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Footer Sections from SP Panel */}
-            {enabledSections.map((section, index) => (
-              <div key={index} className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">{section.title}</h3>
-                {section.links.map((link, linkIndex) => (
-                  <button
-                    key={linkIndex}
-                    onClick={() => handleLinkClick(link.url)}
-                    className="text-left text-gray-300 hover:underline"
-                    style={{ cursor: "pointer" }}
+            {/* Categories Column - if enabled */}
+            {footerData.showCategories && categories.length > 0 && (
+              <div className="flex flex-col space-y-2 text-sm">
+                <h3 className="text-white font-semibold mb-2">Categories</h3>
+                {categories.slice(0, 3).map((category) => (
+                  <Link
+                    key={category._id}
+                    to={`/shop?category=${encodeURIComponent(category.name)}`}
+                    className="text-gray-300 hover:underline"
                   >
-                    {link.label}
-                  </button>
+                    {category.name}
+                  </Link>
                 ))}
               </div>
-            ))}
+            )}
+
+            {/* Products Column - if enabled */}
+            {footerData.showProducts && products.length > 0 && (
+              <div className="flex flex-col space-y-2 text-sm">
+                <h3 className="text-white font-semibold mb-2">Products</h3>
+                {products.slice(0, 3).map((product) => (
+                  <Link
+                    key={product._id}
+                    to={`/product/${product._id}`}
+                    className="text-gray-300 hover:underline"
+                  >
+                    {product.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Footer Sections from SP Panel */}
+            {enabledSections.map((section, index) => {
+              // Hide "Contact Us" section on small screens
+              const isContactUs = section.title.toLowerCase().includes('contact');
+              return (
+                <div key={index} className={`flex flex-col space-y-2 text-sm ${isContactUs ? 'hidden sm:flex' : ''}`}>
+                  <h3 className="text-white font-semibold mb-2">{section.title}</h3>
+                  {section.links.map((link, linkIndex) => (
+                    <button
+                      key={linkIndex}
+                      onClick={() => handleLinkClick(link.url)}
+                      className="text-left text-gray-300 hover:underline"
+                      style={{ cursor: "pointer" }}
+                    >
+                      {link.label}
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
+
+            {/* Social Links Column - if enabled */}
+            {footerData.showSocialLinks && companyData.socialLinks && (
+              <div className="flex flex-col space-y-2 text-sm">
+                <h3 className="text-white font-semibold mb-2">Follow Us</h3>
+                {(companyData.socialLinks.facebook || companyData.socialLinks.instagram || companyData.socialLinks.linkedin || companyData.socialLinks.youtube) && (
+                  <>
+                    {companyData.socialLinks.facebook && (
+                      <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                        Facebook
+                      </a>
+                    )}
+                    {companyData.socialLinks.instagram && (
+                      <a href={companyData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                        Instagram
+                      </a>
+                    )}
+                    {companyData.socialLinks.linkedin && (
+                      <a href={companyData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                        LinkedIn
+                      </a>
+                    )}
+                    {companyData.socialLinks.youtube && (
+                      <a href={companyData.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                        YouTube
+                      </a>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Right side - Social Posts Gallery - only show if there are posts */}
+          {/* Right side - Social Posts Gallery - only show if there are posts - Large screens only */}
           {companyData.socialPosts && companyData.socialPosts.length > 0 && (
-            <div className="lg:ml-auto">
-              <div className="grid grid-cols-4 gap-2">
+            <div className="hidden lg:block lg:ml-auto">
+              <div className="grid grid-cols-4 gap-2 w-48">
                 {companyData.socialPosts
                   .filter((post: any) => {
-                    // Final filter - don't even render the component for Facebook URLs
                     if (!post || !post.image) return false;
                     const imageLower = post.image.toLowerCase();
                     return !imageLower.includes('fbcdn.net') && 
                            !imageLower.includes('scontent.') &&
                            !(imageLower.includes('facebook.com') && imageLower.includes('scontent'));
                   })
+                  .slice(0, 8)
                   .map((post, index) => (
                     <a
                       key={index}
                       href={post.url || "#"}
                       target={post.url && post.url !== "#" ? "_blank" : undefined}
                       rel={post.url && post.url !== "#" ? "noopener noreferrer" : undefined}
-                      className="w-12 h-12 rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
+                      className="w-full aspect-square rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
                     >
                       <img
                         src={post.image}
@@ -255,13 +377,7 @@ export default function Footer() {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          console.error("Failed to load social post image:", post.image, "for post:", post);
                           target.style.display = "none";
-                        }}
-                        onLoad={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          console.log("Successfully loaded social post image:", post.image);
-                          target.style.display = "block";
                         }}
                       />
                     </a>
@@ -270,6 +386,42 @@ export default function Footer() {
             </div>
           )}
         </div>
+        
+        {/* Small screens - Social Posts Gallery - Show after all columns */}
+        {companyData.socialPosts && companyData.socialPosts.length > 0 && (
+          <div className="lg:hidden w-full mt-6">
+            <div className="grid grid-cols-4 gap-2">
+              {companyData.socialPosts
+                .filter((post: any) => {
+                  if (!post || !post.image) return false;
+                  const imageLower = post.image.toLowerCase();
+                  return !imageLower.includes('fbcdn.net') && 
+                         !imageLower.includes('scontent.') &&
+                         !(imageLower.includes('facebook.com') && imageLower.includes('scontent'));
+                })
+                .slice(0, 8)
+                .map((post, index) => (
+                  <a
+                    key={index}
+                    href={post.url || "#"}
+                    target={post.url && post.url !== "#" ? "_blank" : undefined}
+                    rel={post.url && post.url !== "#" ? "noopener noreferrer" : undefined}
+                    className="w-full aspect-square rounded overflow-hidden hover:opacity-80 transition-opacity bg-gray-700"
+                  >
+                    <img
+                      src={post.image}
+                      alt={`Social post ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                      }}
+                    />
+                  </a>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Bottom bar */}
         <div className="mt-6 sm:mt-8 border-t border-gray-600 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-2">

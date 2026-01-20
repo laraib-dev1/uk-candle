@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AtYourService from "@/components/ui/AtYourService";
+import FeatureCards from "@/components/ui/FeatureCards";
 import ProductCard from "@/components/products/ProductCard";
 import { getBlogs, getBlogCategories, getBlogNiches } from "@/api/blog.api";
 import { getProducts } from "@/api/product.api";
@@ -325,13 +326,13 @@ export default function Blogs() {
         )}
       </div>
 
-      {/* Service Features */}
+      {/* Feature Cards */}
       <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
-        <AtYourService />
+        <FeatureCards />
       </section>
 
       {/* Popular Products */}
-      <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-12">
+      <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold theme-heading">Popular Products</h2>
         </div>

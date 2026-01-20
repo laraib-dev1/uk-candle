@@ -53,7 +53,7 @@ export default function FAQs() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-0 mb-0">
       <style>{`
         /* Force text-align from inline styles - override any other rules */
         .content-area p[style*="text-align"],
@@ -113,7 +113,7 @@ export default function FAQs() {
       </div>
 
       {/* Content Section - Centered */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
         {/* FAQs List */}
         <div className="space-y-3">
           {content.faqs && content.faqs.length > 0 ? (
@@ -157,7 +157,7 @@ export default function FAQs() {
 
         {/* Last Updated - Bottom Right */}
         {content.lastUpdated && (
-          <div className="text-right text-sm text-gray-500 mt-12">
+          <div className="text-right text-sm text-gray-500 mt-4">
             Updated: {formatDate(content.lastUpdated)}
           </div>
         )}

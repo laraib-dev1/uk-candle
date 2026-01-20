@@ -44,19 +44,19 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
           <div className="flex gap-2">
             <button
               onClick={scrollLeft}
-              className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              className="bg-white rounded-full p-1 sm:p-2 shadow-lg hover:bg-gray-100 transition-colors"
               aria-label="Scroll left"
               style={{ cursor: "pointer" }}
             >
-              <ChevronLeft className="w-6 h-6 text-gray-700" />
+              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6 text-gray-700" />
             </button>
             <button
               onClick={scrollRight}
-              className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              className="bg-white rounded-full p-1 sm:p-2 shadow-lg hover:bg-gray-100 transition-colors"
               aria-label="Scroll right"
               style={{ cursor: "pointer" }}
             >
-              <ChevronRight className="w-6 h-6 text-gray-700" />
+              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6 text-gray-700" />
             </button>
           </div>
         </div>

@@ -22,6 +22,7 @@ export default function CompanyPage() {
     logo: "",
     favicon: "",
     copyright: "",
+    description: "",
     socialLinks: {
       facebook: "",
       tiktok: "",
@@ -431,6 +432,7 @@ export default function CompanyPage() {
 
       const formData: any = {
         ...companyData,
+        description: companyData.description || "", // Ensure description is included
         logoFile: logoInputRef.current?.files?.[0],
         faviconFile: faviconInputRef.current?.files?.[0],
         socialPosts: socialPostsData,
@@ -706,6 +708,25 @@ export default function CompanyPage() {
                 onChange={(e) => handleChange("address", e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
                 placeholder="Address"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Description
+              </label>
+              <textarea
+                value={companyData.description || ""}
+                onChange={(e) => handleChange("description", e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none min-h-[100px]"
+                placeholder="Company description (shown in blog detail page)"
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "var(--theme-primary)";
                   e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";

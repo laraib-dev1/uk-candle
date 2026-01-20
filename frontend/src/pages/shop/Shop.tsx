@@ -7,6 +7,8 @@ import ProductGrid from "../../components/products/ProductGrid";
 import { ProductGridSkeleton } from "../../components/products/ProductGridSkeleton";
 import Banner from "@/components/hero/Banner";
 import DynamicButton from "@/components/ui/buttons/DynamicButton";
+import AtYourService from "@/components/ui/AtYourService";
+import FeatureCards from "@/components/ui/FeatureCards";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
@@ -156,12 +158,15 @@ const Shop = () => {
     <div className="min-h-screen flex flex-col bg-white text-black">
       <Navbar />
 
-      <main className="flex-1 py-20">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          {/* Shop banner – if admin configured one, use it, otherwise use default image */}
+      <main className="flex-1">
+        {/* Shop banner */}
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
           <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
+        </section>
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-10 mb-6 gap-4">
+        {/* Products Section */}
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-2xl font-bold theme-heading">
               Products
             </h2>
@@ -176,15 +181,8 @@ const Shop = () => {
                   }
                 }}
               >
-                <SelectTrigger className="w-full sm:w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2" style={{ overflow: 'hidden' }}>
-                  <span className="flex items-center justify-between min-w-0 w-full" style={{ maxWidth: 'calc(100% - 24px)' }}>
-                    <SelectValue placeholder="Select Category" />
-                    <span className="text-xs text-gray-500 ml-auto shrink-0 whitespace-nowrap">
-                      {selectedCategory === "all" || !selectedCategory
-                        ? `(${allProducts.length})`
-                        : `(${allProducts.filter((p) => p.categoryName === selectedCategory).length})`}
-                    </span>
-                  </span>
+                <SelectTrigger className="w-full sm:w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2">
+                  <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent 
                   side="bottom" 
@@ -193,22 +191,18 @@ const Shop = () => {
                   sideOffset={4}
                   avoidCollisions={false}
                 >
-                  <SelectItem value="all" className="relative group">
-                    <span className="flex-1 min-w-0 truncate pr-2">All</span>
-                    <span className="absolute right-2 text-xs text-gray-500 whitespace-nowrap group-data-[state=checked]:hidden">
-                      {/* ({allProducts.length}) */}
-                    </span>
+                  <SelectItem value="all" className="flex items-center justify-between">
+                    <span>All</span>
+                    <span className="text-xs text-gray-500 ml-2">({allProducts.length})</span>
                   </SelectItem>
                   {categories.map((category) => {
                     const count = allProducts.filter(
                       (p) => p.categoryName === category.name
                     ).length;
                     return (
-                      <SelectItem key={category._id} value={category.name} className="relative group">
-                        <span className="flex-1 min-w-0 truncate pr-2">{category.name}</span>
-                        <span className="absolute right-2 text-xs text-gray-500 whitespace-nowrap group-data-[state=checked]:hidden">
-                          ({count})
-                        </span>
+                      <SelectItem key={category._id} value={category.name} className="flex items-center justify-between">
+                        <span className="flex-1 text-left pr-3">{category.name}</span>
+                        <span className="text-xs text-gray-500 whitespace-nowrap flex items-center">({count})</span>
                       </SelectItem>
                     );
                   })}
@@ -235,7 +229,12 @@ const Shop = () => {
               )}
             </>
           )}
-        </div>
+        </section>
+
+        {/* Feature Cards */}
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+          <FeatureCards />
+        </section>
       </main>
 
       <Footer />

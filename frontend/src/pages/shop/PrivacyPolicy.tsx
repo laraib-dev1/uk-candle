@@ -122,7 +122,7 @@ export default function PrivacyPolicy() {
       </div>
 
       {/* Content Section - Centered with TOC */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-0">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Table of Contents - Left Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
@@ -139,7 +139,7 @@ export default function PrivacyPolicy() {
             />
 
             {/* Last Updated - Bottom Right */}
-            <div className="text-right text-sm text-gray-500 mt-12">
+            <div className="text-right text-sm text-gray-500 mt-4">
               Updated: {formatDate(content.lastUpdated)}
             </div>
           </div>

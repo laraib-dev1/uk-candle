@@ -21,6 +21,14 @@ const FooterSchema = new mongoose.Schema({
   copyright: { type: String, default: "" },
   description: { type: String, default: "" },
   showPreview: { type: Boolean, default: true, required: false },
+  showCategories: { type: Boolean, default: false },
+  showProducts: { type: Boolean, default: false },
+  showSocialIcons: { type: Boolean, default: false },
+  showSocialLinks: { type: Boolean, default: false },
+  gridSettings: {
+    productsPerRow: { type: Number, default: 4 },
+    blogsPerRow: { type: Number, default: 4 },
+  },
 }, { timestamps: true });
 
 export default mongoose.models.Footer || mongoose.model("Footer", FooterSchema);
