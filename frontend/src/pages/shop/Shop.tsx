@@ -1,5 +1,5 @@
 // pages/shop/Shop.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -12,9 +12,9 @@ import FeatureCards from "@/components/ui/FeatureCards";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageLoader from "@/components/ui/PageLoader";
 import Pagination from "@/components/ui/Pagination";
+import { ChevronDown, Check } from "lucide-react";
 
 // API product type
 interface ApiProduct {
@@ -59,6 +59,8 @@ const Shop = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Products per page: 20 products = 4 rows (5 products per row on large screen)
   const PRODUCTS_PER_PAGE = 20;
@@ -67,6 +69,23 @@ const Shop = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category"); // category from query
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   
   useEffect(() => {
@@ -158,56 +177,82 @@ const Shop = () => {
     <div className="min-h-screen flex flex-col bg-white text-black">
       <Navbar />
 
-      <main className="flex-1">
+      <main className="flex-1 pt-14 sm:pt-16">
         {/* Shop banner */}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
         </section>
 
         {/* Products Section */}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h2 className="text-2xl font-bold theme-heading">
               Products
             </h2>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Select
-                value={selectedCategory || "all"}
-                onValueChange={(value) => {
-                  if (value === "all") {
-                    navigate("/shop");
-                  } else {
-                    navigate(`/shop?category=${encodeURIComponent(value)}`);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full sm:w-[180px] bg-white border border-gray-300 rounded-full px-4 py-2">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent 
-                  side="bottom" 
-                  align="end" 
-                  position="popper" 
-                  sideOffset={4}
-                  avoidCollisions={false}
+              <div className="relative w-full sm:w-[180px]" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full bg-white border border-gray-300 rounded-full px-4 py-2 flex items-center justify-between text-sm text-gray-900 hover:bg-gray-50 transition-colors"
                 >
-                  <SelectItem value="all" className="flex items-center justify-between">
-                    <span>All</span>
-                    <span className="text-xs text-gray-500 ml-2">({allProducts.length})</span>
-                  </SelectItem>
-                  {categories.map((category) => {
-                    const count = allProducts.filter(
-                      (p) => p.categoryName === category.name
-                    ).length;
-                    return (
-                      <SelectItem key={category._id} value={category.name} className="flex items-center justify-between">
-                        <span className="flex-1 text-left pr-3">{category.name}</span>
-                        <span className="text-xs text-gray-500 whitespace-nowrap flex items-center">({count})</span>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                  <span>
+                    {selectedCategory 
+                      ? categories.find(c => c.name === selectedCategory)?.name || "Select Category"
+                      : `All (${allProducts.length})`
+                    }
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {dropdownOpen && (
+                  <div className="absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        navigate("/shop");
+                        setDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-gray-100 transition-colors ${
+                        !selectedCategory ? 'bg-[var(--theme-primary)] text-white' : 'text-gray-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full gap-3">
+                        <span className="text-left flex-1">All</span>
+                        <span className={`text-xs whitespace-nowrap w-14 text-right ${!selectedCategory ? 'text-white' : 'text-gray-500'}`}>
+                          ({allProducts.length})
+                        </span>
+                      </div>
+                      {!selectedCategory && <Check className="w-4 h-4 ml-2 flex-shrink-0" />}
+                    </button>
+                    
+                    {categories.map((category) => {
+                      const count = allProducts.filter(
+                        (p) => p.categoryName === category.name
+                      ).length;
+                      const isSelected = selectedCategory === category.name;
+                      return (
+                        <button
+                          key={category._id}
+                          onClick={() => {
+                            navigate(`/shop?category=${encodeURIComponent(category.name)}`);
+                            setDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 text-sm flex items-center justify-between hover:bg-gray-100 transition-colors ${
+                            isSelected ? 'bg-[var(--theme-primary)] text-white' : 'text-gray-900'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full gap-3">
+                            <span className="text-left flex-1">{category.name}</span>
+                            <span className={`text-xs whitespace-nowrap w-14 text-right ${isSelected ? 'text-white' : 'text-gray-500'}`}>
+                              ({count})
+                            </span>
+                          </div>
+                          {isSelected && <Check className="w-4 h-4 ml-2 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -232,7 +277,7 @@ const Shop = () => {
         </section>
 
         {/* Feature Cards */}
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
           <FeatureCards />
         </section>
       </main>

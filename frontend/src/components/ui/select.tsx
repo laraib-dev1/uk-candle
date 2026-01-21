@@ -143,24 +143,37 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName
 
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none text-black bg-white hover:bg-gray-100 focus:bg-gray-100 data-[state=checked]:bg-[var(--theme-primary)] data-[state=checked]:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50 overflow-hidden",
-      className
-    )}
-    {...props}
-  >
-    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center pointer-events-none">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-white" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
-    <SelectPrimitive.ItemText className="w-full min-w-0 pr-8">{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-))
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    flexLayout?: boolean;
+  }
+>(({ className, children, flexLayout, ...props }, ref) => {
+  const hasMultipleChildren = React.Children.count(children) > 1;
+  const shouldUseFlex = flexLayout || hasMultipleChildren;
+  const isDivWrapper = React.isValidElement(children) && children.type === 'div';
+  
+  return (
+    <SelectPrimitive.Item
+      ref={ref}
+      className={cn(
+        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none text-black bg-white hover:bg-gray-100 focus:bg-gray-100 data-[state=checked]:bg-[var(--theme-primary)] data-[state=checked]:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50 overflow-hidden",
+        className
+      )}
+      {...props}
+    >
+      <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center pointer-events-none">
+        <SelectPrimitive.ItemIndicator>
+          <Check className="h-4 w-4 text-white" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText className={cn(
+        "w-full min-w-0 pr-8",
+        shouldUseFlex && !isDivWrapper && "flex items-center justify-between gap-3"
+      )}>
+        {children}
+      </SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+})
 SelectItem.displayName = SelectPrimitive.Item.displayName
 
 const SelectSeparator = React.forwardRef<

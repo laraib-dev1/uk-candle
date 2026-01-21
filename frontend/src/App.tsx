@@ -8,6 +8,7 @@ import PrivacyPolicy from "./pages/shop/PrivacyPolicy";
 import TermsConditions from "./pages/shop/TermsConditions";
 import FAQs from "./pages/shop/FAQs";
 import ContactUs from "./pages/shop/ContactUs";
+import AboutUs from "./pages/shop/AboutUs";
 import Blogs from "./pages/shop/Blogs";
 import BlogDetail from "./pages/shop/BlogDetail";
 import UserProfile from "./pages/user/UserProfile";
@@ -74,11 +75,12 @@ export default function App() {
         <Route path="/access" element={<Access />} />
         <Route path="/forgot" element={<Forgot />} />
 
-      {/* ---------- CONTENT PAGES (Privacy, Terms, FAQs, Contact) ---------- */}
+      {/* ---------- CONTENT PAGES (Privacy, Terms, FAQs, Contact, About) ---------- */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/about-us" element={<AboutUs />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blog/:id" element={<BlogDetail />} />
 

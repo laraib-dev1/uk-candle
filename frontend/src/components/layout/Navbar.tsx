@@ -134,6 +134,16 @@ let user = null;
           >
             Blogs
           </Link>
+          <Link 
+            to="/about-us" 
+            className={linkClasses("/about-us")}
+            style={{ 
+              color: pathname === "/about-us" ? "var(--theme-primary)" : "var(--theme-dark)",
+              cursor: "pointer",
+            }}
+          >
+            About Us
+          </Link>
         </nav>
 
         {/* RIGHT: Cart + Sign In + Mobile Menu */}
@@ -276,6 +286,13 @@ let user = null;
                     className="text-gray-700 hover:text-gray-900"
                   >
                     Blogs
+                  </Link>
+                  <Link
+                    to="/about-us"
+                    onClick={() => setOpen(false)}
+                    className="text-gray-700 hover:text-gray-900"
+                  >
+                    About Us
                   </Link>
                 </nav>
 

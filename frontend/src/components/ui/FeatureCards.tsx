@@ -26,7 +26,7 @@ const features = [
 
 const FeatureCards = () => {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 my-8 md:my-12">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
       {features.map((feature, index) => {
         const Icon = feature.icon;
         return (

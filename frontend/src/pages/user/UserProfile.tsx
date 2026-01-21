@@ -24,6 +24,9 @@ import { getEnabledProfilePages, getProfilePageBySlug, getEnabledBaseProfileTabs
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import PageLoader from "@/components/ui/PageLoader";
+import FilterTabs from "@/components/ui/FilterTabs";
+import { Input } from "@/components/ui/input";
+import { updateAvatar } from "@/api/auth.api";
 import {
   User,
   Package,
@@ -130,7 +133,35 @@ export default function UserProfile() {
         }),
       ]);
       
-      if (profileData) setProfile(profileData);
+      if (profileData) {
+        // Process avatar URL for production/Vercel
+        if (profileData.avatar) {
+          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+          const isLocalhost = typeof window !== 'undefined' && (
+            window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1"
+          );
+          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+          
+          let avatarUrl = profileData.avatar;
+          if (avatarUrl) {
+            // If it's a localhost URL (from development), replace with production API URL
+            if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
+              const urlPath = avatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+              avatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+            } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+              // Already a full URL (Cloudinary or production) - use directly
+              avatarUrl = avatarUrl;
+            } else {
+              // Relative path - construct full URL
+              avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+            }
+          }
+          profileData.avatar = avatarUrl;
+        }
+        setProfile(profileData);
+      }
       console.log("Loaded addresses:", addressesData);
       setAddresses(Array.isArray(addressesData) ? addressesData : []);
       setOrders(Array.isArray(ordersData) ? ordersData : []);
@@ -319,16 +350,42 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 mb-0">
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+      <main className="pt-14 sm:pt-16">
+        <section className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="mb-6">
-              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-3">
-                <span className="text-2xl font-bold text-gray-700">
-                  {profile?.name?.charAt(0).toUpperCase() || authUser?.name?.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              {profile?.avatar ? (
+                <img
+                  src={profile.avatar}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-2"
+                  style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const fallback = document.createElement("div");
+                      fallback.className = "w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-3 border-2";
+                      fallback.style.borderColor = "var(--theme-primary, #8B5E3C)";
+                      const span = document.createElement("span");
+                      span.className = "text-2xl font-bold text-gray-700";
+                      span.textContent = (profile?.name?.charAt(0) || authUser?.name?.charAt(0) || "U").toUpperCase();
+                      fallback.appendChild(span);
+                      parent.insertBefore(fallback, target);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-3 border-2"
+                  style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}>
+                  <span className="text-2xl font-bold text-gray-700">
+                    {profile?.name?.charAt(0).toUpperCase() || authUser?.name?.charAt(0).toUpperCase() || "U"}
+                  </span>
+                </div>
+              )}
               <h3 className="text-center font-semibold text-gray-900">{profile?.name || authUser?.name}</h3>
               <p className="text-center text-sm text-gray-600">{profile?.email || authUser?.email}</p>
             </div>
@@ -361,7 +418,7 @@ export default function UserProfile() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className={`flex-1 bg-white rounded-lg shadow ${activeTab === "queries" ? "p-0 sm:p-4 md:p-6" : "p-4 sm:p-6"}`}>
             {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
             {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
             {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
@@ -396,10 +453,9 @@ export default function UserProfile() {
             })()}
           </div>
         </div>
-      </div>
-      <div className="mt-0">
-        <Footer />
-      </div>
+        </section>
+      </main>
+      <Footer />
     </div>
   );
 }
@@ -487,7 +543,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
 // Profile Tab Component
 function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; onUpdate: () => void }) {
   const { success, error } = useToast();
-  const [editing, setEditing] = useState(false);
+  const [tab, setTab] = useState<"overview" | "edit" | "password">("overview");
   const [formData, setFormData] = useState({
     name: profile?.name || "",
     email: profile?.email || "",
@@ -504,6 +560,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
       });
     }
   }, [profile]);
+  
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -515,15 +572,83 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
     confirm: false,
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState("");
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | undefined>(profile?.avatar);
+
+  // Update avatar when profile changes
+  useEffect(() => {
+    if (profile?.avatar) {
+      // Handle avatar URL for production/Vercel
+      const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+      const isLocalhost = typeof window !== 'undefined' && (
+        window.location.hostname === "localhost" || 
+        window.location.hostname === "127.0.0.1"
+      );
+      const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+      const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+      
+      let avatarUrl = profile.avatar;
+      if (avatarUrl) {
+        // If it's a localhost URL (from development), replace with production API URL
+        if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
+          const urlPath = avatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+          avatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+        } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+          // Already a full URL (Cloudinary or production) - use directly
+          avatarUrl = avatarUrl;
+        } else {
+          // Relative path - construct full URL
+          avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+        }
+      }
+      setProfileAvatar(avatarUrl);
+    }
+  }, [profile?.avatar]);
+
+  // File select handler
+  const handleEditAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setEditAvatarFile(file);
+    setEditAvatarPreview(URL.createObjectURL(file));
+  };
 
   const handleUpdateProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      error("Please login to update profile");
+      return;
+    }
+
     try {
+      setSavingProfile(true);
+      
+      let newAvatar: string | undefined = profile?.avatar;
+
+      // Upload avatar if file selected
+      if (editAvatarFile) {
+        const res = await updateAvatar(editAvatarFile, token);
+        newAvatar = res.avatar;
+        setEditAvatarPreview(null);
+        setEditAvatarFile(null);
+        setProfileAvatar(newAvatar);
+      }
+
+      // Update profile
       await updateUserProfile(formData);
-      success("Profile updated successfully!");
-      setEditing(false);
+      
+      setProfileMsg("Profile updated successfully!");
+      setTimeout(() => setProfileMsg(""), 3000);
       onUpdate();
     } catch (err: any) {
-      error(err.message || "Failed to update profile");
+      setProfileMsg("Failed to update profile");
+      setTimeout(() => setProfileMsg(""), 3000);
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -550,160 +675,201 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
     setIsChangingPassword(true);
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
-      success("Password changed successfully!");
+      setPasswordMsg("Password updated successfully!");
+      setTimeout(() => setPasswordMsg(""), 3000);
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setShowPasswords({ current: false, new: false, confirm: false });
     } catch (err: any) {
-      error(err.message || "Failed to change password");
+      setPasswordMsg("Failed to update password");
+      setTimeout(() => setPasswordMsg(""), 3000);
     } finally {
       setIsChangingPassword(false);
     }
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6 theme-heading">Profile Settings</h2>
-      
-      {/* Profile Info */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
-          {!editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="flex items-center gap-2 px-4 h-12 theme-button rounded-lg"
-            >
-              <Edit size={16} /> Edit
-            </button>
-          )}
+    <div className="w-full text-black">
+      <h2 className="text-2xl font-semibold theme-heading mb-6">Profile Settings</h2>
+
+      {/* PROFILE BOX */}
+      <div className="flex items-center gap-4 mb-6">
+        <img
+          src={editAvatarPreview || profileAvatar || "/avatar.png"}
+          className="w-20 h-20 rounded-full object-cover border-2"
+          style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
+          alt="avatar"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
+              target.src = "/avatar.png";
+            }
+          }}
+        />
+        <div>
+          <h3 className="text-xl font-semibold">{profile?.name || "User"}</h3>
+          <p className="text-gray-500">{profile?.email || "N/A"}</p>
         </div>
-        
-        {editing ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full border rounded-lg p-2 text-gray-900"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full border rounded-lg p-2 text-gray-900"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full border rounded-lg p-2 text-gray-900"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleUpdateProfile}
-                className="px-4 h-12 theme-button rounded-lg"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setEditing(false);
-                  setFormData({ name: profile?.name || "", email: profile?.email || "", phone: profile?.phone || "" });
-                }}
-                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-gray-900"><strong className="text-gray-700">Name:</strong> {profile?.name || "N/A"}</p>
-            <p className="text-gray-900"><strong className="text-gray-700">Email:</strong> {profile?.email || "N/A"}</p>
-            <p className="text-gray-900"><strong className="text-gray-700">Phone:</strong> {profile?.phone || "N/A"}</p>
-          </div>
-        )}
       </div>
 
-      {/* Change Password */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">Change Password</h3>
-        <form onSubmit={handleChangePassword} className="space-y-4">
+      {/* TABS */}
+      <div className="mb-4">
+        <FilterTabs
+          tabs={[
+            { id: "overview", label: "Overview" },
+            { id: "edit", label: "Edit" },
+            { id: "password", label: "Password" },
+          ]}
+          activeTab={tab}
+          onTabChange={(tabId) => setTab(tabId as any)}
+        />
+      </div>
+
+      {/* OVERVIEW */}
+      {tab === "overview" && (
+        <div className="p-6 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold mb-3">Profile Details</h3>
+          <p><strong>Full Name:</strong> {profile?.name || "N/A"}</p>
+          <p><strong>Email:</strong> {profile?.email || "N/A"}</p>
+          <p><strong>Phone:</strong> {profile?.phone || "N/A"}</p>
+        </div>
+      )}
+
+      {/* EDIT PROFILE */}
+      {tab === "edit" && (
+        <div className="p-6 bg-gray-50 text-black rounded-lg space-y-4">
+          {/* Avatar preview + change */}
+          <div className="flex items-center gap-4 mb-4">
+            <img
+              src={editAvatarPreview || profileAvatar || "/avatar.png"}
+              alt="avatar"
+              className="w-20 h-20 rounded-full object-cover border-2 cursor-pointer"
+              style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
+              onClick={() => document.getElementById("avatarInputEdit")?.click()}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
+                  target.src = "/avatar.png";
+                }
+              }}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              id="avatarInputEdit"
+              className="hidden"
+              onChange={handleEditAvatarChange}
+            />
+          </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Current Password</label>
+            <label className="font-medium">Full Name</label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="font-medium">Email</label>
+            <Input
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="font-medium">Phone</label>
+            <Input
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+          </div>
+
+          <button 
+            onClick={handleUpdateProfile} 
+            disabled={savingProfile}
+            className="px-4 h-12 theme-button text-white rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {savingProfile ? "Saving..." : "Save Changes"}
+          </button>
+
+          {profileMsg && (
+            <p className={`mt-2 ${profileMsg.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+              {profileMsg}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* PASSWORD */}
+      {tab === "password" && (
+        <div className="p-6 bg-gray-50 rounded-lg space-y-4">
+          <div>
+            <label className="font-medium">Current Password</label>
             <div className="relative">
-              <input
+              <Input
                 type={showPasswords.current ? "text" : "password"}
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                className="w-full border rounded-lg p-2 pr-10 text-gray-900"
-                placeholder="Enter current password"
               />
-              <button
-                type="button"
+              <span
+                className="absolute right-3 top-3 cursor-pointer"
                 onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+              </span>
             </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">New Password</label>
+            <label className="font-medium">New Password</label>
             <div className="relative">
-              <input
+              <Input
                 type={showPasswords.new ? "text" : "password"}
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                className="w-full border rounded-lg p-2 pr-10 text-gray-900"
-                placeholder="Enter new password"
               />
-              <button
-                type="button"
+              <span
+                className="absolute right-3 top-3 cursor-pointer"
                 onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+              </span>
             </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Confirm New Password</label>
+            <label className="font-medium">Confirm New Password</label>
             <div className="relative">
-              <input
+              <Input
                 type={showPasswords.confirm ? "text" : "password"}
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                className="w-full border rounded-lg p-2 pr-10 text-gray-900"
-                placeholder="Confirm new password"
               />
-              <button
-                type="button"
+              <span
+                className="absolute right-3 top-3 cursor-pointer"
                 onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+              </span>
             </div>
           </div>
-          <button
-            type="submit"
+
+          <button 
+            onClick={handleChangePassword} 
             disabled={isChangingPassword}
-            className="theme-button px-4 h-12 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 h-12 theme-button text-white rounded-lg disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isChangingPassword ? "Changing Password..." : "Change Password"}
+            {isChangingPassword ? "Updating..." : "Update Password"}
           </button>
-        </form>
-      </div>
+          
+          {passwordMsg && (
+            <p className={`mt-2 ${passwordMsg.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+              {passwordMsg}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1143,7 +1309,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                   ))}
                 </ul>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                 <div>
                   <p className="text-sm text-gray-700">
                     <strong className="text-gray-900">Total:</strong> ${order.bill.toFixed(2)}
@@ -1152,19 +1318,19 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                     <strong className="text-gray-900">Payment:</strong> {order.payment}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   {order.status === "Pending" && (
                     <button
                       onClick={() => handleCancelOrder(order._id)}
                       disabled={isCancelling}
-                      className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                     >
                       {isCancelling ? "Cancelling..." : "Cancel Order"}
                     </button>
                   )}
                   <button
                     onClick={() => handleViewDetails(order._id)}
-                    className="px-4 h-12 theme-button rounded-lg text-sm"
+                    className="px-4 h-12 theme-button rounded-lg text-sm w-full sm:w-auto"
                   >
                     View Details
                   </button>
@@ -1338,13 +1504,15 @@ function QueriesTab() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 theme-heading">Support & Help</h2>
+      <h2 className="text-2xl font-bold mb-6 theme-heading px-4 sm:px-0">Support & Help</h2>
       <div className="space-y-4">
-        <div className="border rounded-lg p-6">
-          <h3 className="font-semibold mb-2 text-gray-900">Need Help?</h3>
-          <p className="text-gray-700 mb-4">Contact our support team for assistance with your orders or account.</p>
+        <div className="border rounded-lg">
+          <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4">
+            <h3 className="font-semibold mb-2 text-gray-900">Need Help?</h3>
+            <p className="text-gray-700 mb-4">Contact our support team for assistance with your orders or account.</p>
+          </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6 sm:pt-0">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Email

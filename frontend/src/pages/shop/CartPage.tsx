@@ -62,41 +62,43 @@ const total = subtotal - discount;
     const itemTotal = itemSubtotal - itemDiscountAmount;
     
     return (
-    <div key={item.id} className="flex items-center justify-between p-5 bg-white text-black rounded-xl shadow-sm border">
-      <div className="flex items-center gap-4 flex-1">
-        <img src={item.image || "/product.png"} className="w-20 h-20 object-cover rounded-lg" />
-        <div className="flex-1">
-          <h3 className="font-semibold theme-heading">{item.name}</h3>
+    <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-white text-black rounded-xl shadow-sm border">
+      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+        <img src={item.image || "/product.png"} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold theme-heading text-sm sm:text-base truncate">{item.name}</h3>
           <div className="flex items-center gap-2 mt-1">
             {itemDiscount > 0 ? (
               <>
-                <span className="text-sm text-gray-500 line-through">${itemPrice.toFixed(2)}</span>
-                <span className="text-lg font-bold">${itemFinalPrice.toFixed(2)}</span>
+                <span className="text-xs sm:text-sm text-gray-500 line-through">${itemPrice.toFixed(2)}</span>
+                <span className="text-base sm:text-lg font-bold">${itemFinalPrice.toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-bold">${itemPrice.toFixed(2)}</span>
+              <span className="text-base sm:text-lg font-bold">${itemPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button onClick={() => decreaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition">−</button>
-        <span className="text-black text-lg w-8 text-center">{item.quantity}</span>
-        <button onClick={() => increaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition">+</button>
-      </div>
+      <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button onClick={() => decreaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition text-sm sm:text-base">−</button>
+          <span className="text-black text-base sm:text-lg w-8 text-center">{item.quantity}</span>
+          <button onClick={() => increaseQuantity(item.id)} className="text-black w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition text-sm sm:text-base">+</button>
+        </div>
 
-      <button onClick={() => removeFromCart(item.id)} className="ml-4 p-1 text-red-500 hover:bg-red-100 rounded-full transition">
-        <Trash2 className="w-5 h-5" />
-      </button>
+        <button onClick={() => removeFromCart(item.id)} className="p-1.5 sm:p-1 text-red-500 hover:bg-red-100 rounded-full transition">
+          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+      </div>
     </div>
   )})}
 </div>
   );
 
 const rightContent = (
-  <div className="p-6 bg-white text-black rounded-xl shadow-sm border">
-    <h2 className="font-semibold mb-4 text-lg theme-heading">Order Summary</h2>
+  <div className="p-4 sm:p-6 bg-white text-black rounded-xl shadow-sm border">
+    <h2 className="font-semibold mb-4 text-base sm:text-lg theme-heading">Order Summary</h2>
 
     <div className="space-y-3 text-gray-700 text-sm">
       <div className="flex justify-between">
@@ -145,26 +147,23 @@ const rightContent = (
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      <div className="bg-white max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <main className="pt-14 sm:pt-16">
+        {/* Purchase List Section */}
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+          <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
+          <TwoColumnLayout left={leftContent} right={rightContent} />
+          <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+        </section>
 
-        {/* ⭐ Main Page Heading (Aligns both sections perfectly) */}
-        <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
-
-        <TwoColumnLayout left={leftContent} right={rightContent} />
-        <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
-
-        {/* Shop Banner after Purchase List and Order Summary */}
+        {/* Shop Banner Section */}
         {shopBanner && (
-          <div className="mt-4 md:mt-8">
+          <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
             <Banner imageSrc={shopBanner.imageUrl} />
-          </div>
+          </section>
         )}
+      </main>
 
-      </div>
-
-      <div className="mt-4 md:mt-8">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

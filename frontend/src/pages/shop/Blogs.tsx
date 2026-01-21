@@ -162,9 +162,9 @@ export default function Blogs() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Header Section */}
-      <div className="w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-4">
+      <main className="pt-14 sm:pt-16">
+        {/* Header Section */}
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
             Blogs
           </h1>
@@ -258,11 +258,10 @@ export default function Blogs() {
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </section>
 
-      {/* Blog Grid */}
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        {/* Blog Grid */}
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
         {loading ? (
           <div className="text-center py-12">
             <p className="text-gray-600">Loading blogs...</p>
@@ -273,20 +272,20 @@ export default function Blogs() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
               {displayedBlogs.map((blog) => (
                 <Link
                   key={blog._id}
                   to={`/blog/${blog._id}`}
                   className="group cursor-pointer"
                 >
-                  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     {/* Blog Image */}
-                    <div className="w-full aspect-square bg-gray-100 overflow-hidden">
+                    <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
                       <img
                         src={getBlogImage(blog)}
                         alt={blog.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/product.png";
                         }}
@@ -313,7 +312,7 @@ export default function Blogs() {
 
             {/* Load More Button */}
             {hasMore && (
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center">
                 <button
                   onClick={() => setDisplayCount(displayCount + 16)}
                   className="px-6 py-3 bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6B4A2C] transition-colors"
@@ -324,18 +323,16 @@ export default function Blogs() {
             )}
           </>
         )}
-      </div>
+        </section>
 
-      {/* Feature Cards */}
-      <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
-        <FeatureCards />
-      </section>
+        {/* Feature Cards */}
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+          <FeatureCards />
+        </section>
 
-      {/* Popular Products */}
-      <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold theme-heading">Popular Products</h2>
-        </div>
+        {/* Popular Products */}
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+          <h2 className="text-2xl font-bold theme-heading mb-6">Popular Products</h2>
         {products.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {products.map((p) => (
@@ -350,7 +347,8 @@ export default function Blogs() {
             ))}
           </div>
         )}
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

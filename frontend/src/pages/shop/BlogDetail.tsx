@@ -209,14 +209,15 @@ export default function BlogDetail() {
       `}</style>
       <Navbar />
 
-      {/* Header Section */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-4">
-        <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
-          Blog Details
-        </h1>
-        
-        {/* Breadcrumb */}
-        <div className="text-sm text-gray-600 mb-6 text-center">
+      <main className="pt-14 sm:pt-16">
+        {/* Header Section */}
+        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
+            Blog Details
+          </h1>
+          
+          {/* Breadcrumb */}
+          <div className="text-sm text-gray-600 mb-6 text-center">
           <Link to="/blogs" className="hover:underline">Blogs</Link>
           {categoryName && (
             <>
@@ -243,10 +244,10 @@ export default function BlogDetail() {
           {" / "}
           <span className="text-gray-900">{blog.title}</span>
         </div>
-      </div>
+        </section>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-20">
+        {/* Main Content */}
+        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="flex-1">
@@ -279,15 +280,15 @@ export default function BlogDetail() {
             {/* Blog Content */}
             <div
               ref={contentRef}
-              className="prose prose-lg max-w-none text-gray-700 mb-8 relative content-area"
+              className="prose prose-lg max-w-none text-gray-700 relative content-area"
               dangerouslySetInnerHTML={{ __html: blog.description || "<p>No content available.</p>" }}
             />
 
             {/* Horizontal Line - End of Blog Content */}
-            <div className="border-t border-gray-300 my-8"></div>
+            <div className="border-t border-gray-300 mt-8"></div>
 
             {/* Sharing Options */}
-            <div className="pt-6 mb-8">
+            <div className="pt-6">
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Share Your Love!</h3>
               <div className="flex items-center gap-3 flex-wrap">
                 <a
@@ -326,7 +327,7 @@ export default function BlogDetail() {
                 >
                   <FaPinterest size={20} />
                 </a>
-                {navigator.share && (
+                {typeof navigator.share === 'function' && (
                   <button
                     onClick={handleNativeShare}
                     className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 transition-colors"
@@ -492,9 +493,10 @@ export default function BlogDetail() {
                   <Link
                     key={cat._id}
                     to={`/blogs?category=${cat._id}`}
-                    className="block text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors"
+                    className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors px-2 py-1 rounded"
                   >
-                    {cat.name} ({cat.blogs || 0})
+                    <span className="leading-5">{cat.name}</span>
+                    <span className="text-xs text-gray-500 whitespace-nowrap leading-5">({cat.blogs || 0})</span>
                   </Link>
                 ))}
               </div>
@@ -502,18 +504,16 @@ export default function BlogDetail() {
             </div>
           </div>
         </div>
-      </main>
+        </section>
 
-      {/* Feature Cards */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
-        <FeatureCards />
-      </section>
+        {/* Feature Cards */}
+        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+          <FeatureCards />
+        </section>
 
-      {/* Popular Products */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-3 sm:pb-5 md:pb-8 lg:pb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold theme-heading">Popular Products</h2>
-        </div>
+        {/* Popular Products */}
+        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+          <h2 className="text-2xl font-bold theme-heading mb-6">Popular Products</h2>
         {products.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {products.map((p) => (
@@ -528,7 +528,8 @@ export default function BlogDetail() {
             ))}
           </div>
         )}
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

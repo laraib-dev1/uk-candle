@@ -40,18 +40,18 @@ export default function BlogGrid({ blogs, onView, onEdit, onDelete }: BlogGridPr
           className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
         >
           {/* Image */}
-          <div className="w-full h-48 bg-gray-200 relative">
+          <div className="relative w-full bg-gray-200 aspect-[16/9]">
             {blog.image ? (
               <img
                 src={blog.image}
                 alt={blog.title}
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/product.png";
                 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                 <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
                   <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>

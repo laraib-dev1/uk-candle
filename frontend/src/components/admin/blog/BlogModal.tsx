@@ -198,8 +198,10 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
         success("Blog created successfully!");
       } else if (mode === "edit" && (data?.id || data?._id)) {
         const blogId = data.id || data._id;
-        await updateBlog(blogId, blogData);
-        success("Blog updated successfully!");
+        if (blogId) {
+          await updateBlog(blogId, blogData);
+          success("Blog updated successfully!");
+        }
       }
 
       // Reset form
@@ -296,12 +298,12 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-900">Sub Niche (Optional)</label>
                 <div className="flex gap-2">
-                  <Select
-                    value={form.niche || undefined}
-                    onValueChange={(value) => setForm({ ...form, niche: value })}
-                    disabled={isView}
-                    className="flex-1"
-                  >
+                  <div className="flex-1">
+                    <Select
+                      value={form.niche || undefined}
+                      onValueChange={(value) => setForm({ ...form, niche: value })}
+                      disabled={isView}
+                    >
                     <SelectTrigger className="text-gray-900">
                       <SelectValue placeholder="Select niche (optional)" />
                     </SelectTrigger>
@@ -317,6 +319,7 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
                       )}
                     </SelectContent>
                   </Select>
+                  </div>
                   {form.niche && !isView && (
                     <Button
                       type="button"
@@ -350,7 +353,7 @@ export default function BlogModal({ open, mode, data, onClose, onSubmit }: BlogM
                   <img
                     src={form.image}
                     alt="Blog"
-                    className="w-32 h-32 object-cover rounded border"
+                    className="w-48 aspect-[16/9] object-cover rounded border"
                   />
                 )}
                 {!isView && (

@@ -51,9 +51,11 @@ export default function Footer() {
       try {
         // Always fetch fresh data to ensure social posts are up to date
         // Fetch from API
-        const [companyData, footerData] = await Promise.all([
+        const [companyData, footerData, categoriesData, productsData] = await Promise.all([
           getCompany(),
           getFooter().catch(() => ({ sections: [], copyright: "" })),
+          getCategories().catch(() => []),
+          getProducts().catch(() => []),
         ]);
 
         const company = companyData;
@@ -208,6 +210,10 @@ export default function Footer() {
           setFooterData({
             sections: (cachedFooter.sections || []).filter((s: FooterSection) => s.enabled !== false).sort((a: FooterSection, b: FooterSection) => a.order - b.order),
             copyright: cachedFooter.copyright || `© ${new Date().getFullYear()} ${cachedCompany?.company || "VERES"}. All rights reserved.`,
+            showCategories: cachedFooter.showCategories === true || cachedFooter.showCategories === "true" || cachedFooter.showCategories === 1,
+            showProducts: cachedFooter.showProducts === true || cachedFooter.showProducts === "true" || cachedFooter.showProducts === 1,
+            showSocialIcons: cachedFooter.showSocialIcons === true || cachedFooter.showSocialIcons === "true" || cachedFooter.showSocialIcons === 1,
+            showSocialLinks: cachedFooter.showSocialLinks === true || cachedFooter.showSocialLinks === "true" || cachedFooter.showSocialLinks === 1,
           });
         }
       }
@@ -230,11 +236,11 @@ export default function Footer() {
   const enabledSections = footerData.sections.filter(s => s.enabled !== false);
 
   return (
-    <footer className="text-gray-300" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
+    <footer className="text-gray-300 mt-3 sm:mt-5 md:mt-8 lg:mt-10" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-0">
         <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left side - Logo and Footer Sections */}
-          <div className="flex-1 flex flex-col sm:flex-col md:grid md:grid-cols-2 lg:grid lg:grid-cols-auto gap-4 sm:gap-6 lg:gap-8">
+          <div className="flex-1 flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-4 sm:gap-6 lg:gap-10">
             {/* Logo */}
             <div className="flex flex-col space-y-4">
               <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
@@ -298,25 +304,21 @@ export default function Footer() {
             )}
 
             {/* Footer Sections from SP Panel */}
-            {enabledSections.map((section, index) => {
-              // Hide "Contact Us" section on small screens
-              const isContactUs = section.title.toLowerCase().includes('contact');
-              return (
-                <div key={index} className={`flex flex-col space-y-2 text-sm ${isContactUs ? 'hidden sm:flex' : ''}`}>
-                  <h3 className="text-white font-semibold mb-2">{section.title}</h3>
-                  {section.links.map((link, linkIndex) => (
-                    <button
-                      key={linkIndex}
-                      onClick={() => handleLinkClick(link.url)}
-                      className="text-left text-gray-300 hover:underline"
-                      style={{ cursor: "pointer" }}
-                    >
-                      {link.label}
-                    </button>
-                  ))}
-                </div>
-              );
-            })}
+            {enabledSections.map((section, index) => (
+              <div key={index} className="flex flex-col space-y-2 text-sm">
+                <h3 className="text-white font-semibold mb-2">{section.title}</h3>
+                {section.links.map((link, linkIndex) => (
+                  <button
+                    key={linkIndex}
+                    onClick={() => handleLinkClick(link.url)}
+                    className="text-left text-gray-300 hover:underline"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
+            ))}
 
             {/* Social Links Column - if enabled */}
             {footerData.showSocialLinks && companyData.socialLinks && (

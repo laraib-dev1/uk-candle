@@ -12,7 +12,7 @@ interface BannerProps {
 const Banner: React.FC<BannerProps> = ({
   imageSrc,
   alt = "Shop Banner",
-  height = "h-64",
+  height,
   targetUrl,
 }) => {
   const navigate = useNavigate();
@@ -28,9 +28,12 @@ const Banner: React.FC<BannerProps> = ({
     }
   };
 
+  // Default responsive height matching landing page hero banner
+  const defaultHeight = height || "h-[150px] sm:h-[200px] md:h-[300px] lg:h-[400px] xl:h-[500px]";
+
   return (
     <section 
-      className={`w-full ${height} overflow-hidden rounded-lg ${targetUrl ? "cursor-pointer" : ""}`}
+      className={`w-full ${defaultHeight} overflow-hidden rounded-lg ${targetUrl ? "cursor-pointer" : ""}`}
       onClick={targetUrl ? handleBannerClick : undefined}
     >
       <img

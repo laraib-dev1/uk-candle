@@ -43,7 +43,8 @@ export default function ContactUs() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <main className="pt-14 sm:pt-16">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
         <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-8">
           {/* Left: Form */}
           <div>
@@ -147,8 +148,8 @@ export default function ContactUs() {
             </form>
           </div>
 
-          {/* Right: Logo Image */}
-          <div className="flex items-center justify-center min-h-[400px]">
+          {/* Right: Logo Image - Hidden on small screens */}
+          <div className="hidden md:flex items-center justify-center min-h-[400px]">
             <img 
               src="/logo.png" 
               alt="Logo" 
@@ -160,6 +161,7 @@ export default function ContactUs() {
             />
           </div>
         </div>
+        </section>
       </main>
       <Footer />
     </div>
