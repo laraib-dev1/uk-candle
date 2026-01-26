@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Lightbulb, Settings, Rocket } from "lucide-react";
+import { spacing } from "@/utils/spacing";
 
 interface ProcessStep {
   icon: React.ComponentType<{ className?: string }>;
@@ -40,7 +41,7 @@ const HowWeWork: React.FC<HowWeWorkProps> = ({
   ],
 }) => {
   return (
-    <section className="py-3 sm:py-5 md:py-8 lg:py-10 bg-gray-50">
+    <section className={`${spacing.section.gap} bg-gray-50`}>
       <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">

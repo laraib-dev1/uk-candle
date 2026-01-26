@@ -9,7 +9,7 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
   const bannerImage = image || "/hero.png";
   
   return (
-    <section className="bg-white text-black py-0">
+    <section className={`bg-white text-black ${spacing.section.gap}`}>
       <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 text-center">
         {/* Text content */}
         <div className="max-w-3xl mx-auto">

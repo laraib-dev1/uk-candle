@@ -45,7 +45,7 @@ export default function ContactUs() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <main className={spacing.navbar.offset}>
-        <section className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
         <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-8">
           {/* Left: Form */}
           <div>

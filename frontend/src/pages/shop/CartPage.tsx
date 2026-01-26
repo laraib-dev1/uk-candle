@@ -149,7 +149,7 @@ const rightContent = (
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Purchase List Section */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
           <TwoColumnLayout left={leftContent} right={rightContent} />
           <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
@@ -157,7 +157,7 @@ const rightContent = (
 
         {/* Shop Banner Section */}
         {shopBanner && (
-          <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+          <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
             <Banner imageSrc={shopBanner.imageUrl} />
           </section>
         )}

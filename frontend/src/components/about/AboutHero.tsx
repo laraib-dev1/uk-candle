@@ -20,7 +20,7 @@ const AboutHero: React.FC<AboutHeroProps> = ({
   meetTeamLink = "#team",
 }) => {
   return (
-    <section className="py-3 sm:py-5 md:py-8 lg:py-10">
+    <section className={spacing.section.gap}>
       <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center">
           {/* Left: Content */}

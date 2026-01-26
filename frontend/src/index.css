@@ -81,16 +81,16 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Section Spacing Utilities - 20px standard gap */
   .section-gap {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
   }
 
   .section-gap-top {
-    padding-top: 20px;
+    padding-top: 20px !important;
   }
 
   .section-gap-bottom {
-    padding-bottom: 20px;
+    padding-bottom: 20px !important;
   }
 
   /* Footer gap - visible white gap before footer */

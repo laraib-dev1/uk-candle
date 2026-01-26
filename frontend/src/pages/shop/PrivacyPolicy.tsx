@@ -106,8 +106,8 @@ export default function PrivacyPolicy() {
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Title Section - Full width container */}
-        <section className="w-full">
-          <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             {/* Title */}
             <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
               {content.title || "Privacy Policy"}
@@ -124,7 +124,7 @@ export default function PrivacyPolicy() {
         </section>
 
         {/* Content Section - Centered with TOC */}
-        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10">
+        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Table of Contents - Left Sidebar */}
             <div className="lg:w-64 flex-shrink-0">

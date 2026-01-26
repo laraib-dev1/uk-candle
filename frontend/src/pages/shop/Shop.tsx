@@ -179,12 +179,12 @@ const Shop = () => {
       <Navbar />
       <main className={`flex-1 ${spacing.navbar.offset}`}>
         {/* Shop banner */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
         </section>
 
         {/* Products Section */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 p-0 m-0">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold theme-heading m-0 p-0">
               Products
@@ -277,7 +277,7 @@ const Shop = () => {
         </section>
 
         {/* Feature Cards */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <FeatureCards />
         </section>
       </main>

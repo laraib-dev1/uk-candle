@@ -164,7 +164,7 @@ export default function Blogs() {
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Header Section */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
             Blogs
           </h1>
@@ -326,12 +326,12 @@ export default function Blogs() {
         </section>
 
         {/* Feature Cards */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <FeatureCards />
         </section>
 
         {/* Popular Products */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <h2 className="text-2xl font-bold theme-heading mb-6">Popular Products</h2>
         {products.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

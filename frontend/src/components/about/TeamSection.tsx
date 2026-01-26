@@ -1,4 +1,5 @@
 import React from "react";
+import { spacing } from "@/utils/spacing";
 
 interface TeamMember {
   name: string;
@@ -44,7 +45,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({
   ],
 }) => {
   return (
-    <section className="py-3 sm:py-5 md:py-8 lg:py-10">
+    <section className={spacing.section.gap}>
       <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">

@@ -33,7 +33,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
   };
 
   return (
-    <section className="bg-white text-black">
+    <section className={`bg-white text-black ${spacing.section.gap}`}>
       <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Heading and Handlers in one row */}
         <div className="flex justify-between items-center px-2">

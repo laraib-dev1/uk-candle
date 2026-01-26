@@ -352,7 +352,7 @@ export default function UserProfile() {
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
       <main className={spacing.navbar.offset}>
-        <section className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4 sm:p-6">

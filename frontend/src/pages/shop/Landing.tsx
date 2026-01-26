@@ -104,7 +104,7 @@ export default function () {
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
-        <section className="p-0 m-0">
+        <section className={`${spacing.section.gap}`}>
           {bannersBySlot["hero-main"] ? (
             <Hero
               title="Welcome to our store"
@@ -121,28 +121,28 @@ export default function () {
             />
           )}
         </section>
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 p-0 m-0">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
-          {loading ? (
-            <ProductGridSkeleton count={5} />
-          ) : (
-            <ProductGrid
-              items={products
-                .slice(0, 5)
-                .map((p) => ({
-                  id: p._id,
-                  name: p.name,
-                  price: p.price,
-                  image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
-                    (img) => img && img.trim() !== ""
-                  ) || "/product.png",
-                  offer: p.discount ? `${p.discount}% OFF` : undefined,
-                }))
-              }
-            />
-          )}
-
-
+          <div className={spacing.container.paddingXLarge}>
+            {loading ? (
+              <ProductGridSkeleton count={5} />
+            ) : (
+              <ProductGrid
+                items={products
+                  .slice(0, 5)
+                  .map((p) => ({
+                    id: p._id,
+                    name: p.name,
+                    price: p.price,
+                    image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
+                      (img) => img && img.trim() !== ""
+                    ) || "/product.png",
+                    offer: p.discount ? `${p.discount}% OFF` : undefined,
+                  }))
+                }
+              />
+            )}
+          </div>
         </section>
         <CategorySection
             categories={categories.map(cat => ({
@@ -155,47 +155,49 @@ export default function () {
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 p-0 m-0">
-          {loading ? (
-            <ProductGridSkeleton count={15} />
-          ) : (
-            <>
-              <ProductGrid
-                items={products
-                  .slice(0, 15) // Show 3 rows (15 products for desktop with 5 columns)
-                  .map((p) => ({
-                    id: p._id,
-                    name: p.name,
-                    price: p.price,
-                    image: [
-                      p.image1,
-                      p.image2,
-                      p.image3,
-                      p.image4,
-                      p.image5,
-                      p.image6
-                    ].filter(Boolean)[0] || "/product.png",
-                    offer: p.discount ? `${p.discount}% OFF` : undefined
-                  }))
-                }
-              />
-              <div className="flex justify-center mt-2 sm:mt-3">
-                <DynamicButton 
-                  label="See All" 
-                  variant="filled" 
-                  shape="pill"
-                  onClick={() => navigate("/shop")}
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingXLarge}>
+            {loading ? (
+              <ProductGridSkeleton count={15} />
+            ) : (
+              <>
+                <ProductGrid
+                  items={products
+                    .slice(0, 15) // Show 3 rows (15 products for desktop with 5 columns)
+                    .map((p) => ({
+                      id: p._id,
+                      name: p.name,
+                      price: p.price,
+                      image: [
+                        p.image1,
+                        p.image2,
+                        p.image3,
+                        p.image4,
+                        p.image5,
+                        p.image6
+                      ].filter(Boolean)[0] || "/product.png",
+                      offer: p.discount ? `${p.discount}% OFF` : undefined
+                    }))
+                  }
                 />
-              </div>
-            </>
-          )}
+                <div className="flex justify-center mt-2 sm:mt-3">
+                  <DynamicButton 
+                    label="See All" 
+                    variant="filled" 
+                    shape="pill"
+                    onClick={() => navigate("/shop")}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </section>
         {/* Offer Section - Commented Out */}
         {/* <section className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <OfferSection />
         </section> */}
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
-         <section className="p-0 m-0">
+         <section className={`${spacing.section.gap}`}>
            <Hero2
              title="Discover new scents"
              subtitle="A selection of fragrances to brighten your mood."
@@ -203,11 +205,11 @@ export default function () {
              imagePosition="right"
            />
          </section>
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <AtYourService />
         </section>
         {/* Banner at bottom of services section - Full width */}
-        <section className="w-full">
+        <section className={`w-full ${spacing.section.gap}`}>
           {bannersBySlot["hero-last"] ? (
             <Hero
               title="Discover your natural glow"
@@ -224,11 +226,11 @@ export default function () {
             />
           )}
         </section>
-        <section className="w-full p-0 m-0">
+        <section className={`w-full ${spacing.section.gap}`}>
           <FeatureSection />
         </section>
         {/* Feedback Section - Full Width */}
-        <section className="w-full bg-white p-0 m-0">
+        <section className={`w-full bg-white ${spacing.section.gap}`}>
           <ClientFeedback />
         </section>
 

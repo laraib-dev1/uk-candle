@@ -97,8 +97,8 @@ export default function FAQs() {
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Title Section - Full width container */}
-        <section className="w-full">
-          <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             {/* Title */}
             <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
               Frequently Asked Questions
@@ -115,7 +115,7 @@ export default function FAQs() {
         </section>
 
         {/* Content Section - Centered */}
-        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10">
+        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           {/* FAQs List */}
           <div className="space-y-3">
             {content.faqs && content.faqs.length > 0 ? (

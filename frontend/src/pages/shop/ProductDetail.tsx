@@ -558,7 +558,7 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-white">
       <main className={spacing.navbar.offset}>
         {/* Product Section */}
-        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
+        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
@@ -748,7 +748,7 @@ export default function ProductDetail() {
         </section>
 
         {/* Similar Products Section */}
-        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10 pb-0">
+        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
             Similar Products
           </h3>
