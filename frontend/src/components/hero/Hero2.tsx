@@ -28,7 +28,7 @@ const Hero2 = ({
     <section className="py-0 bg-gray-200">
       {fullWidthText ? (
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col justify-center py-6 sm:py-8 md:py-10 text-center">
+          <div className="flex flex-col justify-center text-center">
             <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
             </h1>
@@ -66,7 +66,7 @@ const Hero2 = ({
             </div>
           )}
 
-          <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8 flex flex-col justify-center`}>
+          <div className={`${imagePosition === "left" ? "order-2 md:order-1" : "order-1"} max-w-8xl px-3 sm:px-4 md:px-6 lg:px-8 flex flex-col justify-center`}>
             <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif leading-tight tracking-tight">
               {title || "Welcome to Our Store"}
             </h1>

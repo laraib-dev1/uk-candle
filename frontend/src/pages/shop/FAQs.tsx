@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import { getContentByType } from "@/api/content.api";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import PageLoader from "@/components/ui/PageLoader";
+import { spacing } from "@/utils/spacing";
 
 type FAQItem = {
   question: string;
@@ -94,7 +95,7 @@ export default function FAQs() {
         }
       `}</style>
       <Navbar />
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Title Section - Full width container */}
         <section className="w-full">
           <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">

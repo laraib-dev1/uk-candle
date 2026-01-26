@@ -11,6 +11,7 @@ import PageLoader from "@/components/ui/PageLoader";
 import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2 } from "lucide-react";
 import { FaPinterest } from "react-icons/fa";
 import FeatureCards from "@/components/ui/FeatureCards";
+import { spacing } from "@/utils/spacing";
 
 interface Blog {
   _id: string;
@@ -160,7 +161,7 @@ export default function BlogDetail() {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
-        <div className="text-center py-20">
+        <div className={`text-center py-20 ${spacing.navbar.offset}`}>
           <p className="text-gray-600">Blog not found</p>
           <Link to="/blogs" className="text-[#8B5E3C] hover:underline mt-4 inline-block">
             Back to Blogs
@@ -208,8 +209,7 @@ export default function BlogDetail() {
         }
       `}</style>
       <Navbar />
-
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Header Section */}
         <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
@@ -530,7 +530,6 @@ export default function BlogDetail() {
         )}
         </section>
       </main>
-
       <Footer />
     </div>
   );

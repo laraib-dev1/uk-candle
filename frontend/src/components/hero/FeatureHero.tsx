@@ -1,4 +1,5 @@
 import React from "react";
+import { spacing } from "@/utils/spacing";
 
 interface FeatureHeroProps {
   image?: string;
@@ -11,11 +12,11 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
     <section className="bg-white text-black py-0">
       <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 text-center">
         {/* Text content */}
-        <div className="max-w-3xl mx-auto mb-2 sm:mb-2.5">
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold mb-1.5 sm:mb-2 md:mb-2.5 text-gray-900">
+        <div className="max-w-3xl mx-auto">
+          <h2 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>
             An alchemy of gold and perfume
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-gray-600">
+          <p className={`text-xs sm:text-sm md:text-base text-gray-600 ${spacing.inner.gapBottom}`}>
             The Maison's iconic fragrance, adorned in gold to celebrate the
             brilliance of the holidays.
           </p>

@@ -10,6 +10,7 @@ import { getProducts } from "@/api/product.api";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageLoader from "@/components/ui/PageLoader";
 import { getCompany } from "@/api/company.api";
+import { spacing } from "@/utils/spacing";
 
 interface Blog {
   _id: string;
@@ -161,8 +162,7 @@ export default function Blogs() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Header Section */}
         <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
@@ -349,7 +349,6 @@ export default function Blogs() {
         )}
         </section>
       </main>
-
       <Footer />
     </div>
   );

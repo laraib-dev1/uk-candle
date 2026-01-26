@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 import { useCart } from "@/components/products/CartContext";
 import Banner from "@/components/hero/Banner";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
+import { spacing } from "@/utils/spacing";
 
 
 const CartPage = () => {
@@ -146,8 +147,7 @@ const rightContent = (
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Purchase List Section */}
         <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
@@ -162,7 +162,6 @@ const rightContent = (
           </section>
         )}
       </main>
-
       <Footer />
     </div>
   );

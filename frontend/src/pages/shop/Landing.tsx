@@ -17,6 +17,7 @@ import PageLoader from "@/components/ui/PageLoader";
 import { getProducts } from "@/api/product.api";
 import { getBanners, type Banner } from "@/api/banner.api";
 import { getCategories } from "@/api/category.api";
+import { spacing } from "@/utils/spacing";
 interface Product {
   _id: string;
   name: string;
@@ -101,9 +102,9 @@ export default function () {
     <div className="min-h-screen bg-white text-gray-800 overflow-x-hidden">
 
       <Navbar />
-      <main>
+      <main className={spacing.navbar.offset}>
         {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
-        <section className="py-2 sm:py-3 md:py-5 lg:py-8">
+        <section className="p-0 m-0">
           {bannersBySlot["hero-main"] ? (
             <Hero
               title="Welcome to our store"
@@ -120,7 +121,7 @@ export default function () {
             />
           )}
         </section>
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 p-0 m-0">
           {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
           {loading ? (
             <ProductGridSkeleton count={5} />
@@ -144,17 +145,17 @@ export default function () {
 
         </section>
         <CategorySection
-          categories={categories.map(cat => ({
-            title: cat.name,
-            image: (cat.icon && cat.icon.trim() !== "") ? cat.icon : "/category.png"
-          }))}
-        />
+            categories={categories.map(cat => ({
+              title: cat.name,
+              image: (cat.icon && cat.icon.trim() !== "") ? cat.icon : "/category.png"
+            }))}
+          />
         {/* HERO #3: FeatureHero image banner, uses 'hero-tertiary' if set - aligned with products */}
-        <section className="py-2 sm:py-3 md:py-5 lg:py-8">
+        <section className="p-0 m-0">
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 p-0 m-0">
           {loading ? (
             <ProductGridSkeleton count={15} />
           ) : (
@@ -194,7 +195,7 @@ export default function () {
           <OfferSection />
         </section> */}
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
-         <section className="py-3 sm:py-5 md:py-8 lg:py-10">
+         <section className="p-0 m-0">
            <Hero2
              title="Discover new scents"
              subtitle="A selection of fragrances to brighten your mood."
@@ -202,11 +203,11 @@ export default function () {
              imagePosition="right"
            />
          </section>
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <AtYourService />
         </section>
         {/* Banner at bottom of services section - Full width */}
-        <section className="w-full py-2 sm:py-3 md:py-5 lg:py-8">
+        <section className="w-full">
           {bannersBySlot["hero-last"] ? (
             <Hero
               title="Discover your natural glow"
@@ -223,16 +224,13 @@ export default function () {
             />
           )}
         </section>
-        <section className="w-full py-3 sm:py-5 md:py-8 lg:py-10">
+        <section className="w-full p-0 m-0">
           <FeatureSection />
         </section>
         {/* Feedback Section - Full Width */}
-        <section className="w-full py-3 sm:py-5 md:py-8 lg:py-10 pb-0 bg-white">
+        <section className="w-full bg-white p-0 m-0">
           <ClientFeedback />
         </section>
-        
-        {/* Gap between Feedback and Footer - White background */}
-        <div className="w-full h-4 sm:h-6 md:h-8 lg:h-10 bg-white"></div>
 
       </main>
       <Footer />

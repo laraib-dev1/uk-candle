@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
 import { useToast } from "@/components/ui/toast";
 import CircularLoader from "@/components/ui/CircularLoader";
+import { spacing } from "@/utils/spacing";
 
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -554,9 +555,8 @@ export default function ProductDetail() {
       </Helmet>
 
       <Navbar />
-
       <div className="min-h-screen bg-white">
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Product Section */}
         <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
@@ -767,7 +767,6 @@ export default function ProductDetail() {
           </div>
         </section>
       </main>
-
       <Footer />
       </div>
     </>

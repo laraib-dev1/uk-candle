@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { spacing } from "@/utils/spacing";
 
 interface Category {
   title: string;
@@ -32,10 +33,10 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
   };
 
   return (
-    <section className="py-3 sm:py-5 md:py-8 lg:py-10 bg-white text-black">
+    <section className="bg-white text-black">
       <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Heading and Handlers in one row */}
-        <div className="flex justify-between items-center mb-2 sm:mb-3 md:mb-4 px-2">
+        <div className="flex justify-between items-center px-2">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide">
             ALL GIFT IDEAS
           </h2>
@@ -62,7 +63,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
         </div>
 
         {/* Categories Container - Centered and contained within margins */}
-        <div className="w-full overflow-hidden px-2 justify-center">
+        <div className={`w-full overflow-hidden px-2 justify-center ${spacing.inner.gapTop}`}>
           <div
             ref={scrollContainerRef}
             className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-2 sm:pb-3 md:pb-4 scrollbar-hide justify-start"

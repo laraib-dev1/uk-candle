@@ -9,6 +9,20 @@ body {
   @apply bg-white dark:bg-gray-900 text-black dark:text-white;
   overflow-y: overlay; 
 }
+
+/* Remove default padding/margin from sections */
+section {
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove default padding/margin from headings */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
 /* Fix Mantine RTE toolbar jumping */
 .mantine-RichTextEditor-root {
   width: 100% !important;
@@ -63,6 +77,61 @@ body {
 @layer utilities {
   .rdt_TableCell {
     overflow: visible !important;
+  }
+
+  /* Section Spacing Utilities - 20px standard gap */
+  .section-gap {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .section-gap-top {
+    padding-top: 20px;
+  }
+
+  .section-gap-bottom {
+    padding-bottom: 20px;
+  }
+
+  /* Footer gap - visible white gap before footer */
+  .footer-gap {
+    padding-top: 10px;
+    padding-bottom: 20px;
+    background-color: white;
+  }
+
+  /* Inner section gap - 10px for spacing within sections */
+  .inner-gap {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .inner-gap-top {
+    padding-top: 10px;
+  }
+
+  .inner-gap-bottom {
+    padding-bottom: 10px;
+  }
+
+  /* Container Padding Utilities */
+  .container-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-padding {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-padding {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
   }
 }
 

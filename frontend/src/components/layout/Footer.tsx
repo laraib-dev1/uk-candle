@@ -6,6 +6,7 @@ import { getCategories } from "@/api/category.api";
 import { getProducts } from "@/api/product.api";
 import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { spacing } from "@/utils/spacing";
 
 interface FooterLink {
   label: string;
@@ -236,14 +237,14 @@ export default function Footer() {
   const enabledSections = footerData.sections.filter(s => s.enabled !== false);
 
   return (
-    <footer className="text-gray-300 mt-3 sm:mt-5 md:mt-8 lg:mt-10" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-0">
-        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
+    <footer className="text-gray-300" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
+      <div className={`max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 ${spacing.section.gapTop} ${spacing.section.gapBottom}`}>
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-center gap-6 sm:gap-8 lg:gap-16">
           {/* Left side - Logo and Footer Sections */}
-          <div className="flex-1 flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-4 sm:gap-6 lg:gap-10">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-4 sm:gap-6 lg:gap-16 lg:justify-center">
             {/* Logo */}
-            <div className="flex flex-col space-y-4">
-              <span className="text-white font-serif text-xl font-semibold">{companyData.company}</span>
+            <div className="flex flex-col space-y-4 lg:min-w-[140px]">
+              <span className="text-white font-serif text-xl lg:text-2xl font-semibold">{companyData.company}</span>
               {/* Social Icons - show under company name if enabled */}
               {footerData.showSocialIcons && companyData.socialLinks && (
                 <div className="flex gap-2 mt-2">
@@ -273,8 +274,8 @@ export default function Footer() {
 
             {/* Categories Column - if enabled */}
             {footerData.showCategories && categories.length > 0 && (
-              <div className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">Categories</h3>
+              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3">Categories</h3>
                 {categories.slice(0, 3).map((category) => (
                   <Link
                     key={category._id}
@@ -289,8 +290,8 @@ export default function Footer() {
 
             {/* Products Column - if enabled */}
             {footerData.showProducts && products.length > 0 && (
-              <div className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">Products</h3>
+              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3">Products</h3>
                 {products.slice(0, 3).map((product) => (
                   <Link
                     key={product._id}
@@ -305,8 +306,8 @@ export default function Footer() {
 
             {/* Footer Sections from SP Panel */}
             {enabledSections.map((section, index) => (
-              <div key={index} className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">{section.title}</h3>
+              <div key={index} className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3">{section.title}</h3>
                 {section.links.map((link, linkIndex) => (
                   <button
                     key={linkIndex}
@@ -322,8 +323,8 @@ export default function Footer() {
 
             {/* Social Links Column - if enabled */}
             {footerData.showSocialLinks && companyData.socialLinks && (
-              <div className="flex flex-col space-y-2 text-sm">
-                <h3 className="text-white font-semibold mb-2">Follow Us</h3>
+              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3">Follow Us</h3>
                 {(companyData.socialLinks.facebook || companyData.socialLinks.instagram || companyData.socialLinks.linkedin || companyData.socialLinks.youtube) && (
                   <>
                     {companyData.socialLinks.facebook && (
@@ -354,8 +355,8 @@ export default function Footer() {
 
           {/* Right side - Social Posts Gallery - only show if there are posts - Large screens only */}
           {companyData.socialPosts && companyData.socialPosts.length > 0 && (
-            <div className="hidden lg:block lg:ml-auto">
-              <div className="grid grid-cols-4 gap-2 w-48">
+            <div className="hidden lg:block lg:ml-auto lg:flex-shrink-0">
+              <div className="grid grid-cols-4 gap-1.5 lg:gap-2 w-64 lg:w-80">
                 {companyData.socialPosts
                   .filter((post: any) => {
                     if (!post || !post.image) return false;
@@ -426,7 +427,7 @@ export default function Footer() {
         )}
 
         {/* Bottom bar */}
-        <div className="mt-6 sm:mt-8 border-t border-gray-600 pt-4 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-2">
+        <div className={`${spacing.margin.top} border-t border-gray-600 ${spacing.section.gapTop} ${spacing.section.gapBottomSmall} flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-2`}>
           <span className="text-center md:text-left">{footerData.copyright || `© ${new Date().getFullYear()} ${companyData.company}. All rights reserved.`}</span>
           <div className="flex gap-3 sm:gap-4">
             <span>Visa</span>

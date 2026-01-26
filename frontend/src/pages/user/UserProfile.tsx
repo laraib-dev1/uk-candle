@@ -18,6 +18,7 @@ import {
   removeFromWishlist,
 } from "@/api/user.api";
 import { createQuery } from "@/api/query.api";
+import { spacing } from "@/utils/spacing";
 import { createReview } from "@/api/review.api";
 import { getProducts } from "@/api/product.api";
 import { getEnabledProfilePages, getProfilePageBySlug, getEnabledBaseProfileTabs } from "@/api/profilepage.api";
@@ -339,7 +340,7 @@ export default function UserProfile() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className={`flex items-center justify-center min-h-[60vh] ${spacing.navbar.offset}`}>
           <PageLoader message="Loading profile..." />
         </div>
         <Footer />
@@ -350,7 +351,7 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         <section className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-3 sm:pt-5 md:pt-8 lg:pt-10 pb-3 sm:pb-5 md:pb-8 lg:pb-10">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}

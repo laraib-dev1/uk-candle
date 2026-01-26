@@ -4,12 +4,13 @@ import Footer from "@/components/layout/Footer";
 import AboutHero from "@/components/about/AboutHero";
 import HowWeWork from "@/components/about/HowWeWork";
 import TeamSection from "@/components/about/TeamSection";
+import { spacing } from "@/utils/spacing";
 
 export default function AboutUs() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="pt-14 sm:pt-16">
+      <main className={spacing.navbar.offset}>
         {/* Hero/Introduction Section */}
         <AboutHero />
 

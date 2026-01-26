@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { spacing } from "@/utils/spacing";
 
 /**
  * ClientFeedback.tsx
@@ -119,14 +120,14 @@ const ClientFeedback: React.FC = () => {
       <div className="pointer-events-none absolute top-8 right-6 w-40 h-40 rounded-full bg-[#f4cdbf] opacity-30 blur-[1px]" />
       <div className="pointer-events-none absolute left-6 bottom-6 w-36 h-36 rounded-full bg-[#f4cdbf] opacity-20 blur-[1px]" />
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <h2 className="text-center text-3xl italic text-gray-700 font-serif mb-4">
+        <h2 className={`text-center text-3xl italic text-gray-700 font-serif ${spacing.inner.gapBottom}`}>
           Client Feedback
         </h2>
 
         {/* Dots below heading - Active indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className={`flex items-center justify-center gap-2 ${spacing.inner.gapBottom}`}>
           {feedbacks.map((_, index) => (
             <span
               key={index}

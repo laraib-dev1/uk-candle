@@ -1,5 +1,6 @@
 import React from "react";
 import ProductCard from "./ProductCard";
+import { spacing } from "@/utils/spacing";
 
 interface Product {
   id: string | number;
@@ -18,7 +19,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ items, limit }) => {
   const displayedItems = limit ? items.slice(0, limit) : items;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6" style={{ rowGap: '10px' }}>
       {displayedItems.map((product, index) => (
         <ProductCard
           key={product.id || index}
