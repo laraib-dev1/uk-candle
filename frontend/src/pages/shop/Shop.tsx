@@ -180,12 +180,15 @@ const Shop = () => {
       <main className={`flex-1 ${spacing.navbar.offset}`}>
         {/* Shop banner */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
+          <div className={spacing.container.paddingXLarge}>
+            <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
+          </div>
         </section>
 
         {/* Products Section */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className={spacing.container.paddingXLarge}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h2 className="text-2xl font-bold theme-heading m-0 p-0">
               Products
             </h2>
@@ -274,14 +277,19 @@ const Shop = () => {
               )}
             </>
           )}
+          </div>
         </section>
 
         {/* Feature Cards */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <FeatureCards />
+          <div className={spacing.container.paddingXLarge}>
+            <FeatureCards />
+          </div>
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 };

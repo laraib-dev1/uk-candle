@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageLoader from "@/components/ui/PageLoader";
 import { getCompany } from "@/api/company.api";
 import { spacing } from "@/utils/spacing";
+import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 
 interface Blog {
   _id: string;
@@ -63,6 +64,34 @@ export default function Blogs() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      
+      // Try to load from cache first for faster initial render
+      const cachedBlogs = getCachedData<Blog[]>(CACHE_KEYS.BLOGS);
+      const cachedCategories = getCachedData<Category[]>(CACHE_KEYS.BLOG_CATEGORIES);
+      const cachedNiches = getCachedData<Niche[]>(CACHE_KEYS.BLOG_NICHES);
+      const cachedProducts = getCachedData<any[]>(CACHE_KEYS.PRODUCTS);
+      const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+
+      // Use cached data immediately if available
+      if (cachedBlogs) {
+        const publishedBlogs = cachedBlogs.filter((blog: Blog) => blog.status === "published");
+        setBlogs(publishedBlogs);
+        setFilteredBlogs(publishedBlogs);
+      }
+      if (cachedCategories) {
+        setCategories(cachedCategories);
+      }
+      if (cachedNiches) {
+        setNiches(cachedNiches);
+      }
+      if (cachedProducts) {
+        setProducts(cachedProducts.slice(0, 4));
+      }
+      if (cachedCompany?.company) {
+        setCompanyName(cachedCompany.company);
+      }
+
+      // Fetch fresh data in background and update cache
       const [blogsData, categoriesData, nichesData, productsData, companyData] = await Promise.all([
         getBlogs("published"),
         getBlogCategories(),
@@ -83,6 +112,13 @@ export default function Blogs() {
       if (companyData?.company) {
         setCompanyName(companyData.company);
       }
+
+      // Cache the data (24 hours)
+      setCachedData(CACHE_KEYS.BLOGS, publishedBlogs);
+      setCachedData(CACHE_KEYS.BLOG_CATEGORIES, Array.isArray(categoriesData) ? categoriesData : []);
+      setCachedData(CACHE_KEYS.BLOG_NICHES, Array.isArray(nichesData) ? nichesData : []);
+      setCachedData(CACHE_KEYS.PRODUCTS, productsData || []);
+      setCachedData(CACHE_KEYS.COMPANY, companyData);
     } catch (err) {
       console.error("Failed to fetch data:", err);
     } finally {
@@ -165,24 +201,24 @@ export default function Blogs() {
       <main className={spacing.navbar.offset}>
         {/* Header Section */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
+          <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
             Blogs
           </h1>
-          <p className="text-lg text-gray-600 mb-6 text-center">
+          <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
             Legal page details Sub Title
           </p>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 justify-center mb-4">
+          <div className={`flex flex-wrap gap-2 justify-center ${spacing.inner.gapBottom}`}>
             <button
               onClick={() => {
                 setSelectedCategory("all");
                 setSelectedNiche("all");
               }}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ease-in-out ${
                 selectedCategory === "all"
-                  ? "bg-[#8B5E3C] text-white"
-                  : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8]"
+                  ? "bg-[#8B5E3C] text-white scale-105 transform"
+                  : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8] scale-100"
               }`}
             >
               All
@@ -194,10 +230,10 @@ export default function Blogs() {
                   setSelectedCategory(cat._id);
                   setSelectedNiche("all");
                 }}
-                className={`px-4 py-2 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-all duration-300 ease-in-out ${
                   selectedCategory === cat._id
-                    ? "bg-[#8B5E3C] text-white"
-                    : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8]"
+                    ? "bg-[#8B5E3C] text-white scale-105 transform"
+                    : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8] scale-100"
                 }`}
               >
                 {cat.name}
@@ -206,11 +242,11 @@ export default function Blogs() {
           </div>
 
           {/* Horizontal Line */}
-          <div className="w-full h-px bg-gray-300 my-4"></div>
+          <div className={`w-full h-px bg-gray-300 ${spacing.inner.gapBottom}`} style={{ marginTop: 0, marginBottom: 0 }}></div>
 
           {/* Niches Scroll */}
           {selectedCategory !== "all" && categoryNiches.length > 0 && (
-            <div className="relative mb-6">
+            <div className={`relative ${spacing.inner.gapTop} ${spacing.inner.gapBottom}`}>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => scrollNiches("left")}
@@ -226,10 +262,10 @@ export default function Blogs() {
                 >
                   <button
                     onClick={() => setSelectedNiche("all")}
-                    className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                    className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
                       selectedNiche === "all"
-                        ? "bg-[#8B5E3C] text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        ? "bg-[#8B5E3C] text-white scale-105 transform"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300 scale-100"
                     }`}
                   >
                     All
@@ -238,10 +274,10 @@ export default function Blogs() {
                     <button
                       key={niche._id}
                       onClick={() => setSelectedNiche(niche._id)}
-                      className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                      className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-300 ease-in-out ${
                         selectedNiche === niche._id
-                          ? "bg-[#8B5E3C] text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          ? "bg-[#8B5E3C] text-white scale-105 transform"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300 scale-100"
                       }`}
                     >
                       {niche.name}
@@ -261,80 +297,85 @@ export default function Blogs() {
         </section>
 
         {/* Blog Grid */}
-        <section className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading blogs...</p>
-          </div>
-        ) : displayedBlogs.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No blogs found.</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
-              {displayedBlogs.map((blog) => (
-                <Link
-                  key={blog._id}
-                  to={`/blog/${blog._id}`}
-                  className="group cursor-pointer"
-                >
-                  <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    {/* Blog Image */}
-                    <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
-                      <img
-                        src={getBlogImage(blog)}
-                        alt={blog.title}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/product.png";
-                        }}
-                      />
-                    </div>
-                    {/* Blog Info */}
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
-                        {blog.title}
-                      </h3>
-                      <p className="text-xs text-gray-500 mb-2">
-                        {formatDate(blog.createdAt)}
-                      </p>
-                      {blog.niche && (
-                        <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                          {getNicheName(blog.niche)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Load More Button */}
-            {hasMore && (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setDisplayCount(displayCount + 16)}
-                  className="px-6 py-3 bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6B4A2C] transition-colors"
-                >
-                  Load More
-                </button>
+        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingXLarge}>
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading blogs...</p>
               </div>
+            ) : displayedBlogs.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No blogs found.</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+                  {displayedBlogs.map((blog) => (
+                    <Link
+                      key={blog._id}
+                      to={`/blog/${blog._id}`}
+                      className="group cursor-pointer"
+                    >
+                      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        {/* Blog Image */}
+                        <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
+                          <img
+                            src={getBlogImage(blog)}
+                            alt={blog.title}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/product.png";
+                            }}
+                          />
+                        </div>
+                        {/* Blog Info */}
+                        <div className="p-4">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+                            {blog.title}
+                          </h3>
+                          <p className="text-xs text-gray-500 mb-2">
+                            {formatDate(blog.createdAt)}
+                          </p>
+                          {blog.niche && (
+                            <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              {getNicheName(blog.niche)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setDisplayCount(displayCount + 16)}
+                      className="px-6 py-3 bg-[#8B5E3C] text-white rounded-lg hover:bg-[#6B4A2C] transition-colors"
+                    >
+                      Load More
+                    </button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
         </section>
 
         {/* Feature Cards */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <FeatureCards />
+          <div className={spacing.container.paddingXLarge}>
+            <FeatureCards />
+          </div>
         </section>
 
         {/* Popular Products */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h2 className="text-2xl font-bold theme-heading mb-6">Popular Products</h2>
-        {products.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className={spacing.container.paddingXLarge}>
+            <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
+            {products.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {products.map((p) => (
               <ProductCard
                 key={p._id}
@@ -344,12 +385,15 @@ export default function Blogs() {
                 image={p.image1 || "/product.png"}
                 offer={p.discount ? `${p.discount}% OFF` : undefined}
               />
-            ))}
+              ))}
+            </div>
+            )}
           </div>
-        )}
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 }

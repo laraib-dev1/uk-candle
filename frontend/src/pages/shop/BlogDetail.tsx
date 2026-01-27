@@ -12,6 +12,7 @@ import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2 } from "lucide-
 import { FaPinterest } from "react-icons/fa";
 import FeatureCards from "@/components/ui/FeatureCards";
 import { spacing } from "@/utils/spacing";
+import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 
 interface Blog {
   _id: string;
@@ -54,6 +55,30 @@ export default function BlogDetail() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      
+      // Try to load from cache first for faster initial render
+      const cachedBlog = getCachedData<Blog>(`${CACHE_KEYS.BLOG_DETAIL}_${id}`);
+      const cachedCategories = getCachedData<Category[]>(CACHE_KEYS.BLOG_CATEGORIES);
+      const cachedProducts = getCachedData<any[]>(CACHE_KEYS.PRODUCTS);
+      const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+
+      // Use cached data immediately if available
+      if (cachedBlog) {
+        setBlog(cachedBlog);
+      }
+      if (cachedCategories) {
+        setCategories(cachedCategories);
+      }
+      if (cachedProducts) {
+        setProducts(cachedProducts.slice(0, 4));
+      }
+      if (cachedCompany) {
+        setCompanyName(cachedCompany.company || "Grace by Anu");
+        setCompanyLogo(cachedCompany.logo || "");
+        setCompanyDescription(cachedCompany.description || "");
+      }
+
+      // Fetch fresh data in background and update cache
       const [blogData, categoriesData, productsData, companyData] = await Promise.all([
         getBlogById(id!),
         getBlogCategories(),
@@ -70,8 +95,19 @@ export default function BlogDetail() {
         setCompanyLogo(companyData.logo || "");
         setCompanyDescription(companyData.description || "");
       }
+
+      // Cache the data (24 hours)
+      setCachedData(`${CACHE_KEYS.BLOG_DETAIL}_${id}`, blogData);
+      setCachedData(CACHE_KEYS.BLOG_CATEGORIES, Array.isArray(categoriesData) ? categoriesData : []);
+      setCachedData(CACHE_KEYS.PRODUCTS, productsData || []);
+      setCachedData(CACHE_KEYS.COMPANY, companyData);
     } catch (err) {
       console.error("Failed to fetch blog:", err);
+      // Try to use cached data as fallback
+      const cachedBlog = getCachedData<Blog>(`${CACHE_KEYS.BLOG_DETAIL}_${id}`);
+      if (cachedBlog) {
+        setBlog(cachedBlog);
+      }
     } finally {
       setLoading(false);
       setInitialLoad(false);
@@ -167,7 +203,9 @@ export default function BlogDetail() {
             Back to Blogs
           </Link>
         </div>
-        <Footer />
+        <section className={`w-full ${spacing.footer.gapTop}`}>
+          <Footer />
+        </section>
       </div>
     );
   }
@@ -211,46 +249,52 @@ export default function BlogDetail() {
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Header Section */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-2 text-center">
-            Blog Details
-          </h1>
-          
-          {/* Breadcrumb */}
-          <div className="text-sm text-gray-600 mb-6 text-center">
-          <Link to="/blogs" className="hover:underline">Blogs</Link>
-          {categoryName && (
-            <>
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
+                Blog Details
+              </h1>
+              
+              {/* Breadcrumb */}
+              <div className={`text-sm text-gray-600 text-center ${spacing.inner.gapBottom}`}>
+              <Link to="/blogs" className="hover:underline">Blogs</Link>
+              {categoryName && (
+                <>
+                  {" / "}
+                  <Link 
+                    to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}`} 
+                    className="hover:underline"
+                  >
+                    {categoryName}
+                  </Link>
+                </>
+              )}
+              {nicheName && (
+                <>
+                  {" / "}
+                  <Link 
+                    to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}&niche=${encodeURIComponent(typeof blog.niche === "object" ? blog.niche._id : blog.niche || "")}`} 
+                    className="hover:underline"
+                  >
+                    {nicheName}
+                  </Link>
+                </>
+              )}
               {" / "}
-              <Link 
-                to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}`} 
-                className="hover:underline"
-              >
-                {categoryName}
-              </Link>
-            </>
-          )}
-          {nicheName && (
-            <>
-              {" / "}
-              <Link 
-                to={`/blogs?category=${encodeURIComponent(typeof blog.category === "object" ? blog.category._id : blog.category)}&niche=${encodeURIComponent(typeof blog.niche === "object" ? blog.niche._id : blog.niche || "")}`} 
-                className="hover:underline"
-              >
-                {nicheName}
-              </Link>
-            </>
-          )}
-          {" / "}
-          <span className="text-gray-900">{blog.title}</span>
-        </div>
+              <span className="text-gray-900">{blog.title}</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Main Content */}
-        <section className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-5 md:py-8 lg:py-10">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content Area */}
-          <div className="flex-1">
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Main Content Area */}
+                <div className="flex-1">
             {/* Blog Image */}
             {blog.image && (
               <div className="w-full mb-6 rounded-lg overflow-hidden">
@@ -406,131 +450,143 @@ export default function BlogDetail() {
                 </div>
               </div>
             )} */}
-          </div>
-
-          {/* Right Sidebar - Fixed on large screens */}
-          <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-            <div className="lg:sticky lg:top-20">
-              {/* Table of Contents */}
-              {blog.description && (
-                <div className="mb-6">
-                  <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
                 </div>
-              )}
 
-              {/* Share Options */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                Share Your Love!
-              </h3>
-              <div className="flex flex-col gap-2">
-                <a
-                  href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors text-sm"
-                >
-                  <Facebook size={16} />
-                  Facebook
-                </a>
-                <a
-                  href={socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors text-sm"
-                >
-                  <Twitter size={16} />
-                  Twitter
-                </a>
-                <a
-                  href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors text-sm"
-                >
-                  <Linkedin size={16} />
-                  LinkedIn
-                </a>
-                <a
-                  href={socialLinks.pinterest}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors text-sm"
-                >
-                  <FaPinterest size={16} />
-                  Pinterest
-                </a>
+                {/* Right Sidebar - Fixed on large screens */}
+                <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+                  <div className="lg:sticky lg:top-20">
+                    {/* Table of Contents */}
+                    {blog.description && (
+                      <div className="mb-6">
+                        <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
+                      </div>
+                    )}
+
+                    {/* Share Options */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
+                        Share Your Love!
+                      </h3>
+                      <div className="flex flex-col gap-2">
+                        <a
+                          href={socialLinks.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors text-sm"
+                        >
+                          <Facebook size={16} />
+                          Facebook
+                        </a>
+                        <a
+                          href={socialLinks.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors text-sm"
+                        >
+                          <Twitter size={16} />
+                          Twitter
+                        </a>
+                        <a
+                          href={socialLinks.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors text-sm"
+                        >
+                          <Linkedin size={16} />
+                          LinkedIn
+                        </a>
+                        <a
+                          href={socialLinks.pinterest}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors text-sm"
+                        >
+                          <FaPinterest size={16} />
+                          Pinterest
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Company Info */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
+                        {companyName}
+                      </h3>
+                      {companyLogo && (
+                        <img
+                          src={companyLogo.startsWith("http") ? companyLogo : `${import.meta.env.VITE_API_URL?.replace("/api", "")}${companyLogo}`}
+                          alt={companyName}
+                          className="w-full h-auto mb-3 rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      )}
+                      <p className="text-sm text-gray-600">
+                        {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
+                      </p>
+                    </div>
+
+                    {/* Explore Topics */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
+                        Explore Topics
+                      </h3>
+                      <div className="space-y-2">
+                        {categories.map((cat) => (
+                          <Link
+                            key={cat._id}
+                            to={`/blogs?category=${cat._id}`}
+                            className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors px-2 py-1 rounded"
+                          >
+                            <span className="leading-5">{cat.name}</span>
+                            <span className="text-xs text-gray-500 whitespace-nowrap leading-5">({cat.blogs || 0})</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Company Info */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                {companyName}
-              </h3>
-              {companyLogo && (
-                <img
-                  src={companyLogo.startsWith("http") ? companyLogo : `${import.meta.env.VITE_API_URL?.replace("/api", "")}${companyLogo}`}
-                  alt={companyName}
-                  className="w-full h-auto mb-3 rounded"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              )}
-              <p className="text-sm text-gray-600">
-                {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
-              </p>
-            </div>
-
-            {/* Explore Topics */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                Explore Topics
-              </h3>
-              <div className="space-y-2">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat._id}
-                    to={`/blogs?category=${cat._id}`}
-                    className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors px-2 py-1 rounded"
-                  >
-                    <span className="leading-5">{cat.name}</span>
-                    <span className="text-xs text-gray-500 whitespace-nowrap leading-5">({cat.blogs || 0})</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
             </div>
           </div>
-        </div>
         </section>
 
         {/* Feature Cards */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <FeatureCards />
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <FeatureCards />
+            </div>
+          </div>
         </section>
 
         {/* Popular Products */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h2 className="text-2xl font-bold theme-heading mb-6">Popular Products</h2>
-        {products.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {products.map((p) => (
-              <ProductCard
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price}
-                image={p.image1 || "/product.png"}
-                offer={p.discount ? `${p.discount}% OFF` : undefined}
-              />
-            ))}
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
+              {products.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {products.map((p) => (
+                    <ProductCard
+                      key={p._id}
+                      id={p._id}
+                      name={p.name}
+                      price={p.price}
+                      image={p.image1 || "/product.png"}
+                      offer={p.discount ? `${p.discount}% OFF` : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 }

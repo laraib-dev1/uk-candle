@@ -1,4 +1,5 @@
 import React from "react";
+import { spacing } from "@/utils/spacing";
 
 interface AboutHeroProps {
   title?: string;

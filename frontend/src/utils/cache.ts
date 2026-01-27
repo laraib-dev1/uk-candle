@@ -157,4 +157,10 @@ export function getCacheAge(key: string): number | null {
 export const CACHE_KEYS = {
   COMPANY: 'company',
   FOOTER: 'footer',
+  CATEGORIES: 'categories',
+  PRODUCTS: 'products',
+  BLOGS: 'blogs',
+  BLOG_CATEGORIES: 'blog_categories',
+  BLOG_NICHES: 'blog_niches',
+  BLOG_DETAIL: 'blog_detail',
 } as const;

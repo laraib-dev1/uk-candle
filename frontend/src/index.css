@@ -7,7 +7,14 @@
 
 body {
   @apply bg-white dark:bg-gray-900 text-black dark:text-white;
-  overflow-y: overlay; 
+  overflow-y: overlay;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  margin: 0;
+  padding: 0;
 }
 
 /* Remove default padding/margin from sections */
@@ -98,6 +105,13 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 10px;
     padding-bottom: 20px;
     background-color: white;
+  }
+
+  /* Footer top gap - 20px top padding with white background, no bottom padding */
+  .footer-gap-top {
+    padding-top: 20px !important;
+    padding-bottom: 0 !important;
+    background-color: white !important;
   }
 
   /* Inner section gap - 10px for spacing within sections */
@@ -373,23 +387,31 @@ button[data-radix-tabs-trigger][data-state="active"],
 [data-radix-tabs-trigger][data-state="active"] {
   background-color: var(--theme-primary, #8B5E3C) !important;
   color: white !important;
+  transform: scale(1.05) !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 button[data-radix-tabs-trigger][data-state="inactive"],
 [data-radix-tabs-trigger][data-state="inactive"] {
   background-color: transparent !important;
   color: #666 !important;
+  transform: scale(1) !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 /* Additional selector for Radix UI tabs */
 [role="tab"][data-state="active"] {
   background-color: var(--theme-primary, #8B5E3C) !important;
   color: white !important;
+  transform: scale(1.05) !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 [role="tab"][data-state="inactive"] {
   background-color: transparent !important;
   color: #666 !important;
+  transform: scale(1) !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 /* Hide scrollbar for category section */

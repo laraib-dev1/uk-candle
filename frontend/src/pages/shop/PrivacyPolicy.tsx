@@ -105,50 +105,55 @@ export default function PrivacyPolicy() {
       `}</style>
       <Navbar />
       <main className={spacing.navbar.offset}>
-        {/* Title Section - Full width container */}
+        {/* Title Section - Centered content area */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
-              {content.title || "Privacy Policy"}
-            </h1>
-            
-            {/* Subtitle */}
-            <p className="text-lg text-gray-600 mb-0 text-center">
-              {content.subTitle || "Legal page related Sub Title"}
-            </p>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+                {content.title || "Privacy Policy"}
+              </h1>
+              
+              {/* Subtitle */}
+              <p className="text-lg text-gray-600 mb-0 text-center">
+                {content.subTitle || "Legal page related Sub Title"}
+              </p>
+            </div>
           </div>
-
-          {/* Divider - Full Width, no gap */}
-          <div className="w-full h-px bg-gray-300"></div>
         </section>
 
         {/* Content Section - Centered with TOC */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Table of Contents - Left Sidebar */}
-            <div className="lg:w-64 flex-shrink-0">
-              <TableOfContents htmlContent={content.description} contentRef={contentRef} />
-            </div>
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Table of Contents - Left Sidebar */}
+                <div className="lg:w-64 flex-shrink-0">
+                  <TableOfContents htmlContent={content.description} contentRef={contentRef} />
+                </div>
 
-            {/* Main Content - Centered content area */}
-            <div className="flex-1">
-              {/* Content */}
-              <div 
-                ref={contentRef}
-                className="prose prose-lg max-w-none text-gray-700 mb-0 relative content-area"
-                dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
-              />
+                {/* Main Content - Centered content area */}
+                <div className="flex-1">
+                  {/* Content */}
+                  <div 
+                    ref={contentRef}
+                    className="prose prose-lg max-w-none text-gray-700 mb-0 relative content-area"
+                    dangerouslySetInnerHTML={{ __html: content.description || "<p>No content available yet.</p>" }}
+                  />
 
-              {/* Last Updated - Bottom Right */}
-              <div className="text-right text-sm text-gray-500 mt-4 mb-0">
-                Updated: {formatDate(content.lastUpdated)}
+                  {/* Last Updated - Bottom Right */}
+                  <div className="text-right text-sm text-gray-500 mt-4 mb-0">
+                    Updated: {formatDate(content.lastUpdated)}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 }

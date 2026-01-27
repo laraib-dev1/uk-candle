@@ -343,7 +343,9 @@ export default function UserProfile() {
         <div className={`flex items-center justify-center min-h-[60vh] ${spacing.navbar.offset}`}>
           <PageLoader message="Loading profile..." />
         </div>
-        <Footer />
+        <section className={`w-full ${spacing.footer.gapTop}`}>
+          <Footer />
+        </section>
       </div>
     );
   }
@@ -351,9 +353,10 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
       <Navbar />
-      <main className={spacing.navbar.offset}>
-        <section className={`container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+      <main className={`${spacing.navbar.offset} w-full`}>
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="mb-6">
@@ -420,43 +423,48 @@ export default function UserProfile() {
 
           {/* Main Content */}
           <div className={`flex-1 bg-white rounded-lg shadow ${activeTab === "queries" ? "p-0 sm:p-4 md:p-6" : "p-4 sm:p-6"}`}>
-            {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
-            {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
-            {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
-            {activeTab === "orders" && <OrdersTab orders={orders} onUpdate={loadData} />}
-            {activeTab === "wishlist" && <WishlistTab wishlist={wishlist} onUpdate={loadData} />}
-            {activeTab === "queries" && <QueriesTab />}
-            {activeTab === "reviews" && <ReviewsTab orders={orders} />}
-            {/* Profile Pages */}
-            {activeTab.startsWith("profile-page-") && (() => {
-              const pageId = activeTab.replace("profile-page-", "");
-              const page = profilePages.find((p: any) => p._id === pageId);
-              console.log("Rendering profile page:", { pageId, page, allPages: profilePages });
-              if (!page) {
+            <div className={spacing.container.paddingXLarge}>
+              {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
+              {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
+              {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
+              {activeTab === "orders" && <OrdersTab orders={orders} onUpdate={loadData} />}
+              {activeTab === "wishlist" && <WishlistTab wishlist={wishlist} onUpdate={loadData} />}
+              {activeTab === "queries" && <QueriesTab />}
+              {activeTab === "reviews" && <ReviewsTab orders={orders} />}
+              {/* Profile Pages */}
+              {activeTab.startsWith("profile-page-") && (() => {
+                const pageId = activeTab.replace("profile-page-", "");
+                const page = profilePages.find((p: any) => p._id === pageId);
+                console.log("Rendering profile page:", { pageId, page, allPages: profilePages });
+                if (!page) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Profile page not found.</p>
+                    </div>
+                  );
+                }
                 return (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Profile page not found.</p>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6 theme-heading">{page.title}</h2>
+                    {page.subInfo && (
+                      <p className="text-gray-600 mb-4">{page.subInfo}</p>
+                    )}
+                    <div 
+                      className="prose prose-lg max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: page.content || "<p>No content available.</p>" }}
+                    />
                   </div>
                 );
-              }
-              return (
-                <div>
-                  <h2 className="text-2xl font-bold mb-6 theme-heading">{page.title}</h2>
-                  {page.subInfo && (
-                    <p className="text-gray-600 mb-4">{page.subInfo}</p>
-                  )}
-                  <div 
-                    className="prose prose-lg max-w-none text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: page.content || "<p>No content available.</p>" }}
-                  />
-                </div>
-              );
-            })()}
+              })()}
+            </div>
+          </div>
           </div>
         </div>
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 }

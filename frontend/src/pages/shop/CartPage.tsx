@@ -149,20 +149,30 @@ const rightContent = (
       <Navbar />
       <main className={spacing.navbar.offset}>
         {/* Purchase List Section */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
-          <TwoColumnLayout left={leftContent} right={rightContent} />
-          <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
+              <TwoColumnLayout left={leftContent} right={rightContent} />
+              <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
+            </div>
+          </div>
         </section>
 
         {/* Shop Banner Section */}
         {shopBanner && (
-          <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-            <Banner imageSrc={shopBanner.imageUrl} />
+          <section className={`w-full ${spacing.section.gap}`}>
+            <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+              <div className={spacing.container.paddingXLarge}>
+                <Banner imageSrc={shopBanner.imageUrl} />
+              </div>
+            </div>
           </section>
         )}
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 };

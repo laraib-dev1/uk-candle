@@ -20,7 +20,9 @@ export default function AboutUs() {
         {/* Team Section */}
         <TeamSection />
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
     </div>
   );
 }

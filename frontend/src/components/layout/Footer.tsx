@@ -50,8 +50,41 @@ export default function Footer() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Always fetch fresh data to ensure social posts are up to date
-        // Fetch from API
+        // Try to load from cache first for faster initial render
+        const cachedCompany = getCachedData<any>(CACHE_KEYS.COMPANY);
+        const cachedFooter = getCachedData<any>(CACHE_KEYS.FOOTER);
+        const cachedCategories = getCachedData<any[]>(CACHE_KEYS.CATEGORIES);
+        const cachedProducts = getCachedData<any[]>(CACHE_KEYS.PRODUCTS);
+
+        // Use cached data immediately if available
+        if (cachedCompany) {
+          setCompanyData({
+            company: cachedCompany.company || "VERES",
+            copyright: cachedCompany.copyright || "",
+            socialPosts: (cachedCompany.socialPosts || [])
+              .filter((post: any) => post && post.image && post.image.trim() !== "")
+              .slice(0, 8),
+            socialLinks: cachedCompany.socialLinks || {},
+          });
+        }
+        if (cachedFooter) {
+          setFooterData({
+            sections: (cachedFooter.sections || []).filter((s: FooterSection) => s.enabled !== false).sort((a: FooterSection, b: FooterSection) => a.order - b.order),
+            copyright: cachedFooter.copyright || `© ${new Date().getFullYear()} ${cachedCompany?.company || "VERES"}. All rights reserved.`,
+            showCategories: cachedFooter.showCategories === true || cachedFooter.showCategories === "true" || cachedFooter.showCategories === 1,
+            showProducts: cachedFooter.showProducts === true || cachedFooter.showProducts === "true" || cachedFooter.showProducts === 1,
+            showSocialIcons: cachedFooter.showSocialIcons === true || cachedFooter.showSocialIcons === "true" || cachedFooter.showSocialIcons === 1,
+            showSocialLinks: cachedFooter.showSocialLinks === true || cachedFooter.showSocialLinks === "true" || cachedFooter.showSocialLinks === 1,
+          });
+        }
+        if (cachedCategories) {
+          setCategories(cachedCategories);
+        }
+        if (cachedProducts) {
+          setProducts(cachedProducts);
+        }
+
+        // Fetch fresh data in background and update cache
         const [companyData, footerData, categoriesData, productsData] = await Promise.all([
           getCompany(),
           getFooter().catch(() => ({ sections: [], copyright: "" })),
@@ -65,6 +98,8 @@ export default function Footer() {
         // Cache the data (24 hours)
         setCachedData(CACHE_KEYS.COMPANY, company);
         setCachedData(CACHE_KEYS.FOOTER, footer);
+        setCachedData(CACHE_KEYS.CATEGORIES, categoriesData || []);
+        setCachedData(CACHE_KEYS.PRODUCTS, productsData || []);
         
         // Process social posts - ensure they have valid images
         // Helper to get full image URL

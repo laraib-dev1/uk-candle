@@ -107,8 +107,8 @@ export const spacing = {
   footer: {
     // Standard footer gap - 10px top, 20px bottom with white background
     gap: "footer-gap",
-    // Top only - 10px
-    gapTop: "pt-2.5 bg-white", // 10px = 2.5 * 4px
+    // Top only - 20px top padding with white background, no bottom padding
+    gapTop: "footer-gap-top", // Custom utility class with !important to override global section rule
   },
 
   // Inner section spacing (for spacing within sections/components)

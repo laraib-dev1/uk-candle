@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "../../components/layout/Navbar";
 import Hero from "../../components/hero/Hero";
 import ProductGrid from "../../components/products/ProductGrid";
+import ProductCard from "../../components/products/ProductCard";
 import { ProductGridSkeleton } from "../../components/products/ProductGridSkeleton";
 import Footer from "../../components/layout/Footer";
 import CategorySection from "../../components/Categories/Categorysection";
@@ -46,6 +48,8 @@ export default function () {
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [showScrollButtons, setShowScrollButtons] = useState(false);
+  const productScrollRef = useRef<HTMLDivElement>(null);
 
   // Store all banners keyed by `slot` so we can use 3 different ones on this page.
   const [bannersBySlot, setBannersBySlot] = useState<Record<string, Banner>>({});
@@ -94,6 +98,43 @@ export default function () {
     }
   };
 
+  // Check if scroll buttons should be shown (when less than 5 products fit in a row)
+  useEffect(() => {
+    const checkScrollButtons = () => {
+      if (!productScrollRef.current) return;
+      
+      const container = productScrollRef.current;
+      const containerWidth = container.offsetWidth;
+      const firstProduct = container.querySelector('[data-product-card]') as HTMLElement;
+      
+      if (firstProduct) {
+        const productWidth = firstProduct.offsetWidth;
+        const gap = 24; // gap-x-6 = 24px
+        const productsPerRow = Math.floor((containerWidth + gap) / (productWidth + gap));
+        setShowScrollButtons(productsPerRow < 5);
+      }
+    };
+
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    return () => window.removeEventListener('resize', checkScrollButtons);
+  }, [products, loading]);
+
+  // Scroll functions for product row
+  const scrollProducts = (direction: "left" | "right") => {
+    if (!productScrollRef.current) return;
+    const scrollAmount = 300; // Scroll by 300px
+    const currentScroll = productScrollRef.current.scrollLeft;
+    const newScroll = direction === "left" 
+      ? currentScroll - scrollAmount 
+      : currentScroll + scrollAmount;
+    
+    productScrollRef.current.scrollTo({
+      left: newScroll,
+      behavior: "smooth",
+    });
+  };
+
   if (initialLoad) {
     return <PageLoader message="GraceByAnu" />;
   }
@@ -127,20 +168,52 @@ export default function () {
             {loading ? (
               <ProductGridSkeleton count={5} />
             ) : (
-              <ProductGrid
-                items={products
-                  .slice(0, 5)
-                  .map((p) => ({
-                    id: p._id,
-                    name: p.name,
-                    price: p.price,
-                    image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
-                      (img) => img && img.trim() !== ""
-                    ) || "/product.png",
-                    offer: p.discount ? `${p.discount}% OFF` : undefined,
-                  }))
-                }
-              />
+              <div className="relative">
+                {/* Scroll Buttons - Only show when less than 5 products fit */}
+                {showScrollButtons && (
+                  <>
+                    <button
+                      onClick={() => scrollProducts("left")}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10 flex items-center justify-center"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={() => scrollProducts("right")}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10 flex items-center justify-center"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                    </button>
+                  </>
+                )}
+                
+                {/* Horizontal Scrollable Product Row */}
+                <div
+                  ref={productScrollRef}
+                  className="flex gap-6 overflow-x-auto scrollbar-hide"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {products.slice(0, 5).map((p) => (
+                    <div
+                      key={p._id}
+                      data-product-card
+                      className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[280px] lg:w-[240px]"
+                    >
+                      <ProductCard
+                        id={p._id}
+                        name={p.name}
+                        price={p.price}
+                        image={[p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
+                          (img) => img && img.trim() !== ""
+                        ) || "/product.png"}
+                        offer={p.discount ? `${p.discount}% OFF` : undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </section>
@@ -235,7 +308,10 @@ export default function () {
         </section>
 
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
+      
     </div>
   );
 }

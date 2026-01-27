@@ -2,10 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
-  Flag,
-  RotateCcw,
-  Headphones,
-  Truck,
   Heart,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +17,7 @@ import AddToCartButton from "@/components/ui/buttons/AddToCartButton";
 import SocialShare from "@/components/products/SocialShare";
 import ProductCard from "@/components/products/ProductCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import FeatureCards from "@/components/ui/FeatureCards";
 import { getProduct, getProducts } from "@/api/product.api";
 import { getCompany } from "@/api/company.api";
 import { getBanners } from "@/api/banner.api";
@@ -558,9 +555,11 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-white">
       <main className={spacing.navbar.offset}>
         {/* Product Section */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
             {/* Image Gallery - Aligned left with space */}
             <div className="w-full flex justify-start -mr-2 md:-mr-3">
               <ProductImageGallery images={product.images || ["/product.png"]} />
@@ -581,7 +580,7 @@ export default function ProductDetail() {
               <h1 className="text-2xl sm:text-3xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>{product.name || "Product Name"}</h1>
 
               <div className="flex gap-3 items-center flex-nowrap">
-                <span className="text-xl sm:text-2xl font-bold whitespace-nowrap">
+                <span className="text-xl sm:text-2xl font-bold whitespace-nowrap text-gray-900">
                   {discountedPrice} Rs
                 </span>
                 {product.discount && (
@@ -621,12 +620,12 @@ export default function ProductDetail() {
           {/* Tabs */}
           <Tabs defaultValue="description">
             <TabsList 
-              className="bg-gray-100 p-1 rounded-lg h-auto"
+              className="bg-gray-100 p-1 rounded-lg h-auto relative"
               style={{ backgroundColor: "#F5F5F5" }}
             >
               <TabsTrigger 
                 value="description"
-                className="px-4 py-2 rounded-md transition-all"
+                className="px-4 py-2 rounded-md transition-all duration-300 ease-in-out"
               >
                 Description
               </TabsTrigger>
@@ -641,7 +640,7 @@ export default function ProductDetail() {
                 return (
                   <TabsTrigger 
                     value="videos"
-                    className="px-4 py-2 rounded-md transition-all"
+                    className="px-4 py-2 rounded-md transition-all duration-300 ease-in-out"
                   >
                     Demo Video
                   </TabsTrigger>
@@ -729,45 +728,39 @@ export default function ProductDetail() {
             })()}
           </Tabs>
 
-          {/* Services */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[Flag, RotateCcw, Headphones, Truck].map(
-              (Icon, i) => (
-                <div
-                  key={i}
-                  className="p-4 md:p-6 text-center"
-                >
-                  <Icon className="mx-auto mb-2 theme-text-primary w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
-                  <p className="font-semibold text-sm sm:text-base">
-                    {["Locally Owned", "Easy Return", "24/7 Support", "Fast Delivery"][i]}
-                  </p>
-                </div>
-              )
-            )}
+          {/* Feature Cards */}
+          <FeatureCards />
+            </div>
           </div>
         </section>
 
         {/* Similar Products Section */}
-        <section className={`max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
-            Similar Products
-          </h3>
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
+                Similar Products
+              </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {similarProducts.map((p) => (
-              <ProductCard
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price}
-                image={p.images?.[0] || "/product.png"}
-                offer={p.discount ? `${p.discount}% OFF` : undefined}
-              />
-            ))}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {similarProducts.map((p) => (
+                  <ProductCard
+                    key={p._id}
+                    id={p._id}
+                    name={p.name}
+                    price={p.price}
+                    image={p.images?.[0] || "/product.png"}
+                    offer={p.discount ? `${p.discount}% OFF` : undefined}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>
-      <Footer />
+      <section className={`w-full ${spacing.footer.gapTop}`}>
+        <Footer />
+      </section>
       </div>
     </>
   );
