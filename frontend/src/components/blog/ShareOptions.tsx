@@ -68,7 +68,11 @@ export default function ShareOptions({
     }
   };
 
-  const handleShareClick = (platform: string, shareLink: string) => {
+  const handleShareClick = (platform: string, shareLink: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     // Open share link in new window
     window.open(shareLink, "_blank", "noopener,noreferrer");
     if (showAsPopup) {

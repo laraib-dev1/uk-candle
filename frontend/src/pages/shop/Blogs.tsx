@@ -161,6 +161,44 @@ export default function Blogs() {
     }
   };
 
+  const scrollProducts = (direction: "left" | "right") => {
+    if (productsScrollRef.current) {
+      const scrollAmount = 300;
+      productsScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Check if scroll buttons should be shown for popular products
+  useEffect(() => {
+    const checkProductScrollButtons = () => {
+      if (!productsScrollRef.current) return;
+      
+      const container = productsScrollRef.current;
+      const containerWidth = container.offsetWidth;
+      const firstProduct = container.querySelector('[data-popular-product]') as HTMLElement;
+      
+      if (firstProduct) {
+        const productWidth = firstProduct.offsetWidth;
+        const gap = 24; // gap-6 = 24px
+        const productsPerRow = Math.floor((containerWidth + gap) / (productWidth + gap));
+        // Show scroll buttons when less than 4 products fit AND there's overflow
+        setShowProductScrollButtons(productsPerRow < 4 && container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    if (products.length > 0) {
+      setTimeout(checkProductScrollButtons, 100);
+      window.addEventListener('resize', checkProductScrollButtons);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkProductScrollButtons);
+    };
+  }, [products, loading]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });

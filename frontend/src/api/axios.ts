@@ -111,18 +111,19 @@ if (typeof window !== 'undefined') {
   
   // Also try to intercept XMLHttpRequest errors
   const OriginalXHR = window.XMLHttpRequest;
-  window.XMLHttpRequest = function(...args: any[]) {
-    const xhr = new OriginalXHR(...args);
+  window.XMLHttpRequest = function() {
+    const xhr = new OriginalXHR();
     const originalOpen = xhr.open;
     const originalSend = xhr.send;
     
     xhr.open = function(method: string, url: string, ...rest: any[]) {
-      this._method = method;
-      this._url = url;
+      // Store method and url on xhr instance (using type assertion for custom properties)
+      (this as any)._method = method;
+      (this as any)._url = url;
       return originalOpen.apply(this, [method, url, ...rest] as any);
     };
     
-    xhr.send = function(...sendArgs: any[]) {
+    xhr.send = function(body?: Document | XMLHttpRequestBodyInit | null) {
       const xhrInstance = this;
       xhrInstance.addEventListener('error', function(event: any) {
         // Suppress 401 errors
@@ -140,7 +141,7 @@ if (typeof window !== 'undefined') {
         }
       }, true);
       
-      return originalSend.apply(xhrInstance, sendArgs);
+      return originalSend.call(xhrInstance, body);
     };
     
     return xhr;
