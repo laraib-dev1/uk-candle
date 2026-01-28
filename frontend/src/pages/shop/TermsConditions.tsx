@@ -118,6 +118,9 @@ export default function TermsConditions() {
               <p className="text-lg text-gray-600 mb-0 text-center">
                 {content.subTitle || "Legal page related Sub Title"}
               </p>
+              
+              {/* Horizontal Line */}
+              <div className={`w-full border-t border-gray-300 ${spacing.inner.gapTop}`} style={{ marginTop: 0, marginBottom: 0 }}></div>
             </div>
           </div>
         </section>

@@ -51,7 +51,9 @@ export default function Blogs() {
   const [selectedNiche, setSelectedNiche] = useState<string>("all");
   const [displayCount, setDisplayCount] = useState(16);
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
+  const [showProductScrollButtons, setShowProductScrollButtons] = useState(false);
   const nicheScrollRef = useRef<HTMLDivElement>(null);
+  const productsScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchData();
@@ -375,18 +377,52 @@ export default function Blogs() {
           <div className={spacing.container.paddingXLarge}>
             <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
             {products.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {products.map((p) => (
-              <ProductCard
-                key={p._id}
-                id={p._id}
-                name={p.name}
-                price={p.price}
-                image={p.image1 || "/product.png"}
-                offer={p.discount ? `${p.discount}% OFF` : undefined}
-              />
-              ))}
-            </div>
+              <div className="relative">
+                {/* Horizontal Scrollable Popular Products Row */}
+                <div
+                  ref={productsScrollRef}
+                  className="flex gap-6 overflow-x-auto scrollbar-hide"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {products.map((p) => (
+                    <div
+                      key={p._id}
+                      data-popular-product
+                      className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-18px)]"
+                    >
+                      <ProductCard
+                        id={p._id}
+                        name={p.name}
+                        price={p.price}
+                        image={p.image1 || "/product.png"}
+                        offer={p.discount ? `${p.discount}% OFF` : undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Left Scroll Button - Overlay on products with circular background */}
+                {showProductScrollButtons && (
+                  <button
+                    onClick={() => scrollProducts("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
+
+                {/* Right Scroll Button - Overlay on products with circular background */}
+                {showProductScrollButtons && (
+                  <button
+                    onClick={() => scrollProducts("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </section>

@@ -8,7 +8,7 @@ import { getBlogById, getBlogCategories, getBlogs } from "@/api/blog.api";
 import { getProducts } from "@/api/product.api";
 import { getCompany } from "@/api/company.api";
 import PageLoader from "@/components/ui/PageLoader";
-import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2 } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import { FaPinterest } from "react-icons/fa";
 import FeatureCards from "@/components/ui/FeatureCards";
 import { spacing } from "@/utils/spacing";
@@ -44,13 +44,58 @@ export default function BlogDetail() {
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
   const [companyLogo, setCompanyLogo] = useState<string>("");
   const [companyDescription, setCompanyDescription] = useState<string>("");
+  const [showProductScrollButtons, setShowProductScrollButtons] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const productsScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
       fetchData();
     }
   }, [id]);
+
+  // Check if scroll buttons should be shown for popular products
+  useEffect(() => {
+    const checkProductScrollButtons = () => {
+      if (!productsScrollRef.current) return;
+      
+      const container = productsScrollRef.current;
+      const containerWidth = container.offsetWidth;
+      const firstProduct = container.querySelector('[data-popular-product]') as HTMLElement;
+      
+      if (firstProduct) {
+        const productWidth = firstProduct.offsetWidth;
+        const gap = 24; // gap-6 = 24px
+        const productsPerRow = Math.floor((containerWidth + gap) / (productWidth + gap));
+        // Show scroll buttons when less than 4 products fit AND there's overflow
+        setShowProductScrollButtons(productsPerRow < 4 && container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    if (products.length > 0) {
+      setTimeout(checkProductScrollButtons, 100);
+      window.addEventListener('resize', checkProductScrollButtons);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', checkProductScrollButtons);
+    };
+  }, [products, loading]);
+
+  // Scroll functions for popular products row
+  const scrollProducts = (direction: "left" | "right") => {
+    if (!productsScrollRef.current) return;
+    const scrollAmount = 300; // Scroll by 300px
+    const currentScroll = productsScrollRef.current.scrollLeft;
+    const newScroll = direction === "left" 
+      ? currentScroll - scrollAmount 
+      : currentScroll + scrollAmount;
+    
+    productsScrollRef.current.scrollTo({
+      left: newScroll,
+      behavior: "smooth",
+    });
+  };
 
   const fetchData = async () => {
     try {
@@ -567,17 +612,51 @@ export default function BlogDetail() {
             <div className={spacing.container.paddingXLarge}>
               <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
               {products.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {products.map((p) => (
-                    <ProductCard
-                      key={p._id}
-                      id={p._id}
-                      name={p.name}
-                      price={p.price}
-                      image={p.image1 || "/product.png"}
-                      offer={p.discount ? `${p.discount}% OFF` : undefined}
-                    />
-                  ))}
+                <div className="relative">
+                  {/* Horizontal Scrollable Popular Products Row */}
+                  <div
+                    ref={productsScrollRef}
+                    className="flex gap-6 overflow-x-auto scrollbar-hide"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  >
+                    {products.map((p) => (
+                      <div
+                        key={p._id}
+                        data-popular-product
+                        className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-18px)]"
+                      >
+                        <ProductCard
+                          id={p._id}
+                          name={p.name}
+                          price={p.price}
+                          image={p.image1 || "/product.png"}
+                          offer={p.discount ? `${p.discount}% OFF` : undefined}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Left Scroll Button - Overlay on products with circular background */}
+                  {showProductScrollButtons && (
+                    <button
+                      onClick={() => scrollProducts("left")}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-700" />
+                    </button>
+                  )}
+
+                  {/* Right Scroll Button - Overlay on products with circular background */}
+                  {showProductScrollButtons && (
+                    <button
+                      onClick={() => scrollProducts("right")}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-700" />
+                    </button>
+                  )}
                 </div>
               )}
             </div>

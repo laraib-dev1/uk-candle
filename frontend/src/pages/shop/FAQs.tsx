@@ -109,6 +109,9 @@ export default function FAQs() {
               <p className="text-lg text-gray-600 mb-0 text-center">
                 Find answers to common questions
               </p>
+              
+              {/* Horizontal Line */}
+              <div className={`w-full border-t border-gray-300 ${spacing.inner.gapTop}`} style={{ marginTop: 0, marginBottom: 0 }}></div>
             </div>
           </div>
         </section>

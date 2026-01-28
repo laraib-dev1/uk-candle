@@ -309,81 +309,85 @@ export default function Footer() {
 
             {/* Categories Column - if enabled */}
             {footerData.showCategories && categories.length > 0 && (
-              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold mb-2 lg:mb-3">Categories</h3>
-                {categories.slice(0, 3).map((category) => (
-                  <Link
-                    key={category._id}
-                    to={`/shop?category=${encodeURIComponent(category.name)}`}
-                    className="text-gray-300 hover:underline"
-                  >
-                    {category.name}
-                  </Link>
-                ))}
+              <div className="flex flex-col text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold">Categories</h3>
+                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+                  {categories.slice(0, 3).map((category) => (
+                    <Link
+                      key={category._id}
+                      to={`/shop?category=${encodeURIComponent(category.name)}`}
+                      className="text-gray-300 hover:underline"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Products Column - if enabled */}
             {footerData.showProducts && products.length > 0 && (
-              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold mb-2 lg:mb-3">Products</h3>
-                {products.slice(0, 3).map((product) => (
-                  <Link
-                    key={product._id}
-                    to={`/product/${product._id}`}
-                    className="text-gray-300 hover:underline"
-                  >
-                    {product.name}
-                  </Link>
-                ))}
+              <div className="flex flex-col text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold">Products</h3>
+                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+                  {products.slice(0, 3).map((product) => (
+                    <Link
+                      key={product._id}
+                      to={`/product/${product._id}`}
+                      className="text-gray-300 hover:underline"
+                    >
+                      {product.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Footer Sections from SP Panel */}
             {enabledSections.map((section, index) => (
-              <div key={index} className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold mb-2 lg:mb-3">{section.title}</h3>
-                {section.links.map((link, linkIndex) => (
-                  <button
-                    key={linkIndex}
-                    onClick={() => handleLinkClick(link.url)}
-                    className="text-left text-gray-300 hover:underline"
-                    style={{ cursor: "pointer" }}
-                  >
-                    {link.label}
-                  </button>
-                ))}
+              <div key={index} className="flex flex-col text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold">{section.title}</h3>
+                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+                  {section.links.map((link, linkIndex) => (
+                    <button
+                      key={linkIndex}
+                      onClick={() => handleLinkClick(link.url)}
+                      className="text-left text-gray-300 hover:underline"
+                      style={{ cursor: "pointer" }}
+                    >
+                      {link.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
 
             {/* Social Links Column - if enabled */}
             {footerData.showSocialLinks && companyData.socialLinks && (
-              <div className="flex flex-col space-y-2 lg:space-y-3 text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold mb-2 lg:mb-3">Follow Us</h3>
-                {(companyData.socialLinks.facebook || companyData.socialLinks.instagram || companyData.socialLinks.linkedin || companyData.socialLinks.youtube) && (
-                  <>
-                    {companyData.socialLinks.facebook && (
-                      <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
-                        Facebook
-                      </a>
-                    )}
-                    {companyData.socialLinks.instagram && (
-                      <a href={companyData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
-                        Instagram
-                      </a>
-                    )}
-                    {companyData.socialLinks.linkedin && (
-                      <a href={companyData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
-                        LinkedIn
-                      </a>
-                    )}
-                    {companyData.socialLinks.youtube && (
-                      <a href={companyData.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
-                        YouTube
-                      </a>
-                    )}
-                  </>
-                )}
+              <div className="flex flex-col text-sm lg:min-w-[120px]">
+                <h3 className="text-white font-semibold">Follow Us</h3>
+                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+                  {companyData.socialLinks.facebook && (
+                    <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                      Facebook
+                    </a>
+                  )}
+                  {companyData.socialLinks.instagram && (
+                    <a href={companyData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                      Instagram
+                    </a>
+                  )}
+                  {companyData.socialLinks.linkedin && (
+                    <a href={companyData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                      LinkedIn
+                    </a>
+                  )}
+                  {companyData.socialLinks.youtube && (
+                    <a href={companyData.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
+                      YouTube
+                    </a>
+                  )}
+                </div>
               </div>
             )}
           </div>

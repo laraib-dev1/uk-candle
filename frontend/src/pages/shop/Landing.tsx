@@ -109,9 +109,10 @@ export default function () {
       
       if (firstProduct) {
         const productWidth = firstProduct.offsetWidth;
-        const gap = 24; // gap-x-6 = 24px
+        const gap = 24; // gap-6 = 24px
         const productsPerRow = Math.floor((containerWidth + gap) / (productWidth + gap));
-        setShowScrollButtons(productsPerRow < 5);
+        // Show scroll buttons when less than 5 products fit (responsive like second section)
+        setShowScrollButtons(productsPerRow < 5 && container.scrollWidth > container.clientWidth);
       }
     };
 
@@ -169,27 +170,7 @@ export default function () {
               <ProductGridSkeleton count={5} />
             ) : (
               <div className="relative">
-                {/* Scroll Buttons - Only show when less than 5 products fit */}
-                {showScrollButtons && (
-                  <>
-                    <button
-                      onClick={() => scrollProducts("left")}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10 flex items-center justify-center"
-                      aria-label="Scroll left"
-                    >
-                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-                    </button>
-                    <button
-                      onClick={() => scrollProducts("right")}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors z-10 flex items-center justify-center"
-                      aria-label="Scroll right"
-                    >
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-                    </button>
-                  </>
-                )}
-                
-                {/* Horizontal Scrollable Product Row */}
+                {/* Horizontal Scrollable Product Row - Responsive widths matching ProductGrid breakpoints */}
                 <div
                   ref={productScrollRef}
                   className="flex gap-6 overflow-x-auto scrollbar-hide"
@@ -199,7 +180,7 @@ export default function () {
                     <div
                       key={p._id}
                       data-product-card
-                      className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[280px] lg:w-[240px]"
+                      className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(20%-19.2px)]"
                     >
                       <ProductCard
                         id={p._id}
@@ -213,6 +194,28 @@ export default function () {
                     </div>
                   ))}
                 </div>
+                
+                {/* Left Scroll Button - Overlay on products with circular background */}
+                {showScrollButtons && (
+                  <button
+                    onClick={() => scrollProducts("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
+                
+                {/* Right Scroll Button - Overlay on products with circular background */}
+                {showScrollButtons && (
+                  <button
+                    onClick={() => scrollProducts("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
               </div>
             )}
           </div>

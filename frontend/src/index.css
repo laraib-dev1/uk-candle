@@ -457,3 +457,27 @@ button:not([disabled]):not([style*="cursor: not-allowed"]):not([style*="cursor:d
 .animate-fade-in {
   animation: fadeInSlide 0.3s ease-out;
 }
+
+/* Sheet/Drawer slide animation from right - Force transform */
+/* Target Sheet drawer with custom class - More specific selectors */
+.sheet-drawer[data-side="right"],
+[data-side="right"].sheet-drawer,
+[role="dialog"][data-side="right"] {
+  transform: translateX(100%) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  will-change: transform !important;
+}
+
+/* Right side drawer - slide in when open */
+.sheet-drawer[data-side="right"][data-state="open"],
+[data-side="right"].sheet-drawer[data-state="open"],
+[role="dialog"][data-side="right"][data-state="open"] {
+  transform: translateX(0) !important;
+}
+
+/* Right side drawer - slide out when closed */
+.sheet-drawer[data-side="right"][data-state="closed"],
+[data-side="right"].sheet-drawer[data-state="closed"],
+[role="dialog"][data-side="right"][data-state="closed"] {
+  transform: translateX(100%) !important;
+}

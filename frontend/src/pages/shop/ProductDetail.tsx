@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { addToWishlist, removeFromWishlist, getUserWishlist } from "@/api/user.api";
@@ -55,6 +57,8 @@ export default function ProductDetail() {
   const [companyName, setCompanyName] = useState<string>("Grace by Anu");
   const [heroBannerImage, setHeroBannerImage] = useState<string | undefined>(undefined);
   const [companyLogoUrl, setCompanyLogoUrl] = useState<string | undefined>(undefined);
+  const [showScrollButtons, setShowScrollButtons] = useState(false);
+  const similarProductsScrollRef = useRef<HTMLDivElement>(null);
 
   /* =======================
      Fetch Single Product
@@ -358,6 +362,49 @@ export default function ProductDetail() {
     }, 100);
   }, [product, companyName, heroBannerImage]);
 
+  /* =======================
+     Derived Data
+  ======================= */
+  const discountedPrice = product?.discount
+    ? Math.round((product.price - (product.price * product.discount) / 100))
+    : product?.price || 0;
+
+  const similarProducts = product && allProducts.length > 0
+    ? allProducts
+        .filter((p) => p._id !== product._id)
+        .slice(0, 4)
+    : [];
+
+  // Check if scroll buttons should be shown for similar products
+  useEffect(() => {
+    const checkScrollButtons = () => {
+      if (!similarProductsScrollRef.current) return;
+      
+      const container = similarProductsScrollRef.current;
+      const containerWidth = container.offsetWidth;
+      const firstProduct = container.querySelector('[data-similar-product]') as HTMLElement;
+      
+      if (firstProduct) {
+        const productWidth = firstProduct.offsetWidth;
+        const gap = 24; // gap-6 = 24px
+        const productsPerRow = Math.floor((containerWidth + gap) / (productWidth + gap));
+        // Show scroll buttons when less than 4 products fit AND there's overflow
+        setShowScrollButtons(productsPerRow < 4 && container.scrollWidth > container.clientWidth);
+      }
+    };
+
+    if (similarProducts.length > 0) {
+      // Delay to ensure DOM is ready
+      setTimeout(checkScrollButtons, 100);
+      window.addEventListener('resize', checkScrollButtons);
+    }
+    
+    // Always return cleanup function
+    return () => {
+      window.removeEventListener('resize', checkScrollButtons);
+    };
+  }, [similarProducts, loading]);
+
   if (initialLoad && (loading || !product)) {
     return <PageLoader message="Loading product..." />;
   }
@@ -366,16 +413,20 @@ export default function ProductDetail() {
     return <PageLoader message="Loading product..." />;
   }
 
-  /* =======================
-     Derived Data
-  ======================= */
-  const discountedPrice = product.discount
-    ? Math.round(product.price - (product.price * product.discount) / 100)
-    : product.price;
-
-  const similarProducts = allProducts
-    .filter((p) => p._id !== product._id)
-    .slice(0, 4);
+  // Scroll functions for similar products row
+  const scrollSimilarProducts = (direction: "left" | "right") => {
+    if (!similarProductsScrollRef.current) return;
+    const scrollAmount = 300; // Scroll by 300px
+    const currentScroll = similarProductsScrollRef.current.scrollLeft;
+    const newScroll = direction === "left" 
+      ? currentScroll - scrollAmount 
+      : currentScroll + scrollAmount;
+    
+    similarProductsScrollRef.current.scrollTo({
+      left: newScroll,
+      behavior: "smooth",
+    });
+  };
 
   // Calculate meta tags for Helmet (use hero banner if available, else product image)
   const imageForMeta = heroBannerImage || product?.images?.[0];
@@ -742,17 +793,51 @@ export default function ProductDetail() {
                 Similar Products
               </h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {similarProducts.map((p) => (
-                  <ProductCard
-                    key={p._id}
-                    id={p._id}
-                    name={p.name}
-                    price={p.price}
-                    image={p.images?.[0] || "/product.png"}
-                    offer={p.discount ? `${p.discount}% OFF` : undefined}
-                  />
-                ))}
+              <div className="relative">
+                {/* Horizontal Scrollable Similar Products Row */}
+                <div
+                  ref={similarProductsScrollRef}
+                  className="flex gap-6 overflow-x-auto scrollbar-hide"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {similarProducts.map((p) => (
+                    <div
+                      key={p._id}
+                      data-similar-product
+                      className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-18px)]"
+                    >
+                      <ProductCard
+                        id={p._id}
+                        name={p.name}
+                        price={p.price}
+                        image={p.images?.[0] || "/product.png"}
+                        offer={p.discount ? `${p.discount}% OFF` : undefined}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Left Scroll Button - Overlay on products with circular background */}
+                {showScrollButtons && (
+                  <button
+                    onClick={() => scrollSimilarProducts("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll left"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
+
+                {/* Right Scroll Button - Overlay on products with circular background */}
+                {showScrollButtons && (
+                  <button
+                    onClick={() => scrollSimilarProducts("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors z-20 pointer-events-auto"
+                    aria-label="Scroll right"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-700" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
