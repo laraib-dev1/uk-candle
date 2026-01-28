@@ -101,6 +101,8 @@ export const spacing = {
   navbar: {
     // Standard offset for fixed navbar (h-14 sm:h-16 = 56px/64px)
     offset: "pt-14 sm:pt-16", // Matches navbar height
+    // Bottom gap - 20px bottom padding after navbar (used on pages, not in navbar itself)
+    gapBottom: "navbar-gap-bottom", // Custom utility class with 20px bottom padding
   },
 
   // Footer gap (visible gap before footer with white background)

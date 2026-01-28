@@ -175,9 +175,9 @@ const Shop = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-black">
+    <div className="bg-white text-black min-h-screen flex flex-col">
       <Navbar />
-      <main className={`flex-1 ${spacing.navbar.offset}`}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Shop banner */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <div className={spacing.container.paddingXLarge}>
@@ -287,7 +287,7 @@ const Shop = () => {
           </div>
         </section>
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
     </div>

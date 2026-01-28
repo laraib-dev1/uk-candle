@@ -1,4 +1,5 @@
 import API from "./axios";
+import axios from "axios";
 
 export interface UserProfile {
   id: string;
@@ -41,9 +42,25 @@ export interface Order {
 }
 
 // Profile APIs
-export const getUserProfile = async (): Promise<UserProfile> => {
-  const res = await API.get("/user/profile");
-  return res.data.data;
+export const getUserProfile = async (): Promise<UserProfile | null> => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return null; // Return null instead of throwing to prevent 401 error
+  }
+  try {
+    const res = await API.get("/user/profile");
+    return res.data.data;
+  } catch (error: any) {
+    // Handle cancelled requests and 401 errors silently
+    if (error?.message === 'No token - request cancelled' || 
+        error?.response?.status === 401 || 
+        error?.message === 'Unauthorized' || 
+        error?.name === 'SilentError' ||
+        axios.isCancel(error)) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const updateUserProfile = async (data: Partial<UserProfile>): Promise<UserProfile> => {
@@ -58,8 +75,24 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 
 // Address APIs
 export const getUserAddresses = async (): Promise<Address[]> => {
-  const res = await API.get("/user/addresses");
-  return res.data.data;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return []; // Return empty array instead of making API call
+  }
+  try {
+    const res = await API.get("/user/addresses");
+    return res.data.data;
+  } catch (error: any) {
+    // Handle cancelled requests and 401 errors silently
+    if (error?.message === 'No token - request cancelled' || 
+        error?.response?.status === 401 || 
+        error?.message === 'Unauthorized' || 
+        error?.name === 'SilentError' ||
+        axios.isCancel(error)) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const addUserAddress = async (address: Omit<Address, "_id">): Promise<Address[]> => {
@@ -79,8 +112,24 @@ export const deleteUserAddress = async (addressId: string): Promise<Address[]> =
 
 // Order APIs
 export const getUserOrders = async (): Promise<Order[]> => {
-  const res = await API.get("/orders/my-orders");
-  return res.data;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return [];
+  }
+  try {
+    const res = await API.get("/orders/my-orders");
+    return res.data;
+  } catch (error: any) {
+    // Handle cancelled requests and 401 errors silently
+    if (error?.message === 'No token - request cancelled' || 
+        error?.response?.status === 401 || 
+        error?.message === 'Unauthorized' || 
+        error?.name === 'SilentError' ||
+        axios.isCancel(error)) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const getOrderById = async (orderId: string): Promise<Order> => {
@@ -108,8 +157,12 @@ export const getUserWishlist = async () => {
     console.log("Wishlist API response:", wishlist);
     return Array.isArray(wishlist) ? wishlist : [];
   } catch (error: any) {
-    // Silently handle 401 errors - return empty array
-    if (error?.response?.status === 401 || error?.message === 'Unauthorized' || error?.name === 'SilentError') {
+    // Handle cancelled requests and 401 errors silently
+    if (error?.message === 'No token - request cancelled' || 
+        error?.response?.status === 401 || 
+        error?.message === 'Unauthorized' || 
+        error?.name === 'SilentError' ||
+        axios.isCancel(error)) {
       return [];
     }
     // Re-throw other errors

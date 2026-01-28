@@ -33,10 +33,11 @@ export const updateAvatar = async (file: File, token: string) => {
 
   const res = await API.put("/auth/update-avatar", formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
     },
-  });
+    // Axios will automatically set Content-Type with boundary for FormData
+    // Don't set Content-Type manually - it will interfere with FormData
+  } as any);
 
   // If avatar is already a full URL (Cloudinary), use it as-is, otherwise prepend API URL
   // Use same logic as axios.ts to get correct API URL for production

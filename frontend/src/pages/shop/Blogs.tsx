@@ -198,9 +198,9 @@ export default function Blogs() {
   const hasMore = filteredBlogs.length > displayCount;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
-      <main className={spacing.navbar.offset}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Header Section */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
@@ -316,6 +316,7 @@ export default function Blogs() {
                     <Link
                       key={blog._id}
                       to={`/blog/${blog._id}`}
+                      state={{ blog }}
                       className="group cursor-pointer"
                     >
                       <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -427,7 +428,7 @@ export default function Blogs() {
           </div>
         </section>
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
     </div>

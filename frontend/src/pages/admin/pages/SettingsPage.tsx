@@ -53,13 +53,20 @@ const saveProfileWithAvatar = async () => {
     let newAvatar: string | undefined = user?.avatar;
 
     if (editAvatarFile) {
-  const res = await updateAvatar(editAvatarFile, token);
-
-  // Use the avatar URL as returned (already processed in API to handle Cloudinary URLs)
-  newAvatar = res.avatar;
-
-  setEditAvatarPreview(null); // reset preview
-}
+      try {
+        const res = await updateAvatar(editAvatarFile, token);
+        // Use the avatar URL as returned (already processed in API to handle Cloudinary URLs)
+        newAvatar = res.avatar;
+        setEditAvatarPreview(null); // reset preview
+      } catch (avatarErr: any) {
+        console.error("Avatar upload error:", avatarErr);
+        const errorMessage = avatarErr?.response?.data?.message || avatarErr?.message || "Failed to upload avatar";
+        setProfileMsg(`Avatar upload failed: ${errorMessage}`);
+        setTimeout(() => setProfileMsg(""), 5000);
+        setSavingProfile(false);
+        return; // Stop execution if avatar upload fails
+      }
+    }
 
 
     await apiUpdateProfile({ name: editName, email: editEmail }, token);

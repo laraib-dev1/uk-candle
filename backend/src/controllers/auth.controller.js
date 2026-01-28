@@ -190,8 +190,29 @@ export const changePasswordUser = async (req) => {
 export const updateAvatarUser = async (req) => {
   await connectDB();
 
+  console.log("Update Avatar - Request files:", req.files);
+  console.log("Update Avatar - Request body:", req.body);
+  
   const file = req.files?.avatar?.[0];
-  if (!file) throw new Error("No file uploaded");
+  if (!file) {
+    console.error("Update Avatar - No file found in req.files:", {
+      files: req.files,
+      body: req.body,
+      hasFiles: !!req.files,
+      avatarExists: !!req.files?.avatar,
+      avatarLength: req.files?.avatar?.length
+    });
+    throw new Error("No file uploaded");
+  }
+
+  console.log("Update Avatar - File received:", {
+    fieldname: file.fieldname,
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    size: file.size,
+    hasBuffer: !!file.buffer,
+    hasPath: !!file.path
+  });
 
   const avatarUrl = await uploadToCloud(file);
 

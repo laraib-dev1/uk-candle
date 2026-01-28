@@ -145,9 +145,9 @@ const rightContent = (
 
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
-      <main className={spacing.navbar.offset}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Purchase List Section */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
@@ -170,7 +170,7 @@ const rightContent = (
           </section>
         )}
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
     </div>

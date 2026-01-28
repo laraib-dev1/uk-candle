@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../ui/buttons/Button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AppSidebar } from "../app-sidebar";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
 import { Menu, ShoppingCart, LogOut, User } from "lucide-react";
 import { getCompany } from "@/api/company.api";
+import { getMe } from "@/api/auth.api";
 import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
 import * as LucideIcons from "lucide-react";
 
@@ -18,6 +19,8 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
   const [company, setCompany] = useState<{ logo: string; company: string }>({ logo: "", company: "" });
+  const [user, setUser] = useState<any | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -58,19 +61,104 @@ export default function Navbar() {
     loadCompany();
   }, []);
 
-//   const storedUser = localStorage.getItem("user");
-// const user = storedUser ? JSON.parse(storedUser) : null;
-let user = null;
-  try {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser && storedUser !== "undefined") {
-      user = JSON.parse(storedUser);
-    }
-  } catch (err) {
-    console.warn("Failed to parse user from localStorage", err);
-    user = null; // fallback if parsing fails
-  }
- const linkClasses = (path: string) => {
+  // Load user data with avatar from API
+  useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // Fallback to localStorage user if no token
+        try {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser && storedUser !== "undefined") {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          }
+        } catch (err) {
+          console.warn("Failed to parse user from localStorage", err);
+        }
+        return;
+      }
+
+      try {
+        const userData = await getMe(token);
+        if (userData?.user) {
+          // Handle avatar URL - same logic as AdminLayout
+          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+          const isLocalhost = typeof window !== 'undefined' && (
+            window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1"
+          );
+          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+          
+          let processedAvatarUrl = userData.user.avatar;
+          if (processedAvatarUrl) {
+            // If it's a localhost URL (from development), replace with production API URL
+            if (processedAvatarUrl.includes('localhost') || processedAvatarUrl.includes('127.0.0.1')) {
+              const urlPath = processedAvatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+              processedAvatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+            } else if (processedAvatarUrl.startsWith('http://') || processedAvatarUrl.startsWith('https://')) {
+              // Already a full URL (Cloudinary or production) - use directly
+              processedAvatarUrl = processedAvatarUrl;
+            } else {
+              // Relative path - construct full URL
+              processedAvatarUrl = `${apiBaseWithoutApi}${processedAvatarUrl.startsWith('/') ? processedAvatarUrl : '/' + processedAvatarUrl}`;
+            }
+          }
+          
+          console.log("Navbar - Avatar URL processing:", {
+            original: userData.user.avatar,
+            final: processedAvatarUrl,
+            apiBase: API_BASE_URL,
+            apiBaseWithoutApi
+          });
+          
+          setAvatarUrl(processedAvatarUrl);
+          setUser({
+            ...userData.user,
+            avatar: processedAvatarUrl
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to load user from API, using localStorage:", err);
+        // Fallback to localStorage
+        try {
+          const storedUser = localStorage.getItem("user");
+          if (storedUser && storedUser !== "undefined") {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            // Try to process avatar from localStorage too
+            const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+            const isLocalhost = typeof window !== 'undefined' && (
+              window.location.hostname === "localhost" || 
+              window.location.hostname === "127.0.0.1"
+            );
+            const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+            const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+            
+            let localAvatarUrl = parsedUser?.avatar || parsedUser?.profile?.avatar;
+            if (localAvatarUrl) {
+              if (localAvatarUrl.includes('localhost') || localAvatarUrl.includes('127.0.0.1')) {
+                const urlPath = localAvatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+                localAvatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+              } else if (localAvatarUrl.startsWith('http://') || localAvatarUrl.startsWith('https://')) {
+                localAvatarUrl = localAvatarUrl;
+              } else {
+                localAvatarUrl = `${apiBaseWithoutApi}${localAvatarUrl.startsWith('/') ? localAvatarUrl : '/' + localAvatarUrl}`;
+              }
+              setAvatarUrl(localAvatarUrl);
+            }
+          }
+        } catch (parseErr) {
+          console.warn("Failed to parse user from localStorage", parseErr);
+        }
+      }
+    };
+    
+    loadUser();
+  }, []);
+
+  const linkClasses = (path: string) => {
   const base = "text-sm transition-colors";
   const color = pathname === path 
     ? "font-medium underline underline-offset-4" 
@@ -205,19 +293,48 @@ let user = null;
      <div className="relative hidden md:block">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 overflow-hidden"
                 title="Profile"
                 style={{ cursor: "pointer" }}
               >
-                {user.name?.charAt(0).toUpperCase()}
+                {avatarUrl ? (
+                  <img
+                    key={avatarUrl}
+                    src={avatarUrl}
+                    alt={user?.name || "User"}
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      console.error("Navbar - Avatar image failed to load:", {
+                        attemptedUrl: target.src,
+                        userAvatar: user?.avatar
+                      });
+                      // Fallback to initials if image fails
+                      target.style.display = "none";
+                    }}
+                    onLoad={() => {
+                      console.log("Navbar - Avatar image loaded successfully:", avatarUrl);
+                    }}
+                  />
+                ) : (
+                  <span className="text-gray-800 font-semibold">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
               </button>
 
               {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded shadow-lg z-50">
                   <div className="p-4 text-black border-b">
                     <p className="font-semibold">{user.name}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
+                    <p
+                      className="text-sm text-gray-500 truncate"
+                      title={user.email}
+                    >
+                      {user.email}
+                    </p>
                   </div>
                   <button
                     onClick={() => {
@@ -249,108 +366,22 @@ let user = null;
 </div>
 
 
-          {/* Hamburger menu (mobile only) */}
+          {/* Hamburger menu (mobile only) - Using AppSidebar component */}
           <div className="md:hidden text-black">
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  type="button"
-                  className="p-2 bg-gray-100 text-black hover:bg-gray-100 focus:outline-none focus:ring-0 border-0"
-                >
-                  <Menu className="w-6 h-6 text-black" />
-                </Button>
-              </SheetTrigger>
-
-              <SheetContent
-                side="right"
-                className="fixed top-0 right-0 h-full w-64 bg-white text-black p-6 shadow-lg flex flex-col z-50"
-              >
-                <nav className="flex flex-col gap-4 mt-4">
-                  <Link
-                    to="/"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Home
-                  </Link>
-                  <Link
-                    to="/shop"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Shop
-                  </Link>
-                  <Link
-                    to="/blogs"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    Blogs
-                  </Link>
-                  <Link
-                    to="/about-us"
-                    onClick={() => setOpen(false)}
-                    className="text-gray-700 hover:text-gray-900"
-                  >
-                    About Us
-                  </Link>
-                </nav>
-
-                {/* User Profile Section */}
-                {user ? (
-                  <div className="mt-auto flex flex-col gap-2">
-                    <Button
-                      className="w-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 flex items-center gap-2 justify-start"
-                      onClick={() => {
-                        setOpen(false);
-                        navigate("/profile");
-                      }}
-                    >
-                      <User size={16} /> Profile
-                    </Button>
-                    <Button
-                      className="w-full border border-gray-300 text-red-500 bg-white hover:bg-red-50 flex items-center gap-2 justify-start"
-                      onClick={() => {
-                        localStorage.removeItem("user");
-                        localStorage.removeItem("token");
-                        setOpen(false);
-                        navigate("/login");
-                      }}
-                    >
-                      <LogOut size={16} /> Logout
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    className="mt-auto border border-gray-300 text-gray-700 bg-white hover:bg-gray-100"
-                    onClick={async () => {
-                      if (navLoading) return;
-                      setNavLoading(true);
-                      try {
-                        await new Promise(resolve => setTimeout(resolve, 200));
-                        setOpen(false);
-                        navigate("/login");
-                      } finally {
-                        setNavLoading(false);
-                      }
-                    }}
-                    loading={navLoading}
-                  >
-                    Sign In
-                  </Button>
-                )}
-
-                {/* Mini Footer */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="text-xs text-gray-500 text-center">
-                    <p className="font-semibold mb-1" style={{ color: "var(--theme-primary)" }}>
-                      {company.company || "Grace by Anu"}
-                    </p>
-                    <p>© {new Date().getFullYear()} All rights reserved</p>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button
+              type="button"
+              onClick={() => setOpen(!open)}
+              className="p-2 bg-gray-100 text-black hover:bg-gray-100 focus:outline-none focus:ring-0 border-0"
+            >
+              <Menu className="w-6 h-6 text-black" />
+            </Button>
+            <AppSidebar
+              open={open}
+              onOpenChange={setOpen}
+              user={user}
+              company={company}
+              navLoading={navLoading}
+            />
           </div>
         </div>
       </div>

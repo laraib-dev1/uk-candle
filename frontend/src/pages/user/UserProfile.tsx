@@ -52,6 +52,20 @@ type TabType = "dashboard" | "profile" | "addresses" | "orders" | "wishlist" | "
 
 export default function UserProfile() {
   console.log('🚀🚀🚀 UserProfile component RENDERED 🚀🚀🚀');
+  
+  // Add class to body/html/root to match background
+  useEffect(() => {
+    document.body.classList.add('profile-page');
+    document.documentElement.classList.add('profile-page');
+    const root = document.getElementById('root');
+    if (root) root.classList.add('profile-page');
+    
+    return () => {
+      document.body.classList.remove('profile-page');
+      document.documentElement.classList.remove('profile-page');
+      if (root) root.classList.remove('profile-page');
+    };
+  }, []);
   const navigate = useNavigate();
   const { user: authUser, logout, loading: authLoading } = useAuth();
   const { success, error } = useToast();
@@ -78,25 +92,30 @@ export default function UserProfile() {
       return;
     }
     
+    // Double check token exists before loading data
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    
     loadData();
   }, [authUser, authLoading, navigate]);
 
   const loadData = async () => {
+    // Check token AND authUser before making any API calls
+    const token = localStorage.getItem("token");
+    if (!token || !authUser) {
+      setLoading(false);
+      return; // Don't make any API calls if no token or user
+    }
+    
     try {
       setLoading(true);
+      // Only make API calls if we have both token and authUser
       const [profileData, addressesData, ordersData, wishlistData, profilePagesData, baseTabsData] = await Promise.all([
-        getUserProfile().catch((err: any) => {
-          // Silently handle 401 errors (user not logged in) - this is expected
-          if (err?.response?.status !== 401) {
-            console.error("Failed to load profile:", err);
-          }
-          return null;
-        }),
-        getUserAddresses().catch((err: any) => {
-          // Silently handle 401 errors (user not logged in) - this is expected
-          if (err?.response?.status !== 401) {
-            console.error("Failed to load addresses:", err);
-          }
+        getUserProfile().catch(() => null), // Silently catch all errors
+        getUserAddresses().catch(() => {
           // Fallback to localStorage if backend fails
           try {
             const savedAddresses = localStorage.getItem("savedAddresses");
@@ -105,24 +124,12 @@ export default function UserProfile() {
               return Array.isArray(parsed) ? parsed : [];
             }
           } catch (e) {
-            console.error("Failed to load addresses from localStorage:", e);
+            // Silent
           }
           return [];
         }),
-        getUserOrders().catch((err: any) => {
-          // Silently handle 401 errors (user not logged in) - this is expected
-          if (err?.response?.status !== 401) {
-            console.error("Failed to load orders:", err);
-          }
-          return [];
-        }),
-        getUserWishlist().catch((err: any) => {
-          // Silently handle 401 errors (user not logged in) - this is expected
-          if (err?.response?.status !== 401) {
-            console.error("Failed to load wishlist:", err);
-          }
-          return [];
-        }),
+        getUserOrders().catch(() => []), // Silently catch all errors
+        getUserWishlist().catch(() => []), // Silently catch all errors
         getEnabledProfilePages().catch((err) => {
           console.error("Failed to load profile pages:", err);
           return [];
@@ -159,6 +166,15 @@ export default function UserProfile() {
               avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
             }
           }
+          
+          console.log("UserProfile - Avatar URL processing:", {
+            original: profileData.avatar,
+            isCloudinary: profileData.avatar?.includes('cloudinary'),
+            final: avatarUrl,
+            apiBase: API_BASE_URL,
+            apiBaseWithoutApi
+          });
+          
           profileData.avatar = avatarUrl;
         }
         setProfile(profileData);
@@ -338,23 +354,23 @@ export default function UserProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div data-profile-page style={{ backgroundColor: "#F5F5F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Navbar />
-        <div className={`flex items-center justify-center min-h-[60vh] ${spacing.navbar.offset}`}>
+        <div className={`flex items-center justify-center flex-1 ${spacing.navbar.offset}`}>
           <PageLoader message="Loading profile..." />
         </div>
-        <section className={`w-full ${spacing.footer.gapTop}`}>
+        <div className="w-full" style={{ marginTop: "auto", flexShrink: 0, paddingTop: "20px" }}>
           <Footer />
-        </section>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F5" }}>
+    <div data-profile-page style={{ backgroundColor: "#F5F5F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <main className={`${spacing.navbar.offset} w-full`}>
-        <section className={`w-full ${spacing.section.gap}`}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} w-full flex-1`} style={{ minHeight: 0 }}>
+        <section className="w-full" style={{ minHeight: 0, paddingTop: "20px", paddingBottom: "0px", marginBottom: "0px" }}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
@@ -362,12 +378,18 @@ export default function UserProfile() {
             <div className="mb-6">
               {profile?.avatar ? (
                 <img
+                  key={profile.avatar}
                   src={profile.avatar}
                   alt="Profile"
                   className="w-20 h-20 rounded-full object-cover mx-auto mb-3 border-2"
                   style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}
+                  crossOrigin="anonymous"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
+                    console.error("UserProfile - Avatar image failed to load:", {
+                      attemptedUrl: target.src,
+                      profileAvatar: profile?.avatar
+                    });
                     target.style.display = "none";
                     const parent = target.parentElement;
                     if (parent) {
@@ -380,6 +402,9 @@ export default function UserProfile() {
                       fallback.appendChild(span);
                       parent.insertBefore(fallback, target);
                     }
+                  }}
+                  onLoad={() => {
+                    console.log("UserProfile - Avatar image loaded successfully:", profile?.avatar);
                   }}
                 />
               ) : (
@@ -422,49 +447,47 @@ export default function UserProfile() {
           </div>
 
           {/* Main Content */}
-          <div className={`flex-1 bg-white rounded-lg shadow ${activeTab === "queries" ? "p-0 sm:p-4 md:p-6" : "p-4 sm:p-6"}`}>
-            <div className={spacing.container.paddingXLarge}>
-              {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
-              {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
-              {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
-              {activeTab === "orders" && <OrdersTab orders={orders} onUpdate={loadData} />}
-              {activeTab === "wishlist" && <WishlistTab wishlist={wishlist} onUpdate={loadData} />}
-              {activeTab === "queries" && <QueriesTab />}
-              {activeTab === "reviews" && <ReviewsTab orders={orders} />}
-              {/* Profile Pages */}
-              {activeTab.startsWith("profile-page-") && (() => {
-                const pageId = activeTab.replace("profile-page-", "");
-                const page = profilePages.find((p: any) => p._id === pageId);
-                console.log("Rendering profile page:", { pageId, page, allPages: profilePages });
-                if (!page) {
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">Profile page not found.</p>
-                    </div>
-                  );
-                }
+          <div className="flex-1 bg-white rounded-lg shadow p-6 sm:p-8" style={{ minHeight: "auto" }}>
+            {activeTab === "dashboard" && <DashboardTab orders={orders} addresses={addresses} wishlist={wishlist} />}
+            {activeTab === "profile" && <ProfileTab profile={profile} onUpdate={loadData} />}
+            {activeTab === "addresses" && <AddressesTab addresses={addresses} onUpdate={loadData} />}
+            {activeTab === "orders" && <OrdersTab orders={orders} onUpdate={loadData} />}
+            {activeTab === "wishlist" && <WishlistTab wishlist={wishlist} onUpdate={loadData} />}
+            {activeTab === "queries" && <QueriesTab />}
+            {activeTab === "reviews" && <ReviewsTab orders={orders} />}
+            {/* Profile Pages */}
+            {activeTab.startsWith("profile-page-") && (() => {
+              const pageId = activeTab.replace("profile-page-", "");
+              const page = profilePages.find((p: any) => p._id === pageId);
+              console.log("Rendering profile page:", { pageId, page, allPages: profilePages });
+              if (!page) {
                 return (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6 theme-heading">{page.title}</h2>
-                    {page.subInfo && (
-                      <p className="text-gray-600 mb-4">{page.subInfo}</p>
-                    )}
-                    <div 
-                      className="prose prose-lg max-w-none text-gray-700"
-                      dangerouslySetInnerHTML={{ __html: page.content || "<p>No content available.</p>" }}
-                    />
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Profile page not found.</p>
                   </div>
                 );
-              })()}
-            </div>
+              }
+              return (
+                <div>
+                  <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>{page.title}</h2>
+                  {page.subInfo && (
+                    <p className="text-gray-600 mb-4">{page.subInfo}</p>
+                  )}
+                  <div 
+                    className="prose prose-lg max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: page.content || "<p>No content available.</p>" }}
+                  />
+                </div>
+              );
+            })()}
           </div>
           </div>
         </div>
         </section>
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <div className="w-full" style={{ marginTop: "auto", flexShrink: 0, paddingTop: "20px", paddingBottom: "0", marginBottom: "0" }}>
         <Footer />
-      </section>
+      </div>
     </div>
   );
 }
@@ -475,8 +498,8 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
   const pendingOrders = orders.filter(o => o.status === "Pending").length;
   
   return (
-    <div className="pt-0">
-      <h2 className="text-2xl font-bold mb-6 theme-heading">Dashboard</h2>
+    <div>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Dashboard</h2>
       
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -502,7 +525,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
         ) : (
           <div className="space-y-3">
             {recentOrders.map((order) => (
-              <div key={order._id} className="border rounded-lg p-4">
+              <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold text-gray-900">Order #{order._id.substring(0, 8)}</p>
@@ -640,11 +663,18 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
       // Upload avatar if file selected
       if (editAvatarFile) {
-        const res = await updateAvatar(editAvatarFile, token);
-        newAvatar = res.avatar;
-        setEditAvatarPreview(null);
-        setEditAvatarFile(null);
-        setProfileAvatar(newAvatar);
+        try {
+          const res = await updateAvatar(editAvatarFile, token);
+          newAvatar = res.avatar;
+          setEditAvatarPreview(null);
+          setEditAvatarFile(null);
+          setProfileAvatar(newAvatar);
+        } catch (avatarErr: any) {
+          console.error("Avatar upload error:", avatarErr);
+          const errorMessage = avatarErr?.response?.data?.message || avatarErr?.message || "Failed to upload avatar";
+          error(errorMessage);
+          throw avatarErr; // Re-throw to stop profile update
+        }
       }
 
       // Update profile
@@ -698,7 +728,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
   return (
     <div className="w-full text-black">
-      <h2 className="text-2xl font-semibold theme-heading mb-6">Profile Settings</h2>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Profile Settings</h2>
 
       {/* PROFILE BOX */}
       <div className="flex items-center gap-4 mb-6">
@@ -735,7 +765,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
       {/* OVERVIEW */}
       {tab === "overview" && (
-        <div className="p-6 bg-gray-50 rounded-lg">
+        <div className="py-6 px-0 sm:p-6 bg-gray-50 rounded-lg" style={{ minHeight: "auto" }}>
           <h3 className="font-semibold mb-3">Profile Details</h3>
           <p><strong>Full Name:</strong> {profile?.name || "N/A"}</p>
           <p><strong>Email:</strong> {profile?.email || "N/A"}</p>
@@ -745,7 +775,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
       {/* EDIT PROFILE */}
       {tab === "edit" && (
-        <div className="p-6 bg-gray-50 text-black rounded-lg space-y-4">
+        <div className="py-6 px-0 sm:p-6 bg-gray-50 text-black rounded-lg space-y-4">
           {/* Avatar preview + change */}
           <div className="flex items-center gap-4 mb-4">
             <img
@@ -812,7 +842,7 @@ function ProfileTab({ profile, onUpdate }: { profile: UserProfileType | null; on
 
       {/* PASSWORD */}
       {tab === "password" && (
-        <div className="p-6 bg-gray-50 rounded-lg space-y-4">
+        <div className="py-6 px-0 sm:p-6 bg-gray-50 rounded-lg space-y-4">
           <div>
             <label className="font-medium">Current Password</label>
             <div className="relative">
@@ -998,7 +1028,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
         confirmText="Delete"
         cancelText="Cancel"
       />
-      <div className="flex justify-between items-center mb-6">
+      <div className={`flex justify-between items-center ${spacing.inner.gapBottom}`}>
         <h2 className="text-2xl font-bold theme-heading">Address</h2>
         <button
           onClick={() => setShowAddForm(true)}
@@ -1009,7 +1039,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
       </div>
 
       {showAddForm && (
-        <div className="mb-6 p-4 border rounded-lg">
+        <div className="mb-6 border rounded-lg py-4 px-0 sm:px-4">
           <h3 className="font-semibold mb-4 text-gray-900">Add</h3>
           <AddressForm
             formData={formData}
@@ -1042,7 +1072,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
           </div>
         ) : (
           addresses.map((address) => (
-            <div key={address._id} className="border rounded-lg p-4">
+            <div key={address._id} className="border rounded-lg py-4 px-0 sm:px-4">
               {editingId === address._id ? (
                 <AddressForm
                   formData={formData}
@@ -1290,13 +1320,13 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 theme-heading">My Orders</h2>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>My Orders</h2>
       {orders.length === 0 ? (
         <p className="text-gray-600">No orders yet</p>
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <div key={order._id} className="border rounded-lg p-4">
+            <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="font-semibold text-gray-900">Order #{order._id.substring(0, 8)}</p>
@@ -1440,7 +1470,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
 function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => void }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 theme-heading">My Wishlist</h2>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>My Wishlist</h2>
       {wishlist.length === 0 ? (
         <p className="text-gray-600">Your wishlist is empty</p>
       ) : (
@@ -1513,15 +1543,15 @@ function QueriesTab() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 theme-heading px-4 sm:px-0">Support & Help</h2>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Support & Help</h2>
       <div className="space-y-4">
         <div className="border rounded-lg">
-          <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4">
+          <div className="px-0 sm:px-6 pt-4 sm:pt-6 pb-4">
             <h3 className="font-semibold mb-2 text-gray-900">Need Help?</h3>
             <p className="text-gray-700 mb-4">Contact our support team for assistance with your orders or account.</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6 sm:pt-0">
+          <form onSubmit={handleSubmit} className="space-y-4 px-0 pb-4 sm:px-6 sm:pb-6 sm:pt-0">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Email
@@ -1700,13 +1730,13 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl font-bold mb-6 theme-heading">My Reviews</h2>
+      <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>My Reviews</h2>
       {completedOrders.length === 0 ? (
         <p className="text-gray-600">You haven't completed any orders yet. Reviews are available after order completion.</p>
       ) : (
         <div className="space-y-4">
           {completedOrders.map((order) => (
-            <div key={order._id} className="border rounded-lg p-4">
+            <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
               <p className="font-semibold mb-2 text-gray-900">Order #{order._id.substring(0, 8)}</p>
               <div className="space-y-3">
                 {order.items.map((item, idx) => (
@@ -1763,7 +1793,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                   >
                     <Star
                       size={32}
-                      className={star <= reviewData.rating ? "fill-[var(--theme-primary)] text-[var(--theme-primary)]" : "text-gray-300"}
+                      className={star <= reviewData.rating ? "fill-(--theme-primary) text-(--theme-primary)" : "text-gray-300"}
                     />
                   </button>
                 ))}
@@ -1777,7 +1807,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                 onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
                 placeholder="Share your experience with this product..."
                 rows={5}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)] text-gray-900 resize-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-(--theme-primary) focus:border-(--theme-primary) text-gray-900 resize-none"
               />
             </div>
 

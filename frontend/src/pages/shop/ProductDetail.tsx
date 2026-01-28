@@ -603,8 +603,8 @@ export default function ProductDetail() {
       </Helmet>
 
       <Navbar />
-      <div className="min-h-screen bg-white">
-      <main className={spacing.navbar.offset}>
+      <div className="bg-white min-h-screen flex flex-col">
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Product Section */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
@@ -843,7 +843,7 @@ export default function ProductDetail() {
           </div>
         </section>
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
       </div>

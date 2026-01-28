@@ -141,10 +141,10 @@ export default function () {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 overflow-x-hidden">
+    <div className="bg-white text-gray-800 overflow-x-hidden min-h-screen flex flex-col">
 
       <Navbar />
-      <main className={spacing.navbar.offset}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
         <section className={`${spacing.section.gap}`}>
           {bannersBySlot["hero-main"] ? (
@@ -311,7 +311,7 @@ export default function () {
         </section>
 
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
       

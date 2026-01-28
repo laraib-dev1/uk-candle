@@ -71,12 +71,37 @@ export default function AdminLayout() {
         ]);
 
         if (userData) {
-          // Use avatar URL as-is if it's already a full URL (Cloudinary), otherwise prepend API URL
-          const avatarUrl = userData.user.avatar 
-            ? (userData.user.avatar.startsWith('http://') || userData.user.avatar.startsWith('https://')
-                ? userData.user.avatar 
-                : `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}${userData.user.avatar.startsWith('/') ? userData.user.avatar : '/' + userData.user.avatar}`)
-            : undefined;
+          // Handle avatar URL - fix localhost URLs in production and handle Cloudinary URLs
+          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+          const isLocalhost = typeof window !== 'undefined' && (
+            window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1"
+          );
+          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
+          
+          let avatarUrl = userData.user.avatar;
+          if (avatarUrl) {
+            // If it's a localhost URL (from development), replace with production API URL
+            if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
+              const urlPath = avatarUrl.replace(/^https?:\/\/[^\/]+/, '');
+              avatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+            } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+              // Already a full URL (Cloudinary or production) - use directly
+              avatarUrl = avatarUrl;
+            } else {
+              // Relative path - construct full URL
+              avatarUrl = `${apiBaseWithoutApi}${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+            }
+          }
+          
+          console.log("AdminLayout - Avatar URL processing:", {
+            original: userData.user.avatar,
+            isCloudinary: userData.user.avatar?.includes('cloudinary'),
+            final: avatarUrl,
+            apiBase: API_BASE_URL,
+            apiBaseWithoutApi
+          });
           
           const fullUser = {
             ...userData.user,
@@ -193,14 +218,20 @@ export default function AdminLayout() {
           src={user?.avatar || "/avatar.png"}
           alt={user?.name || "User"}
           className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
+          crossOrigin="anonymous"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
+            console.error("AdminLayout - Avatar image failed to load:", {
+              attemptedUrl: target.src,
+              userAvatar: user?.avatar,
+              fallback: "/avatar.png"
+            });
             if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
               target.src = "/avatar.png";
             }
           }}
           onLoad={() => {
-            // Image loaded successfully
+            console.log("AdminLayout - Avatar image loaded successfully:", user?.avatar);
           }}
         />
         <div>

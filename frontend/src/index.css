@@ -6,15 +6,46 @@
 @plugin "@tailwindcss/container-queries";
 
 body {
-  @apply bg-white dark:bg-gray-900 text-black dark:text-white;
+  @apply text-black;
   overflow-y: overlay;
   margin: 0;
   padding: 0;
+  min-height: auto !important;
+  height: auto !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 html {
   margin: 0;
   padding: 0;
+  min-height: auto !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+#root {
+  min-height: auto !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+/* Profile page specific - prevent black space after footer */
+body.profile-page {
+  background-color: #F5F5F5 !important;
+  min-height: 100vh !important;
+}
+
+html.profile-page {
+  background-color: #F5F5F5 !important;
+  min-height: 100vh !important;
+  height: 100% !important;
+}
+
+#root.profile-page {
+  background-color: #F5F5F5 !important;
+  min-height: 100vh !important;
+  height: 100% !important;
 }
 
 /* Remove default padding/margin from sections */
@@ -27,8 +58,6 @@ section {
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
 }
 /* Fix Mantine RTE toolbar jumping */
 .mantine-RichTextEditor-root {
@@ -61,9 +90,11 @@ h1, h2, h3, h4, h5, h6 {
   --foreground: 0 0 0; /* black */
 }
 
-.dark {
-  --background: 17 24 39; /* gray-900 */
-  --foreground: 255 255 255; /* white */
+/* Ensure body/html/#root stick to content - no extra space or background after footer */
+body, html, #root {
+  display: block !important;
+  overflow-x: hidden;
+  background: transparent !important;
 }
 /* FIX for table hiding dropdown */
 /* Fix for react-data-table-component blocking dropdowns */
@@ -91,6 +122,100 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 20px !important;
     padding-bottom: 20px !important;
   }
+  
+  /* Remove all gaps/padding before footer on profile page */
+  [data-profile-page] main section {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  [data-profile-page] > div:last-child {
+    padding-top: 20px !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  [data-profile-page] footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Ensure footer is the absolute last element - no space or background after it */
+  footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Prevent any background from showing after footer - clip containers at footer */
+  div.bg-white:has(footer),
+  div:has(> footer),
+  div:has(section:has(footer)) {
+    overflow: hidden !important;
+  }
+
+  /* Ensure footer section has no space after it */
+  section:has(footer),
+  section:last-child:has(footer) {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Hide anything after footer */
+  footer ~ *,
+  section:has(footer) ~ * {
+    display: none !important;
+  }
+
+  /* Ensure body/html/#root don't extend beyond footer */
+  body:after,
+  html:after,
+  #root:after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* Force page containers to stop at footer - prevent white background extension */
+  /* Target any div containing a footer section */
+  div:has(> section:has(footer)),
+  div:has(section:has(footer)) {
+    overflow: hidden !important;
+    height: fit-content !important;
+    min-height: auto !important;
+    max-height: fit-content !important;
+  }
+
+  /* Specifically target bg-white divs that contain footer - multiple selectors for browser compatibility */
+  div.bg-white:has(> section:has(footer)),
+  div.bg-white:has(section:has(footer)),
+  div.bg-white:has(Footer),
+  div.bg-white:has(footer) {
+    overflow: hidden !important;
+    height: fit-content !important;
+    min-height: auto !important;
+    max-height: fit-content !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Ensure bg-white divs stop exactly at footer */
+  div.bg-white > section:last-child:has(footer) {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Ensure footer is truly the last element */
+  footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hide any pseudo-elements after footer */
+  footer::after,
+  section:has(footer)::after {
+    display: none !important;
+    content: none !important;
+  }
 
   .section-gap-top {
     padding-top: 20px !important;
@@ -112,6 +237,11 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 20px !important;
     padding-bottom: 0 !important;
     background-color: white !important;
+  }
+
+  /* Navbar bottom gap - 20px bottom padding after navbar (used on pages, not in navbar itself) */
+  .navbar-gap-bottom {
+    padding-bottom: 20px !important;
   }
 
   /* Inner section gap - 10px for spacing within sections */
@@ -458,26 +588,41 @@ button:not([disabled]):not([style*="cursor: not-allowed"]):not([style*="cursor:d
   animation: fadeInSlide 0.3s ease-out;
 }
 
-/* Sheet/Drawer slide animation from right - Force transform */
-/* Target Sheet drawer with custom class - More specific selectors */
+/* Sheet/Drawer smooth slide animation from right to left - Like shadcn/ui sidebar */
+/* CRITICAL: Disable Radix UI default animations and force our custom slide */
+[data-radix-dialog-content][data-side="right"],
 .sheet-drawer[data-side="right"],
-[data-side="right"].sheet-drawer,
-[role="dialog"][data-side="right"] {
+[role="dialog"][data-side="right"],
+div[data-side="right"][role="dialog"] {
+  /* Disable Radix default animations */
+  animation: none !important;
+  /* Force our custom slide animation */
   transform: translateX(100%) !important;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: transform !important;
 }
 
-/* Right side drawer - slide in when open */
+/* When open - slide in smoothly from right to left */
+[data-radix-dialog-content][data-side="right"][data-state="open"],
 .sheet-drawer[data-side="right"][data-state="open"],
-[data-side="right"].sheet-drawer[data-state="open"],
-[role="dialog"][data-side="right"][data-state="open"] {
+[role="dialog"][data-side="right"][data-state="open"],
+div[data-side="right"][role="dialog"][data-state="open"] {
+  animation: none !important;
   transform: translateX(0) !important;
 }
 
-/* Right side drawer - slide out when closed */
+/* When closed - slide out to right */
+[data-radix-dialog-content][data-side="right"][data-state="closed"],
 .sheet-drawer[data-side="right"][data-state="closed"],
-[data-side="right"].sheet-drawer[data-state="closed"],
-[role="dialog"][data-side="right"][data-state="closed"] {
+[role="dialog"][data-side="right"][data-state="closed"],
+div[data-side="right"][role="dialog"][data-state="closed"] {
+  animation: none !important;
+  transform: translateX(100%) !important;
+}
+
+/* Initial/mounting state - always start completely off-screen */
+[data-radix-dialog-content][data-side="right"]:not([data-state="open"]),
+.sheet-drawer[data-side="right"]:not([data-state="open"]) {
+  animation: none !important;
   transform: translateX(100%) !important;
 }

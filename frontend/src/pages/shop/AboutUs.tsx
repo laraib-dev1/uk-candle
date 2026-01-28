@@ -8,9 +8,9 @@ import { spacing } from "@/utils/spacing";
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
-      <main className={spacing.navbar.offset}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Hero/Introduction Section */}
         <AboutHero />
 
@@ -20,7 +20,7 @@ export default function AboutUs() {
         {/* Team Section */}
         <TeamSection />
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
     </div>

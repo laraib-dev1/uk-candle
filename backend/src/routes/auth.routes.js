@@ -77,7 +77,7 @@ router.put("/change-password", protect, async (req, res) => {
   }
 });
 
-router.put("/update-avatar", protect, async (req, res) => {
+router.put("/update-avatar", protect, upload.fields([{ name: "avatar", maxCount: 1 }]), async (req, res) => {
   try {
     const data = await updateAvatarUser(req);
     res.json(data);

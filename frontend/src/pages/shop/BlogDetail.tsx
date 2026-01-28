@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { TableOfContents } from "@/components/ui/TableOfContents";
@@ -8,11 +8,11 @@ import { getBlogById, getBlogCategories, getBlogs } from "@/api/blog.api";
 import { getProducts } from "@/api/product.api";
 import { getCompany } from "@/api/company.api";
 import PageLoader from "@/components/ui/PageLoader";
-import { Facebook, Twitter, Linkedin, Instagram, Youtube, Share2, ChevronLeft, ChevronRight } from "lucide-react";
-import { FaPinterest } from "react-icons/fa";
+import { Instagram, Youtube, ChevronLeft, ChevronRight } from "lucide-react";
 import FeatureCards from "@/components/ui/FeatureCards";
 import { spacing } from "@/utils/spacing";
 import { getCachedData, setCachedData, CACHE_KEYS } from "@/utils/cache";
+import ShareOptions, { ShareOptionsSidebar } from "@/components/blog/ShareOptions";
 
 interface Blog {
   _id: string;
@@ -36,6 +36,7 @@ interface Category {
 
 export default function BlogDetail() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -53,6 +54,16 @@ export default function BlogDetail() {
       fetchData();
     }
   }, [id]);
+
+  // If we navigated from Blogs page, use the passed blog immediately (no loader flash)
+  useEffect(() => {
+    const stateBlog = (location.state as any)?.blog as Blog | undefined;
+    if (stateBlog && id && stateBlog._id === id) {
+      setBlog(stateBlog);
+      // allow page to render immediately; API fetch will still refresh in background
+      setInitialLoad(false);
+    }
+  }, [id, location.state]);
 
   // Check if scroll buttons should be shown for popular products
   useEffect(() => {
@@ -99,9 +110,7 @@ export default function BlogDetail() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      
-      // Try to load from cache first for faster initial render
+      // Try to load from cache first for faster initial render (before showing any loader)
       const cachedBlog = getCachedData<Blog>(`${CACHE_KEYS.BLOG_DETAIL}_${id}`);
       const cachedCategories = getCachedData<Category[]>(CACHE_KEYS.BLOG_CATEGORIES);
       const cachedProducts = getCachedData<any[]>(CACHE_KEYS.PRODUCTS);
@@ -110,6 +119,7 @@ export default function BlogDetail() {
       // Use cached data immediately if available
       if (cachedBlog) {
         setBlog(cachedBlog);
+        setInitialLoad(false);
       }
       if (cachedCategories) {
         setCategories(cachedCategories);
@@ -123,6 +133,7 @@ export default function BlogDetail() {
         setCompanyDescription(cachedCompany.description || "");
       }
 
+      setLoading(true);
       // Fetch fresh data in background and update cache
       const [blogData, categoriesData, productsData, companyData] = await Promise.all([
         getBlogById(id!),
@@ -234,13 +245,14 @@ export default function BlogDetail() {
     }
   };
 
-  if (initialLoad && loading) {
+  // Only show full page loader if we have zero blog data to render yet
+  if (initialLoad && loading && !blog) {
     return <PageLoader message="GraceByAnu" />;
   }
 
   if (!blog) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="bg-white">
         <Navbar />
         <div className={`text-center py-20 ${spacing.navbar.offset}`}>
           <p className="text-gray-600">Blog not found</p>
@@ -248,7 +260,7 @@ export default function BlogDetail() {
             Back to Blogs
           </Link>
         </div>
-        <section className={`w-full ${spacing.footer.gapTop}`}>
+        <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
           <Footer />
         </section>
       </div>
@@ -260,7 +272,7 @@ export default function BlogDetail() {
   const nicheName = getNicheName(blog.niche);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white min-h-screen flex flex-col">
       <style>{`
         .content-area p[style*="text-align"],
         .content-area div[style*="text-align"],
@@ -292,17 +304,17 @@ export default function BlogDetail() {
         }
       `}</style>
       <Navbar />
-      <main className={spacing.navbar.offset}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Header Section */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
+            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+              <h1 className="text-4xl md:text-5xl font-bold theme-heading text-center">
                 Blog Details
               </h1>
               
               {/* Breadcrumb */}
-              <div className={`text-sm text-gray-600 text-center ${spacing.inner.gapBottom}`}>
+              <div className="text-sm text-gray-600 text-center mt-4">
               <Link to="/blogs" className="hover:underline">Blogs</Link>
               {categoryName && (
                 <>
@@ -334,10 +346,10 @@ export default function BlogDetail() {
         </section>
 
         {/* Main Content */}
-        <section className={`w-full ${spacing.section.gap}`}>
+        <section className={`w-full ${spacing.section.gapTop}`} style={{ paddingBottom: 0 }}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              <div className="flex flex-col lg:flex-row gap-8">
+            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+              <div className="flex flex-col lg:flex-row gap-8 items-start">
                 {/* Main Content Area */}
                 <div className="flex-1">
             {/* Blog Image */}
@@ -377,55 +389,9 @@ export default function BlogDetail() {
             <div className="border-t border-gray-300 mt-8"></div>
 
             {/* Sharing Options */}
-            <div className="pt-6">
+            <div className="pt-6" style={{ paddingBottom: 0, marginBottom: 0 }}>
               <h3 className="text-lg font-semibold mb-4 text-gray-900">Share Your Love!</h3>
-              <div className="flex items-center gap-3 flex-wrap">
-                <a
-                  href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:bg-[#166FE5] transition-colors"
-                  title="Share on Facebook"
-                >
-                  <Facebook size={20} />
-                </a>
-                <a
-                  href={socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:bg-[#1A91DA] transition-colors"
-                  title="Share on Twitter"
-                >
-                  <Twitter size={20} />
-                </a>
-                <a
-                  href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-[#0077B5] text-white flex items-center justify-center hover:bg-[#006399] transition-colors"
-                  title="Share on LinkedIn"
-                >
-                  <Linkedin size={20} />
-                </a>
-                <a
-                  href={socialLinks.pinterest}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-[#BD081C] text-white flex items-center justify-center hover:bg-[#A00718] transition-colors"
-                  title="Share on Pinterest"
-                >
-                  <FaPinterest size={20} />
-                </a>
-                {typeof navigator.share === 'function' && (
-                  <button
-                    onClick={handleNativeShare}
-                    className="w-10 h-10 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-700 transition-colors"
-                    title="Share"
-                  >
-                    <Share2 size={20} />
-                  </button>
-                )}
-              </div>
+              <ShareOptions url={shareUrl} title={shareTitle} />
             </div>
 
             {/* Author Profile - Commented out as requested, will use later */}
@@ -498,62 +464,23 @@ export default function BlogDetail() {
                 </div>
 
                 {/* Right Sidebar - Fixed on large screens */}
-                <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-                  <div className="lg:sticky lg:top-20">
+                <div className="hidden lg:block lg:w-64 lg:shrink-0" style={{ marginTop: 0, paddingTop: 0, alignSelf: 'flex-start' }}>
+                  <div className="lg:sticky lg:top-14 space-y-4" style={{ marginTop: 0, paddingTop: 0 }}>
                     {/* Table of Contents */}
                     {blog.description && (
-                      <div className="mb-6">
-                        <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
-                      </div>
+                      <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
                     )}
 
                     {/* Share Options */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
                       <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
                         Share Your Love!
                       </h3>
-                      <div className="flex flex-col gap-2">
-                        <a
-                          href={socialLinks.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors text-sm"
-                        >
-                          <Facebook size={16} />
-                          Facebook
-                        </a>
-                        <a
-                          href={socialLinks.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors text-sm"
-                        >
-                          <Twitter size={16} />
-                          Twitter
-                        </a>
-                        <a
-                          href={socialLinks.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors text-sm"
-                        >
-                          <Linkedin size={16} />
-                          LinkedIn
-                        </a>
-                        <a
-                          href={socialLinks.pinterest}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors text-sm"
-                        >
-                          <FaPinterest size={16} />
-                          Pinterest
-                        </a>
-                      </div>
+                      <ShareOptionsSidebar url={shareUrl} title={shareTitle} />
                     </div>
 
                     {/* Company Info */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
                       <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
                         {companyName}
                       </h3>
@@ -567,7 +494,7 @@ export default function BlogDetail() {
                           }}
                         />
                       )}
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600" style={{ marginBottom: 0 }}>
                         {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
                       </p>
                     </div>
@@ -600,7 +527,7 @@ export default function BlogDetail() {
         {/* Feature Cards */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
               <FeatureCards />
             </div>
           </div>
@@ -609,7 +536,7 @@ export default function BlogDetail() {
         {/* Popular Products */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
               <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
               {products.length > 0 && (
                 <div className="relative">
@@ -623,7 +550,7 @@ export default function BlogDetail() {
                       <div
                         key={p._id}
                         data-popular-product
-                        className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-18px)]"
+                        className="shrink-0 w-[calc(50%-12px)] sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] lg:w-[calc(25%-18px)]"
                       >
                         <ProductCard
                           id={p._id}
@@ -663,7 +590,7 @@ export default function BlogDetail() {
           </div>
         </section>
       </main>
-      <section className={`w-full ${spacing.footer.gapTop}`}>
+      <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
       </section>
     </div>
