@@ -105,13 +105,13 @@ export default function FAQs() {
                 Frequently Asked Questions
               </h1>
               
-              {/* Subtitle */}
-              <p className="text-lg text-gray-600 mb-0 text-center">
+              {/* Subtitle – section inner gap between subinfo and line */}
+              <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
                 Find answers to common questions
               </p>
               
               {/* Horizontal Line */}
-              <div className={`w-full border-t border-gray-300 ${spacing.inner.gapTop}`} style={{ marginTop: 0, marginBottom: 0 }}></div>
+              <div className="w-full border-t border-gray-300" style={{ marginTop: 0, marginBottom: 0 }}></div>
             </div>
           </div>
         </section>

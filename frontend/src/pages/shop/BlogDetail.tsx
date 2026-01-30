@@ -367,7 +367,7 @@ export default function BlogDetail() {
             )}
 
             {/* Blog Title */}
-            <h1 className="text-3xl md:text-4xl font-bold theme-heading mb-4 text-gray-900">
+            <h1 className={`text-3xl md:text-4xl font-bold theme-heading text-gray-900 ${spacing.inner.gapBottom}`}>
               {blog.title}
             </h1>
 
@@ -388,9 +388,9 @@ export default function BlogDetail() {
             {/* Horizontal Line - End of Blog Content */}
             <div className="border-t border-gray-300 mt-8"></div>
 
-            {/* Sharing Options */}
-            <div className="pt-6" style={{ paddingBottom: 0, marginBottom: 0 }}>
-              <h3 className="text-lg font-semibold mb-4 text-gray-900">Share Your Love!</h3>
+            {/* Sharing Options – uses section gap from spacing.tsx */}
+            <div className={spacing.section.gap}>
+              <h3 className={`text-lg font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>Share Your Love!</h3>
               <ShareOptions url={shareUrl} title={shareTitle} />
             </div>
 
@@ -471,12 +471,12 @@ export default function BlogDetail() {
                       <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
                     )}
 
-                    {/* Share Options */}
+                    {/* Share Options – all options as rectangle buttons (same as after blog) */}
                     <div className="bg-white border border-gray-200 rounded-lg p-4">
                       <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
                         Share Your Love!
                       </h3>
-                      <ShareOptionsSidebar url={shareUrl} title={shareTitle} />
+                      <ShareOptions url={shareUrl} title={shareTitle} variant="sidebar" />
                     </div>
 
                     {/* Company Info */}

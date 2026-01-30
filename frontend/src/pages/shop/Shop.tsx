@@ -188,7 +188,7 @@ const Shop = () => {
         {/* Products Section */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
           <div className={spacing.container.paddingXLarge}>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${spacing.inner.gapBottom}`}>
             <h2 className="text-2xl font-bold theme-heading m-0 p-0">
               Products
             </h2>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Facebook, Twitter, Linkedin, Share2 } from "lucide-react";
-import { FaPinterest } from "react-icons/fa";
+import { Facebook, Twitter, Linkedin, Share2, Mail, Link2 } from "lucide-react";
+import { FaPinterest, FaWhatsapp } from "react-icons/fa";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface ShareOptionsProps {
   url: string;
@@ -26,6 +27,7 @@ export default function ShareOptions({
   const [shareUrl, setShareUrl] = useState(url);
   const [shareTitle, setShareTitle] = useState(title);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const { success } = useToast();
 
   // Update share URL and title when props change
   useEffect(() => {
@@ -47,6 +49,8 @@ export default function ShareOptions({
     twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
     pinterest: `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`,
+    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
+    email: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
   };
 
   const handleNativeShare = async () => {
@@ -73,11 +77,17 @@ export default function ShareOptions({
       e.preventDefault();
       e.stopPropagation();
     }
-    // Open share link in new window
     window.open(shareLink, "_blank", "noopener,noreferrer");
     if (showAsPopup) {
       setIsPopupOpen(false);
     }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      success("Link copied to clipboard");
+      setIsPopupOpen(false);
+    });
   };
 
   // Inline share options (for main content area)
@@ -133,48 +143,62 @@ export default function ShareOptions({
     </div>
   );
 
-  // Sidebar share options (vertical list)
+  // Sidebar share options (vertical rectangle buttons – all options like after blog)
   const SidebarShareOptions = () => (
     <div className={`flex flex-col gap-2 ${className}`}>
       <button
+        type="button"
         onClick={() => handleShareClick("facebook", socialLinks.facebook)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors text-sm"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors text-sm w-full text-left"
         aria-label="Share on Facebook"
       >
-        <Facebook size={16} />
+        <Facebook size={16} className="shrink-0" />
         Facebook
       </button>
       <button
+        type="button"
         onClick={() => handleShareClick("twitter", socialLinks.twitter)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors text-sm"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors text-sm w-full text-left"
         aria-label="Share on Twitter"
       >
-        <Twitter size={16} />
+        <Twitter size={16} className="shrink-0" />
         Twitter
       </button>
       <button
+        type="button"
         onClick={() => handleShareClick("linkedin", socialLinks.linkedin)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors text-sm"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors text-sm w-full text-left"
         aria-label="Share on LinkedIn"
       >
-        <Linkedin size={16} />
+        <Linkedin size={16} className="shrink-0" />
         LinkedIn
       </button>
       <button
+        type="button"
         onClick={() => handleShareClick("pinterest", socialLinks.pinterest)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors text-sm"
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors text-sm w-full text-left"
         aria-label="Share on Pinterest"
       >
-        <FaPinterest size={16} />
+        <FaPinterest size={16} className="shrink-0" />
         Pinterest
+      </button>
+      <button
+        type="button"
+        onClick={() => handleShareClick("whatsapp", socialLinks.whatsapp)}
+        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#25D366] text-white hover:bg-[#20BD5A] transition-colors text-sm w-full text-left"
+        aria-label="Share on WhatsApp"
+      >
+        <FaWhatsapp size={16} className="shrink-0" />
+        WhatsApp
       </button>
       {typeof navigator.share === "function" && (
         <button
+          type="button"
           onClick={handleNativeShare}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors text-sm"
-          aria-label="Share via native share"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition-colors text-sm w-full text-left"
+          aria-label="Share (system dialog)"
         >
-          <Share2 size={16} />
+          <Share2 size={16} className="shrink-0" />
           Share
         </button>
       )}
@@ -199,58 +223,105 @@ export default function ShareOptions({
       </button>
 
       <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Share Your Love!</DialogTitle>
+        <DialogContent className="sm:max-w-md border-gray-600 text-white p-0 gap-0 overflow-hidden" style={{ backgroundColor: "#2d2d2d" }}>
+          <DialogHeader className="p-4 pb-2 text-center border-b border-gray-600">
+            <DialogTitle className="text-lg font-semibold text-white">Share</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-3 py-4">
+          {/* Link section – URL + copy (like system Share) */}
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-600 bg-[#1f1f1f]">
+            <Link2 className="shrink-0 w-5 h-5 text-gray-400" aria-hidden />
+            <span className="flex-1 min-w-0 text-sm text-gray-300 truncate" title={shareUrl}>
+              {shareUrl}
+            </span>
             <button
-              onClick={(e) => handleShareClick("facebook", socialLinks.facebook, e)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1877F2] text-white hover:bg-[#166FE5] transition-colors cursor-pointer"
-              aria-label="Share on Facebook"
               type="button"
+              onClick={handleCopyLink}
+              className="shrink-0 p-2 rounded hover:bg-gray-600 text-gray-400 hover:text-white transition-colors"
+              title="Copy link"
+              aria-label="Copy link"
             >
-              <Facebook size={20} />
-              <span>Share on Facebook</span>
+              <Link2 className="w-5 h-5" />
             </button>
-            <button
-              onClick={(e) => handleShareClick("twitter", socialLinks.twitter, e)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1DA1F2] text-white hover:bg-[#1A91DA] transition-colors cursor-pointer"
-              aria-label="Share on Twitter"
-              type="button"
-            >
-              <Twitter size={20} />
-              <span>Share on Twitter</span>
-            </button>
-            <button
-              onClick={(e) => handleShareClick("linkedin", socialLinks.linkedin, e)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#0077B5] text-white hover:bg-[#006399] transition-colors cursor-pointer"
-              aria-label="Share on LinkedIn"
-              type="button"
-            >
-              <Linkedin size={20} />
-              <span>Share on LinkedIn</span>
-            </button>
-            <button
-              onClick={(e) => handleShareClick("pinterest", socialLinks.pinterest, e)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#BD081C] text-white hover:bg-[#A00718] transition-colors cursor-pointer"
-              aria-label="Share on Pinterest"
-              type="button"
-            >
-              <FaPinterest size={20} />
-              <span>Share on Pinterest</span>
-            </button>
-            {typeof navigator.share === "function" && (
+          </div>
+          {/* App icons grid (like system Share) */}
+          <div className="p-4">
+            <p className="text-xs text-gray-400 mb-3">Share to</p>
+            <div className="grid grid-cols-4 gap-3">
               <button
-                onClick={handleNativeShare}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors cursor-pointer"
-                aria-label="Share via native share"
                 type="button"
+                onClick={(e) => handleShareClick("facebook", socialLinks.facebook, e)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-[#1877F2] hover:bg-[#166FE5] text-white transition-colors"
+                title="Facebook"
               >
-                <Share2 size={20} />
-                <span>Share via...</span>
+                <Facebook size={24} />
+                <span className="text-xs">Facebook</span>
               </button>
-            )}
+              <button
+                type="button"
+                onClick={(e) => handleShareClick("twitter", socialLinks.twitter, e)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-black hover:bg-gray-900 text-white transition-colors"
+                title="Twitter"
+              >
+                <Twitter size={24} />
+                <span className="text-xs">Twitter</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleShareClick("whatsapp", socialLinks.whatsapp, e)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white transition-colors"
+                title="WhatsApp"
+              >
+                <FaWhatsapp size={24} />
+                <span className="text-xs">WhatsApp</span>
+              </button>
+              <a
+                href={socialLinks.email}
+                onClick={() => setIsPopupOpen(false)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-[#EA4335] hover:bg-[#D33426] text-white transition-colors"
+                title="Gmail"
+              >
+                <Mail size={24} />
+                <span className="text-xs">Gmail</span>
+              </a>
+              <button
+                type="button"
+                onClick={(e) => handleShareClick("linkedin", socialLinks.linkedin, e)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-[#0077B5] hover:bg-[#006399] text-white transition-colors"
+                title="LinkedIn"
+              >
+                <Linkedin size={24} />
+                <span className="text-xs">LinkedIn</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+                title="Copy link"
+              >
+                <Link2 size={24} />
+                <span className="text-xs">Copy link</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => handleShareClick("pinterest", socialLinks.pinterest, e)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-[#BD081C] hover:bg-[#A00718] text-white transition-colors"
+                title="Pinterest"
+              >
+                <FaPinterest size={24} />
+                <span className="text-xs">Pinterest</span>
+              </button>
+              {typeof navigator.share === "function" && (
+                <button
+                  type="button"
+                  onClick={handleNativeShare}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+                  title="More options"
+                >
+                  <Share2 size={24} />
+                  <span className="text-xs">More</span>
+                </button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

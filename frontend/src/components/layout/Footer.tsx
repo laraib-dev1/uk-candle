@@ -273,34 +273,34 @@ export default function Footer() {
 
   return (
     <footer className="text-gray-300" style={{ backgroundColor: "var(--theme-dark, #6B4A2C)" }}>
-      <div className={`max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 ${spacing.section.gapTop} ${spacing.section.gapBottom}`}>
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-center gap-6 sm:gap-8 lg:gap-16">
+      <div className={`max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 ${spacing.section.gapTop} ${spacing.section.gapBottomLarge}`}>
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-center gap-8 sm:gap-10 lg:gap-20">
           {/* Left side - Logo and Footer Sections */}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-4 sm:gap-6 lg:gap-16 lg:justify-center">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-6 sm:gap-8 lg:gap-20 lg:justify-center">
             {/* Logo */}
-            <div className="flex flex-col space-y-4 lg:min-w-[140px]">
-              <span className="text-white font-serif text-xl lg:text-2xl font-semibold">{companyData.company}</span>
+            <div className="flex flex-col space-y-4 lg:min-w-[160px]">
+              <span className="text-white font-serif text-2xl lg:text-3xl font-semibold">{companyData.company}</span>
               {/* Social Icons - show under company name if enabled */}
               {footerData.showSocialIcons && companyData.socialLinks && (
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-3 mt-2">
                   {companyData.socialLinks.facebook && (
                     <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
-                      <Facebook size={20} />
+                      <Facebook size={24} />
                     </a>
                   )}
                   {companyData.socialLinks.instagram && (
                     <a href={companyData.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
-                      <Instagram size={20} />
+                      <Instagram size={24} />
                     </a>
                   )}
                   {companyData.socialLinks.linkedin && (
                     <a href={companyData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
-                      <Linkedin size={20} />
+                      <Linkedin size={24} />
                     </a>
                   )}
                   {companyData.socialLinks.youtube && (
                     <a href={companyData.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
-                      <Youtube size={20} />
+                      <Youtube size={24} />
                     </a>
                   )}
                 </div>
@@ -309,9 +309,9 @@ export default function Footer() {
 
             {/* Categories Column - if enabled */}
             {footerData.showCategories && categories.length > 0 && (
-              <div className="flex flex-col text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold">Categories</h3>
-                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+              <div className="flex flex-col text-base lg:min-w-[140px]">
+                <h3 className="text-white font-semibold text-lg">Categories</h3>
+                <div className="flex flex-col space-y-3 lg:space-y-4 mt-3 lg:mt-4">
                   {categories.slice(0, 3).map((category) => (
                     <Link
                       key={category._id}
@@ -327,9 +327,9 @@ export default function Footer() {
 
             {/* Products Column - if enabled */}
             {footerData.showProducts && products.length > 0 && (
-              <div className="flex flex-col text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold">Products</h3>
-                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+              <div className="flex flex-col text-base lg:min-w-[140px]">
+                <h3 className="text-white font-semibold text-lg">Products</h3>
+                <div className="flex flex-col space-y-3 lg:space-y-4 mt-3 lg:mt-4">
                   {products.slice(0, 3).map((product) => (
                     <Link
                       key={product._id}
@@ -345,9 +345,9 @@ export default function Footer() {
 
             {/* Footer Sections from SP Panel */}
             {enabledSections.map((section, index) => (
-              <div key={index} className="flex flex-col text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold">{section.title}</h3>
-                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+              <div key={index} className="flex flex-col text-base lg:min-w-[140px]">
+                <h3 className="text-white font-semibold text-lg">{section.title}</h3>
+                <div className="flex flex-col space-y-3 lg:space-y-4 mt-3 lg:mt-4">
                   {section.links.map((link, linkIndex) => (
                     <button
                       key={linkIndex}
@@ -364,9 +364,9 @@ export default function Footer() {
 
             {/* Social Links Column - if enabled */}
             {footerData.showSocialLinks && companyData.socialLinks && (
-              <div className="flex flex-col text-sm lg:min-w-[120px]">
-                <h3 className="text-white font-semibold">Follow Us</h3>
-                <div className="flex flex-col space-y-2 lg:space-y-3 mt-2 lg:mt-3">
+              <div className="flex flex-col text-base lg:min-w-[140px]">
+                <h3 className="text-white font-semibold text-lg">Follow Us</h3>
+                <div className="flex flex-col space-y-3 lg:space-y-4 mt-3 lg:mt-4">
                   {companyData.socialLinks.facebook && (
                     <a href={companyData.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:underline">
                       Facebook
@@ -394,8 +394,8 @@ export default function Footer() {
 
           {/* Right side - Social Posts Gallery - only show if there are posts - Large screens only */}
           {companyData.socialPosts && companyData.socialPosts.length > 0 && (
-            <div className="hidden lg:block lg:ml-auto lg:flex-shrink-0">
-              <div className="grid grid-cols-4 gap-1.5 lg:gap-2 w-64 lg:w-80">
+            <div className="hidden lg:block lg:ml-auto lg:shrink-0">
+              <div className="grid grid-cols-4 gap-2 lg:gap-3 w-72 lg:w-96">
                 {companyData.socialPosts
                   .filter((post: any) => {
                     if (!post || !post.image) return false;
@@ -466,7 +466,7 @@ export default function Footer() {
         )}
 
         {/* Bottom bar */}
-        <div className={`${spacing.margin.top} border-t border-gray-600 ${spacing.section.gapTop} ${spacing.section.gapBottomSmall} flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-2`}>
+        <div className={`${spacing.margin.top} border-t border-gray-600 ${spacing.section.gapTop} ${spacing.section.gapBottom} flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-3`}>
           <span className="text-center md:text-left">{footerData.copyright || `© ${new Date().getFullYear()} ${companyData.company}. All rights reserved.`}</span>
           <div className="flex gap-3 sm:gap-4">
             <span>Visa</span>

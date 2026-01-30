@@ -605,12 +605,11 @@ export default function ProductDetail() {
       <Navbar />
       <div className="bg-white min-h-screen flex flex-col">
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
-        {/* Product Section */}
+        {/* Section 1: Product image + info */}
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className={spacing.container.paddingXLarge}>
-              {/* Product Section - Give more space to detail part (1:1.5 ratio) */}
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3 mb-8 md:mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3">
             {/* Image Gallery - Aligned left with space */}
             <div className="w-full flex justify-start -mr-2 md:-mr-3">
               <ProductImageGallery images={product.images || ["/product.png"]} />
@@ -666,9 +665,15 @@ export default function ProductDetail() {
                 productDescription={product.description}
               />
             </div>
+              </div>
+            </div>
           </div>
+        </section>
 
-          {/* Tabs */}
+        {/* Section 2: Description / Meta Features & Meta Info */}
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
           <Tabs defaultValue="description">
             <TabsList 
               className="bg-gray-100 p-1 rounded-lg h-auto relative"
@@ -778,9 +783,15 @@ export default function ProductDetail() {
               );
             })()}
           </Tabs>
+            </div>
+          </div>
+        </section>
 
-          {/* Feature Cards */}
-          <FeatureCards />
+        {/* Section 3: Feature Cards */}
+        <section className={`w-full ${spacing.section.gap}`}>
+          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className={spacing.container.paddingXLarge}>
+              <FeatureCards />
             </div>
           </div>
         </section>
@@ -789,11 +800,11 @@ export default function ProductDetail() {
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className={spacing.container.paddingXLarge}>
-              <h3 className="text-2xl font-bold mb-6 theme-heading" style={{ color: "var(--theme-primary)" }}>
+              <h3 className="text-2xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>
                 Similar Products
               </h3>
 
-              <div className="relative">
+              <div className={`relative ${spacing.inner.gapTop}`}>
                 {/* Horizontal Scrollable Similar Products Row */}
                 <div
                   ref={similarProductsScrollRef}

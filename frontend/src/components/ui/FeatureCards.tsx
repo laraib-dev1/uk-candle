@@ -35,8 +35,8 @@ const FeatureCards = () => {
             className="bg-gray-50 p-4 md:p-6 rounded-lg border border-gray-200 text-center hover:shadow-md transition-shadow"
           >
             <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white border-2 border-blue-600 flex items-center justify-center">
-                <Icon className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-white border-2 flex items-center justify-center theme-heading" style={{ borderColor: "var(--theme-primary, #8B5E3C)" }}>
+                <Icon className="w-6 h-6 md:w-7 md:h-7 theme-heading" style={{ color: "var(--theme-primary, #8B5E3C)" }} />
               </div>
             </div>
             <h3 className="font-semibold text-gray-900 text-sm md:text-base mb-2">

@@ -144,9 +144,9 @@ export default function () {
     <div className="bg-white text-gray-800 overflow-x-hidden min-h-screen flex flex-col">
 
       <Navbar />
-      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
-        {/* HERO #1: top background hero; uses 'hero-main' banner if available */}
-        <section className={`${spacing.section.gap}`}>
+      <main className={`${spacing.navbar.offset} flex-1`}>
+        {/* HERO #1: top background hero – no navbar bottom gap on landing */}
+        <section>
           {bannersBySlot["hero-main"] ? (
             <Hero
               title="Welcome to our store"

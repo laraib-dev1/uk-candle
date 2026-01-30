@@ -121,8 +121,8 @@ const ClientFeedback: React.FC = () => {
       <div className="pointer-events-none absolute left-6 bottom-6 w-36 h-36 rounded-full bg-[#f4cdbf] opacity-20 blur-[1px]" />
 
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
-        <h2 className={`text-center text-3xl italic text-gray-700 font-serif ${spacing.inner.gapBottom}`}>
+        {/* Heading – section inner gap before heading */}
+        <h2 className={`text-center text-3xl italic text-gray-700 font-serif ${spacing.inner.gapTop} ${spacing.inner.gapBottom}`}>
           Client Feedback
         </h2>
 
