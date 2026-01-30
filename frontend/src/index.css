@@ -112,13 +112,6 @@ body, html, #root {
   z-index: 999999 !important;
   position: relative !important;
 }
-/* Blog detail right sidebar container: scroll with page (TOC inside is sticky separately) */
-[data-blog-sidebar-scroll] {
-  position: static !important;
-  top: auto !important;
-  bottom: auto !important;
-}
-
 @layer utilities {
   .rdt_TableCell {
     overflow: visible !important;
@@ -154,7 +147,7 @@ body, html, #root {
   }
 
   /* Prevent any background from showing after footer - clip containers at footer */
-  /* Exclude pages with sticky TOC (data-toc-sticky-page) so position:sticky works */
+  /* Blog/Privacy/Terms (data-toc-sticky-page) par overflow visible taake right sidebar scroll chale */
   div.bg-white:has(footer):not([data-toc-sticky-page]),
   div:has(> footer):not([data-toc-sticky-page]),
   div:has(section:has(footer)):not([data-toc-sticky-page]) {
@@ -183,7 +176,6 @@ body, html, #root {
   }
 
   /* Force page containers to stop at footer - prevent white background extension */
-  /* Exclude data-toc-sticky-page so sticky TOC works (no overflow:hidden on root) */
   div:has(> section:has(footer)):not([data-toc-sticky-page]),
   div:has(section:has(footer)):not([data-toc-sticky-page]) {
     overflow: hidden !important;
@@ -192,7 +184,7 @@ body, html, #root {
     max-height: fit-content !important;
   }
 
-  /* Specifically target bg-white divs that contain footer - multiple selectors for browser compatibility */
+  /* Specifically target bg-white divs that contain footer */
   div.bg-white:has(> section:has(footer)):not([data-toc-sticky-page]),
   div.bg-white:has(section:has(footer)):not([data-toc-sticky-page]),
   div.bg-white:has(Footer):not([data-toc-sticky-page]),
@@ -635,14 +627,8 @@ div[data-side="right"][role="dialog"][data-state="closed"] {
   transform: translateX(100%) !important;
 }
 
-/* ===== Blog sidebar container only: scroll with page (TOC is sticky via component) ===== */
-.scroll-with-content-sidebar,
-[data-blog-sidebar-scroll] {
-  position: static !important;
-  top: auto !important;
-  bottom: auto !important;
-  left: auto !important;
-  right: auto !important;
+/* Blog detail: root + main overflow visible taake right sidebar sticky kaam kare (last so wins) */
+div.bg-white[data-toc-sticky-page],
+div.bg-white[data-toc-sticky-page] main {
+  overflow: visible !important;
 }
-
-/* TOC: position fixed from JS – no global override needed */

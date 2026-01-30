@@ -22,9 +22,15 @@ interface TOCItem {
 interface TableOfContentsProps {
   htmlContent: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
+  /** "sidebar" = Blog Detail (simple, no fixed). "standalone" = Privacy/Terms (fixed TOC). */
+  variant?: "sidebar" | "standalone";
 }
 
-export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, contentRef }) => {
+export const TableOfContents: React.FC<TableOfContentsProps> = ({
+  htmlContent,
+  contentRef,
+  variant = "standalone",
+}) => {
   const [tocItems, setTocItems] = useState<TOCItem[]>([]);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string>("");
@@ -34,17 +40,18 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     left: 24,
     width: 256,
   });
+  const [tocVisible, setTocVisible] = useState(true);
 
   const NAV_TOP = 96; // navbar ke neeche – TOC isse upar nahi jayega
 
-  // Position TOC fixed – main content (right column) ke neeche na jaye, footer overlap na ho
+  // Position TOC fixed – hide only when content bottom (Updated date) reaches TOC bottom
   const updatePosition = () => {
-    if (!wrapperRef.current) return;
+    if (!wrapperRef.current || variant !== "standalone") return;
     const rect = wrapperRef.current.getBoundingClientRect();
     const spacer = wrapperRef.current.querySelector("[data-toc-fixed-inner]") as HTMLElement;
     const tocHeight = spacer ? spacer.offsetHeight + 24 : 400;
 
-    // Main content column (right side – Contact Us etc) ka bottom – TOC isse neeche na jaye
+    // Main content column (right side – Updated date etc) ka bottom
     const contentColumn = wrapperRef.current.parentElement?.nextElementSibling as HTMLElement | null;
     const contentBottom = contentColumn
       ? contentColumn.getBoundingClientRect().bottom
@@ -55,6 +62,11 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
       top = Math.max(NAV_TOP, contentBottom - tocHeight);
     }
 
+    // Hide only when content bottom (Updated date) reaches TOC bottom, not when it reaches TOC top
+    const tocBottomY = NAV_TOP + tocHeight;
+    const visible = contentBottom > tocBottomY;
+
+    setTocVisible(visible);
     setFixedStyle({
       top,
       left: rect.left,
@@ -63,7 +75,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
   };
 
   useEffect(() => {
-    if (tocItems.length === 0) return;
+    if (tocItems.length === 0 || variant !== "standalone") return;
     const timer = setTimeout(updatePosition, 200);
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, { passive: true });
@@ -75,14 +87,14 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
       window.removeEventListener("scroll", updatePosition);
       ro?.disconnect();
     };
-  }, [tocItems.length]);
+  }, [tocItems.length, variant]);
 
-  // Spacer ki height se sidebar column ka height reserve karo
+  // Spacer ki height se sidebar column ka height reserve karo (standalone only)
   useEffect(() => {
-    if (!wrapperRef.current) return;
+    if (!wrapperRef.current || variant !== "standalone") return;
     const spacer = wrapperRef.current.querySelector("[data-toc-fixed-inner]") as HTMLElement;
     if (spacer) wrapperRef.current.style.minHeight = `${spacer.offsetHeight + 24}px`;
-  }, [tocItems.length]);
+  }, [tocItems.length, variant]);
 
   // Parse HTML and extract headings
   useEffect(() => {
@@ -316,9 +328,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     );
   };
 
-  if (tocItems.length === 0) {
-    return null;
-  }
+  if (tocItems.length === 0) return null;
 
   const tocContent = (
     <>
@@ -331,9 +341,16 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     </>
   );
 
+  if (variant === "sidebar") {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        {tocContent}
+      </div>
+    );
+  }
+
   return (
     <div ref={wrapperRef} className="w-full">
-      {/* Spacer so sidebar column height na gire */}
       <div
         data-toc-fixed-inner
         className="bg-white border border-gray-200 rounded-lg p-4 opacity-0 pointer-events-none"
@@ -341,21 +358,22 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
       >
         {tocContent}
       </div>
-      {/* Fixed TOC – scroll ke sath sath viewport me dikhe */}
-      <div
-        data-toc-scroll-with-content
-        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm z-30"
-        style={{
-          position: "fixed",
-          top: fixedStyle.top,
-          left: fixedStyle.left,
-          width: fixedStyle.width,
-          maxHeight: "calc(100vh - 6rem)",
-          overflowY: "auto",
-        }}
-      >
-        {tocContent}
-      </div>
+      {tocVisible && (
+        <div
+          data-toc-scroll-with-content
+          className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm z-30"
+          style={{
+            position: "fixed",
+            top: fixedStyle.top,
+            left: fixedStyle.left,
+            width: fixedStyle.width,
+            maxHeight: "calc(100vh - 6rem)",
+            overflowY: "auto",
+          }}
+        >
+          {tocContent}
+        </div>
+      )}
     </div>
   );
 };

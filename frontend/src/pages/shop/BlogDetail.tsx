@@ -48,6 +48,15 @@ export default function BlogDetail() {
   const [showProductScrollButtons, setShowProductScrollButtons] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const productsScrollRef = useRef<HTMLDivElement>(null);
+  const blogContentColumnRef = useRef<HTMLDivElement>(null);
+  const sidebarColumnRef = useRef<HTMLDivElement>(null);
+  const [sidebarFixed, setSidebarFixed] = useState<{ top: number; left: number; width: number; visible: boolean }>({
+    top: 96,
+    left: 0,
+    width: 224,
+    visible: true,
+  });
+  const NAV_TOP = 96;
 
   useEffect(() => {
     if (id) {
@@ -92,6 +101,48 @@ export default function BlogDetail() {
       window.removeEventListener('resize', checkProductScrollButtons);
     };
   }, [products, loading]);
+
+  // Fixed right sidebar: show until horizontal line reaches sidebar BOTTOM (Explore Topics), not column height
+  useEffect(() => {
+    const updateSidebarPosition = () => {
+      if (!sidebarColumnRef.current || !blogContentColumnRef.current) return;
+      const colRect = sidebarColumnRef.current.getBoundingClientRect();
+      const blogBottom = blogContentColumnRef.current.getBoundingClientRect().bottom;
+      const columnHeight = sidebarColumnRef.current.offsetHeight;
+      // Use spacer (actual sidebar content) height, not column height – column is stretched to left column
+      const spacerEl = sidebarColumnRef.current.querySelector("[data-sidebar-spacer]") as HTMLElement | null;
+      const sidebarContentHeight = spacerEl?.offsetHeight ?? columnHeight;
+
+      let top = Math.max(NAV_TOP, colRect.top);
+      if (top + sidebarContentHeight > blogBottom) {
+        top = Math.max(NAV_TOP, blogBottom - sidebarContentHeight);
+      }
+      const isLg = typeof window !== "undefined" && window.innerWidth >= 1024;
+      // Hide only when horizontal line reaches sidebar BOTTOM (Explore Topics), not when line is near top
+      const visible = isLg && colRect.width > 0 && blogBottom > NAV_TOP + sidebarContentHeight;
+
+      setSidebarFixed({
+        top,
+        left: colRect.left,
+        width: colRect.width,
+        visible,
+      });
+    };
+
+    const timer = setTimeout(updateSidebarPosition, 100);
+    const timer2 = setTimeout(updateSidebarPosition, 400);
+    window.addEventListener("scroll", updateSidebarPosition, { passive: true });
+    window.addEventListener("resize", updateSidebarPosition);
+    const ro = sidebarColumnRef.current ? new ResizeObserver(updateSidebarPosition) : null;
+    if (ro && sidebarColumnRef.current) ro.observe(sidebarColumnRef.current);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+      window.removeEventListener("scroll", updateSidebarPosition);
+      window.removeEventListener("resize", updateSidebarPosition);
+      ro?.disconnect();
+    };
+  }, [blog, loading]);
 
   // Scroll functions for popular products row
   const scrollProducts = (direction: "left" | "right") => {
@@ -272,12 +323,12 @@ export default function BlogDetail() {
   const nicheName = getNicheName(blog.niche);
 
   return (
-    <div className="bg-white min-h-screen flex flex-col" data-toc-sticky-page>
+    <div className="bg-white min-h-screen flex flex-col" data-toc-sticky-page style={{ overflow: "visible" }}>
       <style>{`
-        /* Sidebar wrapper only (not TOC – TOC stays sticky) */
-        [data-blog-sidebar-scroll] {
-          position: static !important;
-          top: auto !important;
+        /* Root + main overflow visible taake right sidebar sticky kaam kare */
+        [data-toc-sticky-page],
+        [data-toc-sticky-page] main {
+          overflow: visible !important;
         }
         .content-area p[style*="text-align"],
         .content-area div[style*="text-align"],
@@ -350,13 +401,13 @@ export default function BlogDetail() {
           </div>
         </section>
 
-        {/* Main Content */}
+        {/* Main Content – blog (up to horizontal line) + right sidebar in one section so sidebar sticks only until blog ends */}
         <section className={`w-full ${spacing.section.gapTop}`} style={{ paddingBottom: 0 }}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className="px-3 sm:px-4 md:px-6 lg:px-8">
-              <div className="flex flex-col lg:flex-row gap-8 items-start">
-                {/* Main Content Area */}
-                <div className="flex-1">
+              <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
+                {/* Blog content – image to horizontal line only (sidebar sticks until here) */}
+                <div ref={blogContentColumnRef} className="flex-1 min-w-0">
             {/* Blog Image */}
             {blog.image && (
               <div className="w-full mb-6 rounded-lg overflow-hidden">
@@ -390,14 +441,108 @@ export default function BlogDetail() {
               dangerouslySetInnerHTML={{ __html: blog.description || "<p>No content available.</p>" }}
             />
 
-            {/* Horizontal Line - End of Blog Content */}
+            {/* Horizontal Line – end of blog; right sidebar section ends here */}
             <div className="border-t border-gray-300 mt-8"></div>
+              </div>
 
-            {/* Sharing Options – uses section gap from spacing.tsx */}
-            <div className={spacing.section.gap}>
-              <h3 className={`text-lg font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>Share Your Love!</h3>
-              <ShareOptions url={shareUrl} title={shareTitle} />
-            </div>
+                {/* Right Sidebar – fixed via JS so it sticks with scroll until blog section ends */}
+                <div ref={sidebarColumnRef} className="hidden lg:block lg:w-56 lg:shrink-0">
+                  {/* Spacer: invisible copy so column keeps height; fixed clone below shows real content */}
+                  <div data-sidebar-spacer className="space-y-4 opacity-0 pointer-events-none select-none" aria-hidden>
+                    {blog.description && (
+                      <TableOfContents htmlContent={blog.description} contentRef={contentRef} variant="sidebar" />
+                    )}
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Share Your Love!</h3>
+                      <ShareOptions url={shareUrl} title={shareTitle} variant="sidebar" />
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">{companyName}</h3>
+                      {companyLogo && (
+                        <img
+                          src={companyLogo.startsWith("http") ? companyLogo : `${import.meta.env.VITE_API_URL?.replace("/api", "")}${companyLogo}`}
+                          alt={companyName}
+                          className="w-full h-auto mb-3 rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      )}
+                      <p className="text-sm text-gray-600" style={{ marginBottom: 0 }}>
+                        {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
+                      </p>
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Explore Topics</h3>
+                      <div className="space-y-2">
+                        {categories.map((cat) => (
+                          <span key={cat._id} className="flex items-center justify-between gap-3 text-sm text-gray-700 px-2 py-1">
+                            <span className="leading-5">{cat.name}</span>
+                            <span className="text-xs text-gray-500">({cat.blogs || 0})</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Fixed clone: visible sidebar that moves with scroll until section ends */}
+                  {sidebarFixed.visible && (
+                    <div
+                      className="space-y-4 z-20 max-h-[calc(100vh-6rem)] overflow-y-auto"
+                      style={{
+                        position: "fixed",
+                        top: sidebarFixed.top,
+                        left: sidebarFixed.left,
+                        width: sidebarFixed.width,
+                      }}
+                    >
+                      {blog.description && (
+                        <TableOfContents htmlContent={blog.description} contentRef={contentRef} variant="sidebar" />
+                      )}
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Share Your Love!</h3>
+                        <ShareOptions url={shareUrl} title={shareTitle} variant="sidebar" />
+                      </div>
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">{companyName}</h3>
+                        {companyLogo && (
+                          <img
+                            src={companyLogo.startsWith("http") ? companyLogo : `${import.meta.env.VITE_API_URL?.replace("/api", "")}${companyLogo}`}
+                            alt={companyName}
+                            className="w-full h-auto mb-3 rounded"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        )}
+                        <p className="text-sm text-gray-600" style={{ marginBottom: 0 }}>
+                          {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
+                        </p>
+                      </div>
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Explore Topics</h3>
+                        <div className="space-y-2">
+                          {categories.map((cat) => (
+                            <Link
+                              key={cat._id}
+                              to={`/blogs?category=${cat._id}`}
+                              className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors px-2 py-1 rounded"
+                            >
+                              <span className="leading-5">{cat.name}</span>
+                              <span className="text-xs text-gray-500 whitespace-nowrap leading-5">({cat.blogs || 0})</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Share Your Love in main content – below blog (full width of content area) */}
+              <div className={`${spacing.section.gap} mt-0`}>
+                <h3 className={`text-lg font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>Share Your Love!</h3>
+                <ShareOptions url={shareUrl} title={shareTitle} />
+              </div>
 
             {/* Author Profile - Commented out as requested, will use later */}
             {/* {typeof blog.author === "object" && (
@@ -466,65 +611,6 @@ export default function BlogDetail() {
                 </div>
               </div>
             )} */}
-                </div>
-
-                {/* Right Sidebar – scrolls with blog content (not sticky) */}
-                <div data-blog-sidebar-scroll className="scroll-with-content-sidebar hidden lg:block lg:w-64 lg:shrink-0" style={{ marginTop: 0, paddingTop: 0 }}>
-                  <div data-blog-sidebar-scroll className="scroll-with-content-sidebar space-y-4" style={{ marginTop: 0, paddingTop: 0 }}>
-                    {/* Table of Contents */}
-                    {blog.description && (
-                      <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
-                    )}
-
-                    {/* Share Options – all options as rectangle buttons (same as after blog) */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                        Share Your Love!
-                      </h3>
-                      <ShareOptions url={shareUrl} title={shareTitle} variant="sidebar" />
-                    </div>
-
-                    {/* Company Info */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                        {companyName}
-                      </h3>
-                      {companyLogo && (
-                        <img
-                          src={companyLogo.startsWith("http") ? companyLogo : `${import.meta.env.VITE_API_URL?.replace("/api", "")}${companyLogo}`}
-                          alt={companyName}
-                          className="w-full h-auto mb-3 rounded"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      )}
-                      <p className="text-sm text-gray-600" style={{ marginBottom: 0 }}>
-                        {companyDescription || `${companyName} - Your trusted source for quality products and insights.`}
-                      </p>
-                    </div>
-
-                    {/* Explore Topics */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                        Explore Topics
-                      </h3>
-                      <div className="space-y-2">
-                        {categories.map((cat) => (
-                          <Link
-                            key={cat._id}
-                            to={`/blogs?category=${cat._id}`}
-                            className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#8B5E3C] hover:underline transition-colors px-2 py-1 rounded"
-                          >
-                            <span className="leading-5">{cat.name}</span>
-                            <span className="text-xs text-gray-500 whitespace-nowrap leading-5">({cat.blogs || 0})</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
