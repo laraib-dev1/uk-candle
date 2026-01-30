@@ -239,52 +239,53 @@ export default function Blogs() {
     <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
-        {/* Header Section */}
+        {/* Header Section – same inner area as blog grid */}
         <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
-            Blogs
-          </h1>
-          <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
-            Legal page details Sub Title
-          </p>
+          <div className={spacing.container.paddingXLarge}>
+            <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
+              Blogs
+            </h1>
+            <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
+              Legal page details Sub Title
+            </p>
 
-          {/* Category Tabs */}
-          <div className={`flex flex-wrap gap-2 justify-center ${spacing.inner.gapBottom}`}>
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                setSelectedNiche("all");
-              }}
-              className={`px-4 py-2 rounded-lg transition-all duration-300 ease-in-out ${
-                selectedCategory === "all"
-                  ? "bg-[#8B5E3C] text-white scale-105 transform"
-                  : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8] scale-100"
-              }`}
-            >
-              All
-            </button>
-            {categories.map((cat) => (
+            {/* Category Tabs */}
+            <div className={`flex flex-wrap gap-2 justify-center ${spacing.inner.gapBottom}`}>
               <button
-                key={cat._id}
                 onClick={() => {
-                  setSelectedCategory(cat._id);
+                  setSelectedCategory("all");
                   setSelectedNiche("all");
                 }}
                 className={`px-4 py-2 rounded-lg transition-all duration-300 ease-in-out ${
-                  selectedCategory === cat._id
+                  selectedCategory === "all"
                     ? "bg-[#8B5E3C] text-white scale-105 transform"
                     : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8] scale-100"
                 }`}
               >
-                {cat.name}
+                All
               </button>
-            ))}
-          </div>
+              {categories.map((cat) => (
+                <button
+                  key={cat._id}
+                  onClick={() => {
+                    setSelectedCategory(cat._id);
+                    setSelectedNiche("all");
+                  }}
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ease-in-out ${
+                    selectedCategory === cat._id
+                      ? "bg-[#8B5E3C] text-white scale-105 transform"
+                      : "bg-[#F5E6D3] text-gray-700 hover:bg-[#E8D4B8] scale-100"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
 
-          {/* Horizontal Line */}
-          <div className={`w-full h-px bg-gray-300 ${spacing.inner.gapBottom}`} style={{ marginTop: 0, marginBottom: 0 }}></div>
+            {/* Horizontal Line – single thin line, inner area like blog grid */}
+            <div className="w-full h-px bg-gray-300" style={{ margin: 0 }} aria-hidden />
 
-          {/* Niches Scroll */}
+            {/* Niches Scroll */}
           {selectedCategory !== "all" && categoryNiches.length > 0 && (
             <div className={`relative ${spacing.inner.gapTop} ${spacing.inner.gapBottom}`}>
               <div className="flex items-center gap-2">
@@ -334,6 +335,7 @@ export default function Blogs() {
               </div>
             </div>
           )}
+          </div>
         </section>
 
         {/* Blog Grid */}
@@ -369,19 +371,21 @@ export default function Blogs() {
                             }}
                           />
                         </div>
-                        {/* Blog Info */}
+                        {/* Blog Info – tag first, then date in same row */}
                         <div className="p-4">
                           <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
                             {blog.title}
                           </h3>
-                          <p className="text-xs text-gray-500 mb-2">
-                            {formatDate(blog.createdAt)}
-                          </p>
-                          {blog.niche && (
-                            <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                              {getNicheName(blog.niche)}
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {blog.niche && (
+                              <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                                {getNicheName(blog.niche)}
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-500">
+                              {formatDate(blog.createdAt)}
                             </span>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </Link>

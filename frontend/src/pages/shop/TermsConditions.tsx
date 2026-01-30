@@ -63,7 +63,7 @@ export default function TermsConditions() {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-white min-h-screen flex flex-col" data-toc-sticky-page>
       <style>{`
         /* Force text-align from inline styles - override any other rules */
         .content-area p[style*="text-align"],
@@ -129,9 +129,9 @@ export default function TermsConditions() {
         <section className={`w-full ${spacing.section.gap}`}>
           <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <div className={spacing.container.paddingXLarge}>
-              <div className="flex flex-col lg:flex-row gap-8">
-                {/* Table of Contents - Left Sidebar */}
-                <div className="lg:w-64 flex-shrink-0">
+              <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+                {/* Table of Contents - Left Sidebar (sticky, sath sath dikhe) */}
+                <div className="lg:w-64 lg:shrink-0 lg:self-start">
                   <TableOfContents htmlContent={content.description} contentRef={contentRef} />
                 </div>
 

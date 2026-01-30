@@ -28,6 +28,61 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
   const [tocItems, setTocItems] = useState<TOCItem[]>([]);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string>("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [fixedStyle, setFixedStyle] = useState<{ top: number; left: number; width: number }>({
+    top: 96,
+    left: 24,
+    width: 256,
+  });
+
+  const NAV_TOP = 96; // navbar ke neeche – TOC isse upar nahi jayega
+
+  // Position TOC fixed – main content (right column) ke neeche na jaye, footer overlap na ho
+  const updatePosition = () => {
+    if (!wrapperRef.current) return;
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const spacer = wrapperRef.current.querySelector("[data-toc-fixed-inner]") as HTMLElement;
+    const tocHeight = spacer ? spacer.offsetHeight + 24 : 400;
+
+    // Main content column (right side – Contact Us etc) ka bottom – TOC isse neeche na jaye
+    const contentColumn = wrapperRef.current.parentElement?.nextElementSibling as HTMLElement | null;
+    const contentBottom = contentColumn
+      ? contentColumn.getBoundingClientRect().bottom
+      : window.innerHeight;
+
+    let top = Math.max(NAV_TOP, rect.top);
+    if (top + tocHeight > contentBottom) {
+      top = Math.max(NAV_TOP, contentBottom - tocHeight);
+    }
+
+    setFixedStyle({
+      top,
+      left: rect.left,
+      width: rect.width,
+    });
+  };
+
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+    const timer = setTimeout(updatePosition, 200);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, { passive: true });
+    const ro = wrapperRef.current && new ResizeObserver(updatePosition);
+    if (ro && wrapperRef.current) ro.observe(wrapperRef.current);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition);
+      ro?.disconnect();
+    };
+  }, [tocItems.length]);
+
+  // Spacer ki height se sidebar column ka height reserve karo
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    const spacer = wrapperRef.current.querySelector("[data-toc-fixed-inner]") as HTMLElement;
+    if (spacer) wrapperRef.current.style.minHeight = `${spacer.offsetHeight + 24}px`;
+  }, [tocItems.length]);
 
   // Parse HTML and extract headings
   useEffect(() => {
@@ -130,30 +185,35 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     return () => clearTimeout(timer);
   }, [htmlContent, contentRef]);
 
-  // Track active section while scrolling
+  // Heading ke sath align: scroll par jo heading view me hai wahi TOC me highlight ho
   useEffect(() => {
-    if (!contentRef?.current) return;
+    if (!contentRef?.current || tocItems.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      {
-        rootMargin: "-20% 0px -70% 0px",
-        threshold: 0,
+    const NAV_OFFSET = 120; // navbar ke neeche ka zone jahan heading "active" mana jaye
+
+    const updateActiveHeading = () => {
+      const headings = contentRef.current!.querySelectorAll("h1, h2, h3, h4");
+      if (headings.length === 0) return;
+
+      let active: string | null = null;
+      headings.forEach((el) => {
+        const id = el.id;
+        if (!id) return;
+        const top = el.getBoundingClientRect().top;
+        // Jo heading NAV_OFFSET ke andar ya thoda neeche hai, usko active maano
+        if (top <= NAV_OFFSET + 80) active = id;
+      });
+      // Agar koi bhi zone me nahi, pehla visible heading active
+      if (!active && headings.length > 0) {
+        const first = headings[0];
+        if (first.getBoundingClientRect().top < window.innerHeight) active = first.id;
       }
-    );
-
-    const headings = contentRef.current.querySelectorAll("h1, h2, h3, h4");
-    headings.forEach((heading) => observer.observe(heading));
-
-    return () => {
-      headings.forEach((heading) => observer.unobserve(heading));
+      if (active) setActiveId(active);
     };
+
+    updateActiveHeading();
+    window.addEventListener("scroll", updateActiveHeading, { passive: true });
+    return () => window.removeEventListener("scroll", updateActiveHeading);
   }, [tocItems, contentRef]);
 
   // Toggle expand/collapse
@@ -236,7 +296,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
           }}
         >
           {hasChildren && (
-            <span className="flex-shrink-0">
+            <span className="shrink-0">
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
@@ -260,13 +320,41 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ htmlContent, c
     return null;
   }
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 lg:sticky lg:top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+  const tocContent = (
+    <>
       <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
         Table of Contents
       </h3>
       <div className="space-y-1">
         {tocItems.map((item) => renderTOCItem(item))}
+      </div>
+    </>
+  );
+
+  return (
+    <div ref={wrapperRef} className="w-full">
+      {/* Spacer so sidebar column height na gire */}
+      <div
+        data-toc-fixed-inner
+        className="bg-white border border-gray-200 rounded-lg p-4 opacity-0 pointer-events-none"
+        aria-hidden
+      >
+        {tocContent}
+      </div>
+      {/* Fixed TOC – scroll ke sath sath viewport me dikhe */}
+      <div
+        data-toc-scroll-with-content
+        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm z-30"
+        style={{
+          position: "fixed",
+          top: fixedStyle.top,
+          left: fixedStyle.left,
+          width: fixedStyle.width,
+          maxHeight: "calc(100vh - 6rem)",
+          overflowY: "auto",
+        }}
+      >
+        {tocContent}
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../ui/buttons/Button";
 import { AppSidebar } from "../app-sidebar";
 import { useTheme } from "@/lib/ThemeProvider";
 import { useCart } from "../products/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Menu, ShoppingCart, LogOut, User } from "lucide-react";
 import { getCompany } from "@/api/company.api";
 import { getMe } from "@/api/auth.api";
@@ -16,11 +17,14 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const { totalItems } = useCart();
+  const { user: authUser, loading: authLoading, logout: authLogout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
   const [company, setCompany] = useState<{ logo: string; company: string }>({ logo: "", company: "" });
-  const [user, setUser] = useState<any | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+
+  // Use auth context user so we don't flash "Sign In" on page change when user is logged in
+  const user = authUser;
 
   useEffect(() => {
     const loadCompany = async () => {
@@ -61,102 +65,41 @@ export default function Navbar() {
     loadCompany();
   }, []);
 
-  // Load user data with avatar from API
-  useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        // Fallback to localStorage user if no token
-        try {
-          const storedUser = localStorage.getItem("user");
-          if (storedUser && storedUser !== "undefined") {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-          }
-        } catch (err) {
-          console.warn("Failed to parse user from localStorage", err);
-        }
-        return;
-      }
+  // Process avatar URL from user (auth context or getMe response) for production
+  const processAvatarUrl = (avatar: string | undefined) => {
+    if (!avatar) return undefined;
+    const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
+    const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+    const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
+    const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace("/api", "") : "";
+    if (avatar.includes("localhost") || avatar.includes("127.0.0.1")) {
+      const urlPath = avatar.replace(/^https?:\/\/[^/]+/, "");
+      return `${apiBaseWithoutApi}${urlPath.startsWith("/") ? urlPath : "/" + urlPath}`;
+    }
+    if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+    return `${apiBaseWithoutApi}${avatar.startsWith("/") ? avatar : "/" + avatar}`;
+  };
 
-      try {
-        const userData = await getMe(token);
-        if (userData?.user) {
-          // Handle avatar URL - same logic as AdminLayout
-          const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
-          const isLocalhost = typeof window !== 'undefined' && (
-            window.location.hostname === "localhost" || 
-            window.location.hostname === "127.0.0.1"
-          );
-          const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
-          const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
-          
-          let processedAvatarUrl = userData.user.avatar;
-          if (processedAvatarUrl) {
-            // If it's a localhost URL (from development), replace with production API URL
-            if (processedAvatarUrl.includes('localhost') || processedAvatarUrl.includes('127.0.0.1')) {
-              const urlPath = processedAvatarUrl.replace(/^https?:\/\/[^\/]+/, '');
-              processedAvatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
-            } else if (processedAvatarUrl.startsWith('http://') || processedAvatarUrl.startsWith('https://')) {
-              // Already a full URL (Cloudinary or production) - use directly
-              processedAvatarUrl = processedAvatarUrl;
-            } else {
-              // Relative path - construct full URL
-              processedAvatarUrl = `${apiBaseWithoutApi}${processedAvatarUrl.startsWith('/') ? processedAvatarUrl : '/' + processedAvatarUrl}`;
-            }
-          }
-          
-          console.log("Navbar - Avatar URL processing:", {
-            original: userData.user.avatar,
-            final: processedAvatarUrl,
-            apiBase: API_BASE_URL,
-            apiBaseWithoutApi
-          });
-          
-          setAvatarUrl(processedAvatarUrl);
-          setUser({
-            ...userData.user,
-            avatar: processedAvatarUrl
-          });
+  // Initial avatar from auth user (so profile shows immediately on navigation)
+  const initialAvatarUrl = useMemo(() => processAvatarUrl(user?.avatar), [user?.avatar]);
+
+  // When user is logged in, optionally fetch fresh avatar from API (runs in background)
+  useEffect(() => {
+    if (!user) {
+      setAvatarUrl(undefined);
+      return;
+    }
+    setAvatarUrl(initialAvatarUrl ?? undefined);
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    getMe(token)
+      .then((userData) => {
+        if (userData?.user?.avatar) {
+          setAvatarUrl(processAvatarUrl(userData.user.avatar) ?? undefined);
         }
-      } catch (err) {
-        console.warn("Failed to load user from API, using localStorage:", err);
-        // Fallback to localStorage
-        try {
-          const storedUser = localStorage.getItem("user");
-          if (storedUser && storedUser !== "undefined") {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            // Try to process avatar from localStorage too
-            const urls = (import.meta.env.VITE_API_URLS || "").split(",").map((url: string) => url.trim()).filter(Boolean);
-            const isLocalhost = typeof window !== 'undefined' && (
-              window.location.hostname === "localhost" || 
-              window.location.hostname === "127.0.0.1"
-            );
-            const API_BASE_URL = isLocalhost ? urls[0] : (urls[1] || urls[0] || import.meta.env.VITE_API_URL || "");
-            const apiBaseWithoutApi = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
-            
-            let localAvatarUrl = parsedUser?.avatar || parsedUser?.profile?.avatar;
-            if (localAvatarUrl) {
-              if (localAvatarUrl.includes('localhost') || localAvatarUrl.includes('127.0.0.1')) {
-                const urlPath = localAvatarUrl.replace(/^https?:\/\/[^\/]+/, '');
-                localAvatarUrl = `${apiBaseWithoutApi}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
-              } else if (localAvatarUrl.startsWith('http://') || localAvatarUrl.startsWith('https://')) {
-                localAvatarUrl = localAvatarUrl;
-              } else {
-                localAvatarUrl = `${apiBaseWithoutApi}${localAvatarUrl.startsWith('/') ? localAvatarUrl : '/' + localAvatarUrl}`;
-              }
-              setAvatarUrl(localAvatarUrl);
-            }
-          }
-        } catch (parseErr) {
-          console.warn("Failed to parse user from localStorage", parseErr);
-        }
-      }
-    };
-    
-    loadUser();
-  }, []);
+      })
+      .catch(() => {});
+  }, [user, initialAvatarUrl]);
 
   const linkClasses = (path: string) => {
   const base = "text-sm transition-colors";
@@ -260,7 +203,9 @@ export default function Navbar() {
             </Button>
           </div> */}
           <div className="hidden md:block">
-  {!user ? (
+  {authLoading ? (
+    <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" aria-hidden />
+  ) : !user ? (
     <Button
       className="border text-white"
       style={{
@@ -348,8 +293,7 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => {
-                      localStorage.removeItem("user");
-                      localStorage.removeItem("token");
+                      authLogout();
                       setDropdownOpen(false);
                       navigate("/login");
                     }}

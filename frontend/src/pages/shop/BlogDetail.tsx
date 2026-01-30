@@ -272,8 +272,13 @@ export default function BlogDetail() {
   const nicheName = getNicheName(blog.niche);
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-white min-h-screen flex flex-col" data-toc-sticky-page>
       <style>{`
+        /* Sidebar wrapper only (not TOC – TOC stays sticky) */
+        [data-blog-sidebar-scroll] {
+          position: static !important;
+          top: auto !important;
+        }
         .content-area p[style*="text-align"],
         .content-area div[style*="text-align"],
         .content-area h1[style*="text-align"],
@@ -463,9 +468,9 @@ export default function BlogDetail() {
             )} */}
                 </div>
 
-                {/* Right Sidebar - Fixed on large screens */}
-                <div className="hidden lg:block lg:w-64 lg:shrink-0" style={{ marginTop: 0, paddingTop: 0, alignSelf: 'flex-start' }}>
-                  <div className="lg:sticky lg:top-14 space-y-4" style={{ marginTop: 0, paddingTop: 0 }}>
+                {/* Right Sidebar – scrolls with blog content (not sticky) */}
+                <div data-blog-sidebar-scroll className="scroll-with-content-sidebar hidden lg:block lg:w-64 lg:shrink-0" style={{ marginTop: 0, paddingTop: 0 }}>
+                  <div data-blog-sidebar-scroll className="scroll-with-content-sidebar space-y-4" style={{ marginTop: 0, paddingTop: 0 }}>
                     {/* Table of Contents */}
                     {blog.description && (
                       <TableOfContents htmlContent={blog.description} contentRef={contentRef} />
