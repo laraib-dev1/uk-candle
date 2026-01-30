@@ -588,45 +588,6 @@ button:not([disabled]):not([style*="cursor: not-allowed"]):not([style*="cursor:d
   animation: fadeInSlide 0.3s ease-out;
 }
 
-/* Sheet/Drawer smooth slide animation from right to left - Like shadcn/ui sidebar */
-/* CRITICAL: Disable Radix UI default animations and force our custom slide */
-[data-radix-dialog-content][data-side="right"],
-.sheet-drawer[data-side="right"],
-[role="dialog"][data-side="right"],
-div[data-side="right"][role="dialog"] {
-  /* Disable Radix default animations */
-  animation: none !important;
-  /* Force our custom slide animation */
-  transform: translateX(100%) !important;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: transform !important;
-}
-
-/* When open - slide in smoothly from right to left */
-[data-radix-dialog-content][data-side="right"][data-state="open"],
-.sheet-drawer[data-side="right"][data-state="open"],
-[role="dialog"][data-side="right"][data-state="open"],
-div[data-side="right"][role="dialog"][data-state="open"] {
-  animation: none !important;
-  transform: translateX(0) !important;
-}
-
-/* When closed - slide out to right */
-[data-radix-dialog-content][data-side="right"][data-state="closed"],
-.sheet-drawer[data-side="right"][data-state="closed"],
-[role="dialog"][data-side="right"][data-state="closed"],
-div[data-side="right"][role="dialog"][data-state="closed"] {
-  animation: none !important;
-  transform: translateX(100%) !important;
-}
-
-/* Initial/mounting state - always start completely off-screen */
-[data-radix-dialog-content][data-side="right"]:not([data-state="open"]),
-.sheet-drawer[data-side="right"]:not([data-state="open"]) {
-  animation: none !important;
-  transform: translateX(100%) !important;
-}
-
 /* Blog detail: root + main overflow visible taake right sidebar sticky kaam kare (last so wins) */
 div.bg-white[data-toc-sticky-page],
 div.bg-white[data-toc-sticky-page] main {

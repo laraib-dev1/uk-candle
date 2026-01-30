@@ -18,7 +18,7 @@ export default function PasswordInput({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-white/80 text-sm">{label}</label>
+      <label className="text-gray-800 text-sm font-medium">{label}</label>
 
       <div className="relative">
        <input

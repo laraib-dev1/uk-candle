@@ -58,9 +58,9 @@ export default function ResetPassword() {
           Send Reset Link
         </Button>
 
-        <p className="text-sm text-gray-700 mt-1">
+        <p className="text-sm text-white mt-1">
           Back to login?{" "}
-          <Link to="/login" className="text-[var(--theme-primary,#A8734B)] underline">
+          <Link to="/login" className="text-white font-medium underline underline-offset-2 hover:opacity-90">
             Login
           </Link>
         </p>

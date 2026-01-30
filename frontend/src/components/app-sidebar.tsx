@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, ShoppingBag, BookOpen, User, LogOut } from "lucide-react";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Home, ShoppingBag, BookOpen, User, LogOut, X } from "lucide-react";
 import Button from "./ui/buttons/Button";
 import { useNavigate } from "react-router-dom";
 
@@ -12,46 +12,81 @@ interface AppSidebarProps {
   navLoading?: boolean;
 }
 
-export function AppSidebar({ 
-  open, 
-  onOpenChange, 
-  user, 
+export function AppSidebar({
+  open,
+  onOpenChange,
+  user,
   company,
-  navLoading 
+  navLoading,
 }: AppSidebarProps) {
   const navigate = useNavigate();
+  const [slideIn, setSlideIn] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Open: start off-screen (right), then next frame slide in
+  useEffect(() => {
+    if (open) {
+      setSlideIn(false);
+      setIsClosing(false);
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setSlideIn(true));
+      });
+      return () => cancelAnimationFrame(id);
+    } else {
+      setSlideIn(false);
+    }
+  }, [open]);
+
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onOpenChange?.(false);
+      setIsClosing(false);
+    }, 400);
+  };
 
   const menuItems = [
-    {
-      title: "Home",
-      url: "/",
-      icon: Home,
-    },
-    {
-      title: "Shop",
-      url: "/shop",
-      icon: ShoppingBag,
-    },
-    {
-      title: "Blogs",
-      url: "/blogs",
-      icon: BookOpen,
-    },
-    {
-      title: "About Us",
-      url: "/about-us",
-      icon: User,
-    },
+    { title: "Home", url: "/", icon: Home },
+    { title: "Shop", url: "/shop", icon: ShoppingBag },
+    { title: "Blogs", url: "/blogs", icon: BookOpen },
+    { title: "About Us", url: "/about-us", icon: User },
   ];
 
+  if (!open && !isClosing) return null;
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="fixed top-0 right-0 h-full w-64 bg-white text-black p-6 shadow-lg flex flex-col z-50"
+    <>
+      {/* Overlay - right se panel ke saath dim background */}
+      <div
+        role="presentation"
+        aria-hidden
+        className="fixed inset-0 z-50 bg-black/50 transition-opacity duration-300"
+        style={{
+          opacity: open || isClosing ? 1 : 0,
+          pointerEvents: open && !isClosing ? "auto" : "none",
+        }}
+        onClick={handleClose}
+      />
+      {/* Panel - hamesha right edge se, transform se slide */}
+      <div
+        role="dialog"
+        aria-label="Navigation menu"
+        className="fixed top-0 right-0 z-50 h-full w-64 max-w-[85vw] bg-white text-black shadow-xl flex flex-col p-6"
+        style={{
+          transform: slideIn && !isClosing ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
+        }}
       >
-        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-        <nav className="flex flex-col gap-4 mt-4">
+        <button
+          type="button"
+          onClick={handleClose}
+          className="absolute right-4 top-4 rounded p-1 hover:bg-gray-100"
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <nav className="flex flex-col gap-4 mt-8">
           {menuItems.map((item) => (
             <Link
               key={item.title}
@@ -64,8 +99,6 @@ export function AppSidebar({
             </Link>
           ))}
         </nav>
-
-        {/* User Profile Section */}
         {user ? (
           <div className="mt-auto flex flex-col gap-2">
             <Button
@@ -102,8 +135,6 @@ export function AppSidebar({
             Sign In
           </Button>
         )}
-
-        {/* Mini Footer */}
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="text-xs text-gray-500 text-center">
             <p className="font-semibold mb-1" style={{ color: "var(--theme-primary)" }}>
@@ -112,7 +143,7 @@ export function AppSidebar({
             <p>© {new Date().getFullYear()} All rights reserved</p>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>
   );
 }

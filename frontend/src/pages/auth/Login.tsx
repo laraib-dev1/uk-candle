@@ -98,9 +98,9 @@ export default function Login() {
           Login
         </Button>
 
-        <p className="text-sm text-gray-700 mt-1">
+        <p className="text-sm text-white mt-1">
           Don’t have an account?{" "}
-          <Link to="/access" className="text-[var(--theme-primary,#A8734B)] underline">
+          <Link to="/access" className="text-white font-medium underline underline-offset-2 hover:opacity-90">
             Sign up
           </Link>
         </p>
