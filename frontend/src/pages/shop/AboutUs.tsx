@@ -10,15 +10,15 @@ export default function AboutUs() {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
-      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
+      <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1 w-full max-w-full overflow-x-hidden min-w-0`}>
         {/* Hero/Introduction Section */}
         <AboutHero />
 
         {/* How We Work Section */}
         <HowWeWork />
 
-        {/* Team Section */}
-        <TeamSection />
+        {/* Team Section - commented out */}
+        {/* <TeamSection /> */}
       </main>
       <section className={`w-full ${spacing.footer.gapTop}`} style={{ marginBottom: 0, paddingBottom: 0 }}>
         <Footer />
