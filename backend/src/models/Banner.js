@@ -19,10 +19,10 @@ const BannerSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // URL of the banner image (usually a Cloudinary URL)
+    // URL of the banner image (usually a Cloudinary URL). Empty string = no image (cleared by admin).
     imageUrl: {
       type: String,
-      required: true,
+      default: "",
     },
 
     // Optional URL where the banner should point when clicked

@@ -70,7 +70,8 @@ export default function AssetsPage() {
   // Banners state
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerLoading, setBannerLoading] = useState(false);
-  const [bannerFormData, setBannerFormData] = useState<Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }>>({
+  type BannerFormSlot = { targetUrl: string; imageFile: File | null; imagePreview: string | null; imageRemoved?: boolean };
+  const [bannerFormData, setBannerFormData] = useState<Record<BannerSlot, BannerFormSlot>>({
     "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
     "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
@@ -138,6 +139,7 @@ export default function AssetsPage() {
             targetUrl: banner.targetUrl || "",
             imageFile: null,
             imagePreview: banner.imageUrl,
+            imageRemoved: false,
           };
         }
       });
@@ -204,6 +206,7 @@ export default function AssetsPage() {
         targetUrl: banner?.targetUrl || "",
         imageFile: null,
         imagePreview: banner?.imageUrl || null,
+        imageRemoved: false,
       },
     });
     setBannerOriginalData({
@@ -227,9 +230,12 @@ export default function AssetsPage() {
 
   const saveBanner = async (slot: BannerSlot) => {
     try {
+      const formSlot = bannerFormData[slot];
+      const clearImage = !!(formSlot.imageRemoved && !formSlot.imageFile);
       await updateBanner(slot, {
-        targetUrl: bannerFormData[slot].targetUrl,
-        file: bannerFormData[slot].imageFile,
+        targetUrl: formSlot.targetUrl,
+        file: formSlot.imageFile,
+        clearImage,
       });
       success("Banner updated successfully!");
       setEditingBannerSlot(null);
@@ -238,6 +244,7 @@ export default function AssetsPage() {
         [slot]: {
           ...bannerFormData[slot],
           imageFile: null,
+          imageRemoved: false,
         },
       });
       loadBanners();
@@ -389,8 +396,9 @@ export default function AssetsPage() {
     setEditingFAQIndex(index);
   };
 
+  // Recommended banner image sizes: Hero & Shop full-bleed → 1920×600px (or similar wide aspect).
   const bannerSlots: { slot: BannerSlot; label: string }[] = [
-    { slot: "hero-main", label: "Hero Main" },
+    { slot: "hero-main", label: "Hero Main (Landing top)" },
     { slot: "hero-secondary", label: "Hero Secondary" },
     { slot: "hero-tertiary", label: "Hero Tertiary" },
     { slot: "hero-last", label: "Hero Last (Above Feedback)" },
@@ -504,19 +512,21 @@ export default function AssetsPage() {
                               className="w-full h-64 object-cover rounded border"
                             />
                             <button
+                              type="button"
                               onClick={() => {
                                 setBannerFormData({
                                   ...bannerFormData,
                                   [slot]: {
                                     ...formData,
-                                    imagePreview: banner?.imageUrl || null,
+                                    imagePreview: null,
                                     imageFile: null,
+                                    imageRemoved: true,
                                   },
                                 });
                               }}
-                              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded"
+                              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm"
                             >
-                              Remove
+                              Remove image
                             </button>
                           </div>
                         ) : (

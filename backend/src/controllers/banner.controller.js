@@ -74,7 +74,8 @@ export const upsertBannerBySlot = async (req) => {
   await connectDB();
 
   const { slot } = req.params; // e.g. "hero-main"
-  const { targetUrl = "" } = req.body;
+  const targetUrl = req.body.targetUrl != null ? req.body.targetUrl : "";
+  const clearImage = req.body.clearImage === "true" || req.body.clearImage === true;
   const file = req.file;
 
   if (!slot) {
@@ -83,27 +84,26 @@ export const upsertBannerBySlot = async (req) => {
 
   let imageUrl = undefined;
 
+  // If admin requested to remove the image, clear it
+  if (clearImage) {
+    imageUrl = "";
+  }
   // If a new file is provided, upload it
-  if (file) {
+  else if (file) {
     imageUrl = await uploadBannerImage(file);
   }
 
-  // If there is no uploaded image and we are creating for the first time,
-  // we keep the old image (if any). If banner does not exist and imageUrl
-  // is still empty, we throw an error.
   const existing = await Banner.findOne({ slot });
 
-  if (!existing && !imageUrl) {
+  // Creating for the first time requires an image (unless clearImage)
+  if (!existing && !imageUrl && !clearImage) {
     throw new Error("Banner image is required for a new banner");
   }
 
-  const update = {
-    targetUrl,
-  };
+  const update = { targetUrl };
 
-  if (imageUrl) {
-    // Optionally remove old local file if it was stored under /uploads
-    if (existing?.imageUrl) {
+  if (imageUrl !== undefined) {
+    if (existing?.imageUrl && imageUrl !== "" && existing.imageUrl.includes("/uploads/")) {
       tryRemoveBannerFromUrl(existing.imageUrl);
     }
     update.imageUrl = imageUrl;
