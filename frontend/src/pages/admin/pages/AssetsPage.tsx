@@ -126,7 +126,7 @@ export default function AssetsPage() {
       const data = await getBanners();
       setBanners(data);
       // Initialize form data with existing banners
-      const initialData: Record<BannerSlot, { targetUrl: string; imageFile: File | null; imagePreview: string | null }> = {
+      const initialData: Record<BannerSlot, BannerFormSlot> = {
         "hero-main": { targetUrl: "", imageFile: null, imagePreview: null },
         "hero-secondary": { targetUrl: "", imageFile: null, imagePreview: null },
         "hero-tertiary": { targetUrl: "", imageFile: null, imagePreview: null },
