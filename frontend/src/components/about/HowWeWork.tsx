@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Lightbulb, Settings, Rocket } from "lucide-react";
+import { Search, Lightbulb, Settings, ClipboardCheck, Rocket } from "lucide-react";
 
 interface ProcessStep {
   icon: React.ComponentType<{ className?: string }>;
@@ -23,23 +23,28 @@ const HowWeWork: React.FC<HowWeWorkProps> = ({
   steps = [
     {
       icon: Search,
-      title: "Research & Planning",
-      description: "We start by understanding your needs and conducting thorough research to create a solid foundation for your project.",
+      title: "Research & Inspiration",
+      description: "We study fragrance trends, natural ingredients, and sustainable materials to design thoughtful collections.",
     },
     {
       icon: Lightbulb,
-      title: "Creative Solutions",
-      description: "Our team brainstorms innovative ideas and develops creative solutions tailored to your unique requirements.",
+      title: "Formulation & Testing",
+      description: "Each scent blend is tested for performance, safety, and longevity.",
     },
     {
       icon: Settings,
-      title: "Development",
-      description: "We bring your vision to life with meticulous attention to detail and cutting-edge technology.",
+      title: "Small Batch Production",
+      description: "Products are handcrafted in limited batches to maintain premium quality.",
+    },
+    {
+      icon: ClipboardCheck,
+      title: "Quality Inspection",
+      description: "Every item is carefully inspected for finish, scent throw, and packaging.",
     },
     {
       icon: Rocket,
-      title: "Launch & Support",
-      description: "We ensure a smooth launch and provide ongoing support to help you achieve long-term success.",
+      title: "Eco Packaging & Delivery",
+      description: "Orders are packed in recyclable materials and shipped responsibly across the UK.",
     },
   ],
   showNumbering = true,
@@ -47,7 +52,7 @@ const HowWeWork: React.FC<HowWeWorkProps> = ({
 }) => {
   return (
     <section className={`pt-10 pb-10 md:pt-14 md:pb-14 bg-gray-50 w-full max-w-full overflow-x-hidden overflow-y-visible box-border`}>
-      <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Header - inner gap before heading */}
         <div className="text-center pt-4 md:pt-6 mb-5 md:mb-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -68,7 +73,7 @@ const HowWeWork: React.FC<HowWeWorkProps> = ({
             </>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 relative w-full max-w-full min-w-0 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-5 relative w-full max-w-full min-w-0 items-stretch">
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (

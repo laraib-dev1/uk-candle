@@ -4,27 +4,27 @@ import { spacing } from "@/utils/spacing";
 const services = [
   {
     img: "/icon 01.png",
-    text: "Free shipping from $50 and free return on all orders in Canada",
+    text: "Free UK shipping on orders over £50",
   },
   {
     img: "/icon 02.png",
-    text: "Free gift box & gift notes",
+    text: "Luxury gift packaging with personalized notes",
   },
   {
     img: "/icon 03.png",
-    text: "Fragrance test when you buy",
+    text: "Scent discovery samples with every order",
   },
   {
     img: "/icon 04.png",
-    text: "Two free samples with all orders",
+    text: "Two complimentary samples with purchases",
   },
   {
     img: "/icon 05.png",
-    text: "Free returns",
+    text: "Easy returns within 14 days",
   },
   {
     img: "/icon 06.png",
-    text: "Welcome gift",
+    text: "Welcome discount for new customers",
   },
 ];
 

@@ -14,11 +14,10 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
         {/* Text content */}
         <div className="max-w-3xl mx-auto">
           <h2 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>
-            An alchemy of gold and perfume
+            An Signature Blen of Craft and Scent
           </h2>
           <p className={`text-xs sm:text-sm md:text-base text-gray-600 ${spacing.inner.gapBottom}`}>
-            The Maison's iconic fragrance, adorned in gold to celebrate the
-            brilliance of the holidays.
+            Discover luxury handcrafted candles infused with premium fragrance oils and natural wax blends. Each piece is thoughtfully designed to elevate your home, events, and gifting moments.
           </p>
         </div>
 

@@ -9,8 +9,8 @@ interface AboutHeroProps {
 }
 
 const AboutHero: React.FC<AboutHeroProps> = ({
-  title = "Building Excellence Through Innovation and Integrity",
-  description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+  title = "Building Timeless Scents Through Craft and Care",
+  description = "Grace By Anu was founded from a passion for simple, natural living and the power of scent to create memories.\n\nInspired by countryside life in the UK, our products are handcrafted in small batches to ensure quality, freshness, and attention to detail.\n\nWe use eco-friendly soy wax, plant-based oils, and premium fragrance oils free from parabens, sulfates, and phthalates. Every piece is made with intention—never mass-produced.\n\nOur goal is to create candles and wellness products that bring comfort, calm, and meaningful ambience to homes, businesses, and special events.",
   stats = [
     { value: "15+", label: "YEARS OF EXCELLENCE" },
     { value: "500+", label: "SATISFIED CLIENTS" },
@@ -29,9 +29,7 @@ const AboutHero: React.FC<AboutHeroProps> = ({
             </h1>
             
             <div className="space-y-4 text-gray-700 text-sm sm:text-base">
-              <p>{description}</p>
-              <p>{description}</p>
-              <p>{description}</p>
+              <p className="whitespace-pre-line">{description}</p>
             </div>
 
             {/* Statistics */}

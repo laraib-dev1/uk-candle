@@ -38,7 +38,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
         {/* Heading and Handlers in one row */}
         <div className="flex justify-between items-center px-2">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide">
-            ALL GIFT IDEAS
+            Shop Our Collections
           </h2>
 
           {/* Handlers on the right */}

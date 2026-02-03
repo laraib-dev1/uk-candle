@@ -25,6 +25,7 @@ export default function Footer() {
   const navigate = useNavigate();
   const [companyData, setCompanyData] = useState({
     company: "VERES",
+    description: "" as string,
     copyright: "",
     socialPosts: [] as Array<{ image: string; url: string; order: number }>,
     socialLinks: {} as Record<string, string>,
@@ -60,6 +61,7 @@ export default function Footer() {
         if (cachedCompany) {
           setCompanyData({
             company: cachedCompany.company || "VERES",
+            description: cachedCompany.description || "",
             copyright: cachedCompany.copyright || "",
             socialPosts: (cachedCompany.socialPosts || [])
               .filter((post: any) => post && post.image && post.image.trim() !== "")
@@ -202,6 +204,7 @@ export default function Footer() {
         
         setCompanyData({
           company: company.company || "VERES",
+          description: company.description || "",
           copyright: company.copyright || "",
           socialPosts: finalValidPosts,
           socialLinks: company.socialLinks || {},
@@ -235,6 +238,7 @@ export default function Footer() {
         if (cachedCompany) {
           setCompanyData({
             company: cachedCompany.company || "VERES",
+            description: cachedCompany.description || "",
             copyright: cachedCompany.copyright || "",
             socialPosts: (cachedCompany.socialPosts || [])
               .filter((post: any) => post && post.image && post.image.trim() !== "")
@@ -280,6 +284,9 @@ export default function Footer() {
             {/* Logo */}
             <div className="flex flex-col space-y-4 lg:min-w-[160px]">
               <span className="text-white font-serif text-2xl lg:text-3xl font-semibold">{companyData.company}</span>
+              {companyData.description && (
+                <p className="text-gray-300 text-sm leading-relaxed max-w-xs">{companyData.description}</p>
+              )}
               {/* Social Icons - show under company name if enabled */}
               {footerData.showSocialIcons && companyData.socialLinks && (
                 <div className="flex gap-3 mt-2">

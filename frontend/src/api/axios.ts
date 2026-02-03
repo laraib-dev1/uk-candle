@@ -6,7 +6,7 @@ const isLocalhost =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1";
 
-const API_URL = isLocalhost ? urls[0] : urls[1];
+const API_URL = (isLocalhost ? urls[0] : urls[1]) || urls[0] || "http://localhost:5000/api";
 
 console.log("API Base URL:", API_URL); // debug
 

@@ -145,12 +145,12 @@ export default function () {
 
       <Navbar />
       <main className={`${spacing.navbar.offset} flex-1`}>
-        {/* HERO #1: top background hero – no navbar bottom gap on landing */}
-        <section>
+        {/* HERO #1: top background hero – bottom spacing from spacing.ts */}
+        <section className={spacing.section.gapBottom}>
           {bannersBySlot["hero-main"] ? (
             <Hero
-              title="Welcome to our store"
-              subtitle="Discover our latest collections."
+              title="Grace By Anu – Handcrafted Candles & Wellness Essentials"
+              subtitle="Crafted in small batches using natural, eco-conscious ingredients.Inspired by countryside living and memories captured in scent.Designed to bring calm, warmth, and elegance into your space."
               image={bannersBySlot["hero-main"].imageUrl}
               variant="full-background"
             />
@@ -275,8 +275,8 @@ export default function () {
          {/* HERO #2: middle Hero2 section, uses 'hero-secondary' banner - aligned with products */}
          <section className={`${spacing.section.gap}`}>
            <Hero2
-             title="Discover new scents"
-             subtitle="A selection of fragrances to brighten your mood."
+             title="Discover Scents That Tell a Story"
+             subtitle="From coastal breezes to warm countryside evenings, our fragrances are inspired by real-life moments and travels. Each candle is designed to evoke emotion and create a comforting atmosphere."
              image={bannersBySlot["hero-secondary"]?.imageUrl || "/hero.png"}
              imagePosition="right"
            />
@@ -288,8 +288,8 @@ export default function () {
         <section className={`w-full ${spacing.section.gap}`}>
           {bannersBySlot["hero-last"] ? (
             <Hero
-              title="Discover your natural glow"
-              subtitle="Pure essentials for body and mind."
+              title="Crafted With Purpose, Made With Heart"
+              subtitle="Every candle, soap, and engraved piece is handmade using plant-based oils, eco-friendly wax, and sustainably sourced materials. We believe in thoughtful ingredients, minimal additives, and responsible production."
               image={bannersBySlot["hero-last"].imageUrl}
               imagePosition="left"
             />

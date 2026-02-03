@@ -61,6 +61,7 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [shopBanner, setShopBanner] = useState<BannerType | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Products per page: 20 products = 4 rows (5 products per row on large screen)
@@ -98,6 +99,7 @@ const Shop = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const res: ApiProduct[] = await getProducts(); // API returns array
 
       // map API product to frontend Product type
@@ -125,8 +127,11 @@ const Shop = () => {
         // show all products
         setProducts(mapped);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Failed to load products:", err);
+      setFetchError(err?.message || "Failed to load products. Is the backend running?");
+      setProducts([]);
+      setAllProducts([]);
     } finally {
       setLoading(false);
       setInitialLoad(false);
@@ -261,6 +266,20 @@ const Shop = () => {
 
           {loading && !initialLoad ? (
             <ProductGridSkeleton count={PRODUCTS_PER_PAGE} />
+          ) : products.length === 0 ? (
+            <div className="py-12 text-center text-gray-500">
+              {fetchError ? (
+                <>
+                  <p className="text-lg text-red-600">Could not load products.</p>
+                  <p className="text-sm mt-1">{fetchError}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-lg">No products found.</p>
+                  <p className="text-sm mt-1">Try another category or check back later.</p>
+                </>
+              )}
+            </div>
           ) : (
             <>
               <ProductGrid items={displayedProducts} />

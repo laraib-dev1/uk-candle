@@ -89,7 +89,7 @@ const Hero2 = ({
                   e.currentTarget.style.backgroundColor = "var(--theme-primary)";
                   e.currentTarget.style.opacity = "1";
                 }}
-              >Shop More</Button>
+              >Explore Collection</Button>
             </div>
           </div>
 

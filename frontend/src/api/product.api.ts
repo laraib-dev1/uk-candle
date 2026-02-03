@@ -22,7 +22,9 @@ const mapImages = (p: any) => {
 
 export const getProducts = async () => {
   const res = await API.get("/products");
-  return res.data.data.map(mapImages);
+  const raw = res?.data?.data ?? res?.data;
+  const list = Array.isArray(raw) ? raw : [];
+  return list.map(mapImages);
 };
 
 export const getProduct = async (id: string) => {

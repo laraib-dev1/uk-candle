@@ -36,26 +36,18 @@ const startServer = async () => {
       "https://uk-candles.vercel.app",
       "http://localhost:3000",
       "http://localhost:5173",
+      "http://localhost:5174",
       "http://127.0.0.1:5173",
+      "http://127.0.0.1:5174",
       "http://127.0.0.1:3000",
     ];
-    
+
     const corsOptions = {
       origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
-        // In development or if origin is in allowed list, allow it
-        if (process.env.NODE_ENV !== "production" || allowedOrigins.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          // In production, be more strict but still allow common localhost patterns
-          if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-            callback(null, true);
-          } else {
-            callback(new Error("Not allowed by CORS"));
-          }
-        }
+        if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
+        if (origin.includes("localhost") || origin.includes("127.0.0.1")) return callback(null, true);
+        callback(new Error("Not allowed by CORS"));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
