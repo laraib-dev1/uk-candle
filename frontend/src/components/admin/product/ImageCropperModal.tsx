@@ -92,6 +92,8 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
       return "3:4";
     } else if (Math.abs(aspect - 16/9) < 0.01) {
       return "16:9";
+    } else if (Math.abs(aspect - 1920/600) < 0.01) {
+      return "1920×600";
     } else {
       return `${Math.round(aspect * 100) / 100}:1`;
     }

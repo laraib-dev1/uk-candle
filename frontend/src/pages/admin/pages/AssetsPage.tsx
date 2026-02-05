@@ -396,7 +396,16 @@ export default function AssetsPage() {
     setEditingFAQIndex(index);
   };
 
-  // Recommended banner image sizes: Hero & Shop full-bleed → 1920×600px (or similar wide aspect).
+  // Recommended banner image sizes per slot, matching how they appear on the site:
+  // - Full-width banners (hero-main, hero-tertiary, shop-main): 1920×600
+  // - Half-width side-image banners (hero-secondary, hero-last): ~4:3
+  const BANNER_CONFIG: Record<BannerSlot, { aspect: number; label: string }> = {
+    "hero-main": { aspect: 1920 / 600, label: "1920×600" },
+    "hero-secondary": { aspect: 4 / 3, label: "1200×900 (4:3)" },
+    "hero-tertiary": { aspect: 1920 / 600, label: "1920×600" },
+    "hero-last": { aspect: 4 / 3, label: "1200×900 (4:3)" },
+    "shop-main": { aspect: 1920 / 600, label: "1920×600" },
+  };
   const bannerSlots: { slot: BannerSlot; label: string }[] = [
     { slot: "hero-main", label: "Hero Main (Landing top)" },
     { slot: "hero-secondary", label: "Hero Secondary" },
@@ -446,6 +455,7 @@ export default function AssetsPage() {
               const isEditing = editingBannerSlot === slot;
               const formData = bannerFormData[slot];
               const imageUrl = formData.imagePreview || banner?.imageUrl;
+              const config = BANNER_CONFIG[slot];
 
               return (
                 <div key={slot} className="bg-white p-6 rounded-lg border border-gray-200 relative">
@@ -475,14 +485,16 @@ export default function AssetsPage() {
                               <img
                                 src={imageUrl}
                                 alt={label}
-                                className="w-full h-64 object-cover rounded border hover:opacity-90 transition-opacity"
+                                className="w-full object-cover rounded border hover:opacity-90 transition-opacity"
+                                style={{ aspectRatio: config.aspect }}
                               />
                             </a>
                           ) : (
                             <img
                               src={imageUrl}
                               alt={label}
-                              className="w-full h-64 object-cover rounded border"
+                              className="w-full object-cover rounded border"
+                              style={{ aspectRatio: config.aspect }}
                             />
                           )}
                         </div>
@@ -503,13 +515,19 @@ export default function AssetsPage() {
                   ) : (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Banner Image</label>
+                        <label className="block text-sm font-medium mb-2">
+                          Banner Image{" "}
+                          <span className="text-gray-500 font-normal">
+                            (recommended: {config.label}px)
+                          </span>
+                        </label>
                         {formData.imagePreview ? (
                           <div className="relative">
                             <img
                               src={formData.imagePreview}
                               alt="Preview"
-                              className="w-full h-64 object-cover rounded border"
+                              className="w-full object-cover rounded border"
+                              style={{ aspectRatio: config.aspect }}
                             />
                             <button
                               type="button"
@@ -1036,7 +1054,7 @@ export default function AssetsPage() {
             const croppedFile = new File([croppedBlob], currentImageFile.name, { type: croppedBlob.type });
             handleImageCrop(croppedFile);
           }}
-          aspect={16 / 9}
+          aspect={BANNER_CONFIG[currentBannerSlot].aspect}
         />
       )}
     </div>

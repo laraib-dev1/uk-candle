@@ -21,12 +21,13 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
           </p>
         </div>
 
-        {/* Image */}
-        <div className="w-full">
+        {/* Image – same aspect as admin hero-tertiary (1920×600) */}
+        <div className="w-full max-w-full mx-auto overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl">
           <img
             src={bannerImage}
             alt="Perfume collection"
-            className="w-full max-w-full h-[120px] sm:h-[160px] md:h-[250px] lg:h-[350px] xl:h-[450px] object-cover rounded-lg sm:rounded-xl md:rounded-2xl mx-auto"
+            className="w-full max-w-full object-cover"
+            style={{ aspectRatio: "1920 / 600", minHeight: "120px" }}
           />
         </div>
       </div>

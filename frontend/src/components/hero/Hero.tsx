@@ -23,12 +23,16 @@ const Hero = ({
 const handleShopMore = () => {
     navigate("/shop"); // <-- navigate to your shop page
   };
-  // FULL BACKGROUND VERSION – content aligned to the right
+  // FULL BACKGROUND VERSION – content aligned to the right. Aspect 1920×600 to match admin banner spec.
   if (variant === "full-background") {
     return (
       <section
-        className="relative bg-cover bg-center bg-no-repeat h-[150px] sm:h-[200px] md:h-[300px] lg:h-[400px] xl:h-[500px]"
-        style={{ backgroundImage: `url(${heroImage})` }}
+        className="relative bg-cover bg-center bg-no-repeat w-full"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          aspectRatio: "1920 / 600",
+          minHeight: "150px",
+        }}
       >
         <div className="bg-black/40 w-full h-full absolute inset-0" aria-hidden="true" />
 
