@@ -6,6 +6,7 @@ interface Product {
   id: string | number;
   name: string;
   price: number;
+  currency?: string;
   image?: string;
   discount?: number;
 }
@@ -26,6 +27,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ items, limit }) => {
           id={product.id}
           name={product.name}
           price={product.price}
+          currency={product.currency}
           image={product.image && product.image.trim() !== "" ? product.image : "/product.png"}
           offer={product.discount?.toString()}
         />

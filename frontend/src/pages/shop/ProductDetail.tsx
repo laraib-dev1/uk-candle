@@ -32,6 +32,7 @@ interface Product {
   _id: string;
   name: string;
   price: number;
+  currency?: string;
   discount?: number;
   description?: string;
   images?: string[];
@@ -324,7 +325,7 @@ export default function ProductDetail() {
     setMetaTag("og:type", "product");
     setMetaTag("og:site_name", companyName);
     setMetaTag("product:price:amount", product.price.toString());
-    setMetaTag("product:price:currency", "PKR");
+    setMetaTag("product:price:currency", product.currency || "PKR");
     
     // Set Twitter tags
     setMetaTag("twitter:card", "summary_large_image", false);
@@ -591,7 +592,7 @@ export default function ProductDetail() {
         <meta property="og:type" content="product" />
         <meta property="og:site_name" content={companyName} />
         <meta property="product:price:amount" content={product?.price?.toString() || ""} />
-        <meta property="product:price:currency" content="PKR" />
+        <meta property="product:price:currency" content={product?.currency || "PKR"} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={product?.name || ""} />
         <meta name="twitter:description" content={metaDescription} />
@@ -607,8 +608,7 @@ export default function ProductDetail() {
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Section 1: Product image + info */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-2 md:gap-3">
             {/* Image Gallery - Aligned left with space */}
             <div className="w-full flex justify-start -mr-2 md:-mr-3">
@@ -631,11 +631,11 @@ export default function ProductDetail() {
 
               <div className="flex gap-3 items-center flex-nowrap">
                 <span className="text-xl sm:text-2xl font-bold whitespace-nowrap text-gray-900">
-                  {discountedPrice} Rs
+                  {product.currency || "Rs"} {discountedPrice}
                 </span>
                 {product.discount && (
                   <span className="line-through text-gray-400 text-lg sm:text-xl whitespace-nowrap">
-                    {product.price} Rs
+                    {product.currency || "Rs"} {product.price}
                   </span>
                 )}
               </div>
@@ -666,14 +666,12 @@ export default function ProductDetail() {
               />
             </div>
               </div>
-            </div>
           </div>
         </section>
 
         {/* Section 2: Description / Meta Features & Meta Info */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
           <Tabs defaultValue="description">
             <TabsList 
               className="bg-gray-100 p-1 rounded-lg h-auto relative"
@@ -772,34 +770,34 @@ export default function ProductDetail() {
                   >
                     <iframe
                       className="w-full h-80 rounded-lg"
-                      src={product.video1?.replace(
-                        "watch?v=",
-                        "embed/"
-                      ) || ""}
+                      src={(() => {
+                        const url = (product.video1 || "").trim();
+                        if (!url) return "";
+                        const m1 = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+                        const id = m1?.[1];
+                        return id ? `https://www.youtube.com/embed/${id}` : url.replace("watch?v=", "embed/");
+                      })()}
                       allowFullScreen
+                      title="Demo video"
                     />
                   </div>
                 </TabsContent>
               );
             })()}
           </Tabs>
-            </div>
-          </div>
+        </div>
         </section>
 
         {/* Section 3: Feature Cards */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <FeatureCards />
-            </div>
           </div>
         </section>
 
         {/* Similar Products Section */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <h3 className="text-2xl font-bold theme-heading" style={{ color: "var(--theme-primary)" }}>
                 Similar Products
               </h3>
@@ -820,7 +818,8 @@ export default function ProductDetail() {
                       <ProductCard
                         id={p._id}
                         name={p.name}
-                        price={p.price}
+                        price={p.discount ? Math.round(p.price * (1 - p.discount / 100)) : p.price}
+                        currency={p.currency}
                         image={p.images?.[0] || "/product.png"}
                         offer={p.discount ? `${p.discount}% OFF` : undefined}
                       />
@@ -850,7 +849,6 @@ export default function ProductDetail() {
                   </button>
                 )}
               </div>
-            </div>
           </div>
         </section>
       </main>

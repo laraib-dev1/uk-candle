@@ -1,25 +1,26 @@
 import React from "react";
+import { spacing } from "@/utils/spacing";
 
 const features = [
   {
     img: "/feature 01.png",
     title: "100% Natural",
-    subtitle: "Made with plant-based oils and soy wax",
+    subtitle: "Made with plant-based oils",
   },
   {
     img: "/feature 02.png",
     title: "Skin Safe",
-    subtitle: "Gentle ingredients suitable for all skin types",
+    subtitle: "Gentle for all skin types",
   },
   {
     img: "/feature 03.png",
     title: "Eco Conscious",
-    subtitle: "Sustainable materials and recyclable packaging",
+    subtitle: "Recyclable packaging",
   },
     {
     img: "/feature 03.png",
     title: "Free Delivery",
-    subtitle: "Free UK delivery on orders over £50",
+    subtitle: "Free UK Delivery £50+",
   },
   {
     img: "/feature 04.png",
@@ -31,7 +32,7 @@ const features = [
 const FeatureSection = () => {
   return (
     <section className="py-0 bg-white text-black text-center">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 lg:gap-12 justify-items-center">
+      <div className={`max-w-8xl mx-auto ${spacing.container.paddingSectionAlign} grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 lg:gap-12 justify-items-center`}>
         {features.map((feature, i) => (
           <div
             key={i}

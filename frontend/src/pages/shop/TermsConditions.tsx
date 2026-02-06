@@ -107,31 +107,28 @@ export default function TermsConditions() {
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Title Section - Centered content area */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              {/* Title */}
-              <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
-                {content.title || "Terms & Conditions"}
-              </h1>
-              
-              {/* Subtitle – section inner gap between subinfo and line */}
-              <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
-                {content.subTitle || "Legal page related Sub Title"}
-              </p>
-              
-              {/* Horizontal Line */}
-              <div className="w-full border-t border-gray-300" style={{ marginTop: 0, marginBottom: 0 }}></div>
-            </div>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+              {content.title || "Terms & Conditions"}
+            </h1>
+            
+            {/* Subtitle – section inner gap between subinfo and line */}
+            <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
+              {content.subTitle || "Legal page related Sub Title"}
+            </p>
+            
+            {/* Horizontal Line */}
+            <div className="w-full border-t border-gray-300" style={{ marginTop: 0, marginBottom: 0 }}></div>
           </div>
         </section>
 
         {/* Content Section - Centered with TOC */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
-                {/* Table of Contents - Left Sidebar (sticky, sath sath dikhe) */}
-                <div className="lg:w-64 lg:shrink-0 lg:self-start">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+                {/* Table of Contents - Left Sidebar (hidden on small screens) */}
+                <div className="hidden lg:block lg:w-64 lg:shrink-0 lg:self-start">
                   <TableOfContents htmlContent={content.description} contentRef={contentRef} />
                 </div>
 
@@ -150,7 +147,6 @@ export default function TermsConditions() {
                   </div>
                 </div>
               </div>
-            </div>
           </div>
         </section>
       </main>

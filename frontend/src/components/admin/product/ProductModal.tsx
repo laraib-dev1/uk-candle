@@ -426,36 +426,36 @@ const handleSubmit = () => {
             {error.description && <p className="text-red-500 text-sm">{error.description}</p>}
           </div>
 
-          {/* % Off + Sale Rate simplified (left as inputs) */}
+          {/* % Off + Sale Rate (discounted price) */}
           <div className="border-t pt-3">
             <label className="flex items-center gap-2">
-             <input
-  type="checkbox"
-  checked={toggles.discount}
-  onChange={() => toggleSection("discount")}
-  disabled={isView}
-/>
-
+              <input
+                type="checkbox"
+                checked={toggles.discount}
+                onChange={() => toggleSection("discount")}
+                disabled={isView}
+              />
               <span className="text-sm font-medium text-gray-900">% Off</span>
             </label>
-             {toggles.discount && (
-            <div className="flex gap-3 mt-2">
-              <Input
-                type="number"
-                value={form.discount}
-                disabled={isView}
-                onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })}
-                className="flex-1"
-                placeholder="%"
-              />
-              <Input
-                value={form.metaInfo || ""}
-                disabled={isView}
-                onChange={(e) => setForm({ ...form, metaInfo: e.target.value })}
-                placeholder="Sale Rate"
-                className="w-48"
-              />
-            </div>
+            {toggles.discount && (
+              <div className="flex gap-3 mt-2">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={form.discount}
+                  disabled={isView}
+                  onChange={(e) => setForm({ ...form, discount: Number(e.target.value) || 0 })}
+                  className="flex-1"
+                  placeholder="%"
+                />
+                <Input
+                  readOnly
+                  value={form.discount ? Math.round(form.price * (1 - form.discount / 100)) : form.price}
+                  className="w-48 bg-gray-50"
+                  placeholder="Sale Rate"
+                />
+              </div>
             )}
           </div>
           {/* Images grid */}
@@ -647,27 +647,26 @@ const handleSubmit = () => {
   </div>
 
   {toggles.videos && (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Video 1 - required */}
-      <Input
-        placeholder="Video URL 1"
-        value={form.video1}
-        disabled={isView}
-        required={toggles.videos}
-        onChange={(e) =>
-          setForm({ ...form, video1: e.target.value })
-        }
-      />
-
-      {/* Video 2 - optional */}
-      <Input
-        placeholder="Video URL 2 (optional)"
-        value={form.video2}
-        disabled={isView}
-        onChange={(e) =>
-          setForm({ ...form, video2: e.target.value })
-        }
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+      <div>
+        <label className="text-sm text-gray-600 block mb-1">Demo Video (YouTube link)</label>
+        <Input
+          placeholder="Paste YouTube video link (e.g. https://youtube.com/watch?v=... or https://youtu.be/...)"
+          value={form.video1}
+          disabled={isView}
+          onChange={(e) => setForm({ ...form, video1: e.target.value })}
+        />
+        <p className="text-xs text-gray-500 mt-1">Shows in Product detail page under &quot;Demo Video&quot; tab.</p>
+      </div>
+      <div>
+        <label className="text-sm text-gray-600 block mb-1">Demo Video 2 (optional)</label>
+        <Input
+          placeholder="Paste second YouTube link (optional)"
+          value={form.video2}
+          disabled={isView}
+          onChange={(e) => setForm({ ...form, video2: e.target.value })}
+        />
+      </div>
     </div>
   )}
 </div>

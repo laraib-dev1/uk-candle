@@ -98,29 +98,26 @@ export default function FAQs() {
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Title Section - Centered content area */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              {/* Title */}
-              <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
-                Frequently Asked Questions
-              </h1>
-              
-              {/* Subtitle – section inner gap between subinfo and line */}
-              <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
-                Find answers to common questions
-              </p>
-              
-              {/* Horizontal Line */}
-              <div className="w-full border-t border-gray-300" style={{ marginTop: 0, marginBottom: 0 }}></div>
-            </div>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-bold theme-heading mb-4 text-center">
+              Frequently Asked Questions
+            </h1>
+            
+            {/* Subtitle – section inner gap between subinfo and line */}
+            <p className={`text-lg text-gray-600 text-center ${spacing.inner.gapBottom}`}>
+              Find answers to common questions
+            </p>
+            
+            {/* Horizontal Line */}
+            <div className="w-full border-t border-gray-300" style={{ marginTop: 0, marginBottom: 0 }}></div>
           </div>
         </section>
 
         {/* Content Section - Centered */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              {/* FAQs List */}
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            {/* FAQs List */}
               <div className="space-y-3">
                 {content.faqs && content.faqs.length > 0 ? (
                   content.faqs.map((faq, index) => (
@@ -167,7 +164,6 @@ export default function FAQs() {
                   Updated: {formatDate(content.lastUpdated)}
                 </div>
               )}
-            </div>
           </div>
         </section>
       </main>

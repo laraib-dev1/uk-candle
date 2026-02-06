@@ -239,9 +239,9 @@ export default function Blogs() {
     <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
-        {/* Header Section – same inner area as blog grid */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        {/* Header Section - mobile: paddingMobileContent, large: inner area */}
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <h1 className={`text-4xl md:text-5xl font-bold theme-heading text-center ${spacing.inner.gapBottom}`}>
               Blogs
             </h1>
@@ -339,8 +339,8 @@ export default function Blogs() {
         </section>
 
         {/* Blog Grid */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             {loading ? (
               <div className="text-center py-12">
                 <p className="text-gray-600">Loading blogs...</p>
@@ -409,15 +409,15 @@ export default function Blogs() {
         </section>
 
         {/* Feature Cards */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <FeatureCards />
           </div>
         </section>
 
         {/* Popular Products */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
             {products.length > 0 && (
               <div className="relative">
@@ -436,7 +436,8 @@ export default function Blogs() {
                       <ProductCard
                         id={p._id}
                         name={p.name}
-                        price={p.price}
+                        price={p.discount ? Math.round(p.price * (1 - p.discount / 100)) : p.price}
+                        currency={p.currency}
                         image={p.image1 || "/product.png"}
                         offer={p.discount ? `${p.discount}% OFF` : undefined}
                       />

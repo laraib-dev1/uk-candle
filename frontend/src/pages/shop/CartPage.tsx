@@ -150,22 +150,18 @@ const rightContent = (
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Purchase List Section */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
-              <TwoColumnLayout left={leftContent} right={rightContent} />
-              <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
-            </div>
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
+            <TwoColumnLayout left={leftContent} right={rightContent} />
+            <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
           </div>
         </section>
 
         {/* Shop Banner Section */}
         {shopBanner && (
           <section className={`w-full ${spacing.section.gap}`}>
-            <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-              <div className={spacing.container.paddingXLarge}>
-                <Banner imageSrc={shopBanner.imageUrl} />
-              </div>
+            <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+              <Banner imageSrc={shopBanner.imageUrl} />
             </div>
           </section>
         )}

@@ -10,6 +10,7 @@ type Props = {
   id: string | number;
   name: string;
   price: number | string;
+  currency?: string; // Shown before amount (e.g. "Rs"). From admin product currency.
   image?: string;
   offer?: string;
   isInWishlist?: boolean;
@@ -17,7 +18,7 @@ type Props = {
   showHeartAlways?: boolean; // Show heart icon always (for wishlist page)
 };
 
-export default function ProductCard({ id, name, price, image, offer, isInWishlist: initialIsInWishlist, onRemove, showHeartAlways = false }: Props) {
+export default function ProductCard({ id, name, price, currency = "Rs", image, offer, isInWishlist: initialIsInWishlist, onRemove, showHeartAlways = false }: Props) {
   const { user } = useAuth();
   const { success, error } = useToast();
   const [isInWishlist, setIsInWishlist] = useState(initialIsInWishlist || false);
@@ -138,25 +139,25 @@ export default function ProductCard({ id, name, price, image, offer, isInWishlis
         </div>
 
         {/* Content Section - Takes lower 1/3 of card */}
-        <div className="px-4 py-2 flex flex-col bg-white rounded-b-lg relative">
+        <div className="px-4 py-2 flex flex-col bg-white rounded-b-lg relative overflow-visible">
           {/* Item Name */}
           <h3 className="text-base font-medium text-gray-800 mb-1 line-clamp-2">{name}</h3>
           
           {/* Pricing Information with Discount Badge */}
-          <div className="flex items-baseline gap-2 justify-between">
-            <div className="flex items-baseline gap-2 flex-nowrap min-w-0">
+          <div className="flex items-baseline gap-2 justify-between gap-x-2 min-w-0">
+            <div className="flex items-baseline gap-1.5 flex-nowrap shrink-0">
               {discountPercent > 0 ? (
                 <>
-                  <span className="text-base font-semibold theme-text-primary whitespace-nowrap">
-                    Rs: {Math.round(discountedPrice)}
+                  <span className="text-base font-semibold theme-text-primary shrink-0">
+                    {currency} {Math.round(discountedPrice)}
                   </span>
-                  <span className="text-base text-gray-600 line-through whitespace-nowrap">
-                    {Math.round(originalPrice)}
+                  <span className="text-xs sm:text-sm text-gray-500 line-through shrink-0 whitespace-nowrap pr-0.5">
+                    {currency} {Math.round(originalPrice)}
                   </span>
                 </>
               ) : (
-                <span className="text-base font-semibold theme-text-primary whitespace-nowrap">
-                  Rs: {Math.round(numericPrice)}
+                <span className="text-base font-semibold theme-text-primary shrink-0">
+                  {currency} {Math.round(numericPrice)}
                 </span>
               )}
             </div>

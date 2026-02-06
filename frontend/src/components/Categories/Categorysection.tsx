@@ -34,11 +34,11 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
 
   return (
     <section className={`bg-white text-black ${spacing.section.gap}`}>
-      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className={`max-w-8xl mx-auto ${spacing.container.paddingSectionAlign}`}>
         {/* Heading and Handlers in one row */}
-        <div className="flex justify-between items-center px-2">
+        <div className="flex justify-between items-center">
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide">
-            Shop Our Collections
+            Our Collections
           </h2>
 
           {/* Handlers on the right */}
@@ -63,7 +63,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({ categories }) => {
         </div>
 
         {/* Categories Container - Centered and contained within margins */}
-        <div className={`w-full overflow-hidden px-2 justify-center ${spacing.inner.gapTop}`}>
+        <div className={`w-full overflow-hidden justify-center ${spacing.inner.gapTop}`}>
           <div
             ref={scrollContainerRef}
             className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto pb-2 sm:pb-3 md:pb-4 scrollbar-hide justify-start"

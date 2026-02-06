@@ -34,10 +34,17 @@ export const spacing = {
   },
 
   // Container padding (left and right padding)
+  // Areas: 1 = full (hero/landing), 2 = inner (products on large), 3 = content (e.g. privacy on large), 4 = mobile content (12px horizontal on small; content pages).
   container: {
+    // Section-aligned horizontal padding: 12px on small screens, same alignment across all landing sections (area 1/2)
+    paddingSectionAlign: "px-3 sm:px-4 md:px-6 lg:px-8",
+
+    // 4. Mobile content area: 24px horizontal on small screens; used on profile, contact, privacy, terms, faqs, cart, product detail, blog detail, about.
+    paddingMobileContent: "px-6 sm:px-4 md:px-6 lg:px-8",
+
     // Standard container padding
     padding: "px-4 sm:px-6 lg:px-8", // Responsive horizontal padding
-    
+
     // Alternative container paddings
     paddingSmall: "px-3 sm:px-4 md:px-6",      // Smaller padding
     paddingMedium: "px-4 sm:px-6 lg:px-8",      // Medium padding (default)

@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Lightbulb, Settings, ClipboardCheck, Rocket } from "lucide-react";
+import { spacing } from "@/utils/spacing";
 
 interface ProcessStep {
   icon: React.ComponentType<{ className?: string }>;
@@ -52,7 +53,7 @@ const HowWeWork: React.FC<HowWeWorkProps> = ({
 }) => {
   return (
     <section className={`pt-10 pb-10 md:pt-14 md:pb-14 bg-gray-50 w-full max-w-full overflow-x-hidden overflow-y-visible box-border`}>
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className={`max-w-[1400px] mx-auto ${spacing.container.paddingMobileContent}`}>
         {/* Header - inner gap before heading */}
         <div className="text-center pt-4 md:pt-6 mb-5 md:mb-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">

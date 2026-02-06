@@ -149,8 +149,8 @@ export default function () {
         <section className={spacing.section.gapBottom}>
           {bannersBySlot["hero-main"] ? (
             <Hero
-              title="Grace By Anu – Handcrafted Candles & Wellness Essentials"
-              subtitle="Crafted in small batches using natural, eco-conscious ingredients.Inspired by countryside living and memories captured in scent.Designed to bring calm, warmth, and elegance into your space."
+              title="Handcrafted Candles & Wellness Essentials"
+              subtitle="Crafted in small batches using natural, eco-conscious ingredients. Inspired by countryside to bring calm, warmth, and elegance into your space."
               image={bannersBySlot["hero-main"].imageUrl}
               variant="full-background"
             />
@@ -163,9 +163,8 @@ export default function () {
             />
           )}
         </section>
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          {/* <h2 className="text-center text-gray-500 uppercase tracking-wide text-sm">Featured</h2> */}
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={`w-full ${spacing.container.paddingSectionAlign}`}>
             {loading ? (
               <ProductGridSkeleton count={5} />
             ) : (
@@ -185,7 +184,8 @@ export default function () {
                       <ProductCard
                         id={p._id}
                         name={p.name}
-                        price={p.price}
+                        price={p.discount ? Math.round(p.price * (1 - p.discount / 100)) : p.price}
+                        currency={(p as any).currency}
                         image={[p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
                           (img) => img && img.trim() !== ""
                         ) || "/product.png"}
@@ -231,8 +231,8 @@ export default function () {
            <FeatureHero image={bannersBySlot["hero-tertiary"]?.imageUrl} />
         </section>
 
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={`w-full ${spacing.container.paddingSectionAlign}`}>
             {loading ? (
               <ProductGridSkeleton count={15} />
             ) : (
@@ -243,7 +243,11 @@ export default function () {
                     .map((p) => ({
                       id: p._id,
                       name: p.name,
-                      price: p.price,
+                      price: p.discount
+                        ? Math.round(p.price * (1 - p.discount / 100))
+                        : p.price,
+                      currency: (p as any).currency,
+                      discount: p.discount,
                       image: [
                         p.image1,
                         p.image2,
@@ -281,7 +285,7 @@ export default function () {
              imagePosition="right"
            />
          </section>
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
+        <section className={`max-w-8xl mx-auto ${spacing.container.paddingSectionAlign} ${spacing.section.gap}`}>
           <AtYourService />
         </section>
         {/* Banner at bottom of services section - Full width */}

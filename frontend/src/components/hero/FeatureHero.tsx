@@ -10,7 +10,7 @@ const FeatureHero: React.FC<FeatureHeroProps> = ({ image }) => {
   
   return (
     <section className={`bg-white text-black ${spacing.section.gap}`}>
-      <div className="max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 text-center">
+      <div className={`max-w-8xl mx-auto ${spacing.container.paddingSectionAlign} text-center`}>
         {/* Text content */}
         <div className="max-w-3xl mx-auto">
           <h2 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-gray-900 ${spacing.inner.gapBottom}`}>

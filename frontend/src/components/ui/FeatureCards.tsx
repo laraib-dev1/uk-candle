@@ -5,7 +5,7 @@ const features = [
   {
     icon: Flag,
     title: "Locally Owned",
-    description: "We have local business and sell best quality clothes",
+    description: "We sell best quality Candles",
   },
   {
     icon: RotateCcw,
@@ -20,7 +20,7 @@ const features = [
   {
     icon: Truck,
     title: "Fast Delivery",
-    description: "We provide fast delivery to our customers",
+    description: "Fast delivery to our customers",
   },
 ];
 

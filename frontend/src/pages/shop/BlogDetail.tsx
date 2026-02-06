@@ -363,8 +363,7 @@ export default function BlogDetail() {
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         {/* Header Section */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <h1 className="text-4xl md:text-5xl font-bold theme-heading text-center">
                 Blog Details
               </h1>
@@ -397,14 +396,12 @@ export default function BlogDetail() {
               {" / "}
               <span className="text-gray-900">{blog.title}</span>
               </div>
-            </div>
           </div>
         </section>
 
         {/* Main Content – blog (up to horizontal line) + right sidebar in one section so sidebar sticks only until blog ends */}
         <section className={`w-full ${spacing.section.gapTop}`} style={{ paddingBottom: 0 }}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <div className="flex flex-col lg:flex-row gap-6 lg:items-stretch">
                 {/* Blog content – image to horizontal line only (sidebar sticks until here) */}
                 <div ref={blogContentColumnRef} className="flex-1 min-w-0">
@@ -612,22 +609,18 @@ export default function BlogDetail() {
               </div>
             )} */}
             </div>
-          </div>
         </section>
 
         {/* Feature Cards */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <FeatureCards />
-            </div>
           </div>
         </section>
 
         {/* Popular Products */}
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
               <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Popular Products</h2>
               {products.length > 0 && (
                 <div className="relative">
@@ -646,7 +639,8 @@ export default function BlogDetail() {
                         <ProductCard
                           id={p._id}
                           name={p.name}
-                          price={p.price}
+                          price={p.discount ? Math.round(p.price * (1 - p.discount / 100)) : p.price}
+                          currency={p.currency}
                           image={p.image1 || "/product.png"}
                           offer={p.discount ? `${p.discount}% OFF` : undefined}
                         />
@@ -677,7 +671,6 @@ export default function BlogDetail() {
                   )}
                 </div>
               )}
-            </div>
           </div>
         </section>
       </main>

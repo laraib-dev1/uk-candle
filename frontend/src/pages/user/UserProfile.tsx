@@ -371,7 +371,7 @@ export default function UserProfile() {
       <Navbar />
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} w-full flex-1`} style={{ minHeight: 0 }}>
         <section className="w-full" style={{ minHeight: 0, paddingTop: "20px", paddingBottom: "0px", marginBottom: "0px" }}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
             <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Sidebar */}
           <div className="w-full md:w-64 bg-white rounded-lg shadow p-4 sm:p-6">
@@ -525,7 +525,7 @@ function DashboardTab({ orders, addresses, wishlist }: { orders: Order[]; addres
         ) : (
           <div className="space-y-3">
             {recentOrders.map((order) => (
-              <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
+              <div key={order._id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold text-gray-900">Order #{order._id.substring(0, 8)}</p>
@@ -1039,7 +1039,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
       </div>
 
       {showAddForm && (
-        <div className="mb-6 border rounded-lg py-4 px-0 sm:px-4">
+        <div className="mb-6 border rounded-lg p-4">
           <h3 className="font-semibold mb-4 text-gray-900">Add</h3>
           <AddressForm
             formData={formData}
@@ -1072,7 +1072,7 @@ function AddressesTab({ addresses, onUpdate }: { addresses: Address[]; onUpdate:
           </div>
         ) : (
           addresses.map((address) => (
-            <div key={address._id} className="border rounded-lg py-4 px-0 sm:px-4">
+            <div key={address._id} className="border rounded-lg p-4">
               {editingId === address._id ? (
                 <AddressForm
                   formData={formData}
@@ -1326,8 +1326,8 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
-            <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
-              <div className="flex justify-between items-start mb-4">
+<div key={order._id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="font-semibold text-gray-900">Order #{order._id.substring(0, 8)}</p>
                   <p className="text-sm text-gray-600">
@@ -1485,13 +1485,15 @@ function WishlistTab({ wishlist, onUpdate }: { wishlist: any[]; onUpdate: () => 
             
             const productImage = productData.image1 || productData.image2 || productData.image3 || productData.image4 || productData.image5 || productData.image6 || productData.image || "/product.png";
             const discount = productData.discount || 0;
+            const displayPrice = discount > 0 ? Math.round(productData.price * (1 - discount / 100)) : productData.price;
 
             return (
               <ProductCard
                 key={productData._id}
                 id={productData._id}
                 name={productData.name}
-                price={productData.price}
+                price={displayPrice}
+                currency={productData.currency}
                 image={productImage}
                 offer={discount > 0 ? discount.toString() : undefined}
                 isInWishlist={true}
@@ -1545,13 +1547,13 @@ function QueriesTab() {
     <div>
       <h2 className={`text-2xl font-bold theme-heading ${spacing.inner.gapBottom}`}>Support & Help</h2>
       <div className="space-y-4">
-        <div className="border rounded-lg">
-          <div className="px-0 sm:px-6 pt-4 sm:pt-6 pb-4">
+        <div className="rounded-lg">
+          <div className="pt-4 pb-4">
             <h3 className="font-semibold mb-2 text-gray-900">Need Help?</h3>
             <p className="text-gray-700 mb-4">Contact our support team for assistance with your orders or account.</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4 px-0 pb-4 sm:px-6 sm:pb-6 sm:pt-0">
+          <form onSubmit={handleSubmit} className="space-y-4 pb-4 pt-0">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Email
@@ -1736,11 +1738,11 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
       ) : (
         <div className="space-y-4">
           {completedOrders.map((order) => (
-            <div key={order._id} className="border rounded-lg py-4 px-0 sm:px-4">
+            <div key={order._id} className="border rounded-lg p-4">
               <p className="font-semibold mb-2 text-gray-900">Order #{order._id.substring(0, 8)}</p>
               <div className="space-y-3">
                 {order.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center border-b pb-3">
+                  <div key={idx} className="flex justify-between items-center gap-3 border-b border-gray-200 pb-3">
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>
                       <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>

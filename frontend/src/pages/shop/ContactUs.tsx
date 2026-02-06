@@ -46,9 +46,8 @@ export default function ContactUs() {
       <Navbar />
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
         <section className={`w-full ${spacing.section.gap}`}>
-          <div className="max-w-[1232px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className={spacing.container.paddingXLarge}>
-              <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-8">
+          <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
+            <div className="grid md:grid-cols-2 gap-8 bg-white rounded-2xl p-0 sm:p-8">
                 {/* Left: Form */}
                 <div>
                   <h2 className="text-2xl font-bold mb-6 theme-heading">You have any query!</h2>
@@ -164,7 +163,6 @@ export default function ContactUs() {
                   />
                 </div>
               </div>
-            </div>
           </div>
         </section>
       </main>

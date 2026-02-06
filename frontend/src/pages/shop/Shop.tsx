@@ -106,7 +106,7 @@ const Shop = () => {
    const mapped: Product[] = res.map((p) => ({
   id: p._id,
   name: p.name,
-  price: p.price,
+  price: p.discount ? Math.round(p.price * (1 - p.discount / 100)) : p.price,
   discount: p.discount,
   image: [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6].find(
   (img) => img && img.trim() !== "" && img !== "/product.png"
@@ -183,16 +183,16 @@ const Shop = () => {
     <div className="bg-white text-black min-h-screen flex flex-col">
       <Navbar />
       <main className={`${spacing.navbar.offset} ${spacing.navbar.gapBottom} flex-1`}>
-        {/* Shop banner */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        {/* Shop banner - mobile: paddingMobileContent, large: inner area (via same token) */}
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <Banner imageSrc={shopBanner?.imageUrl || "/hero.png"} />
           </div>
         </section>
 
         {/* Products Section */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${spacing.inner.gapBottom}`}>
             <h2 className="text-2xl font-bold theme-heading m-0 p-0">
               Products
@@ -300,8 +300,8 @@ const Shop = () => {
         </section>
 
         {/* Feature Cards */}
-        <section className={`max-w-8xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 ${spacing.section.gap}`}>
-          <div className={spacing.container.paddingXLarge}>
+        <section className={`max-w-8xl mx-auto ${spacing.section.gap}`}>
+          <div className={spacing.container.paddingMobileContent}>
             <FeatureCards />
           </div>
         </section>
