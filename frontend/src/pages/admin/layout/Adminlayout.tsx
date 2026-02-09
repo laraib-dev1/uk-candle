@@ -155,17 +155,32 @@ export default function AdminLayout() {
     return <PageLoader message="GraceByAnu" />;
   }
 
-  // Sidebar content component (reusable for both desktop and mobile) – UI aligned with Developer panel
+  // Sidebar content component (reusable for both desktop and mobile)
   const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <div className="flex flex-col h-full">
-      {/* Admin Badge (same style as Developer panel "Developer" badge) */}
-      <div className="px-5 pt-6 pb-6 border-b border-white/20 shrink-0">
-        <span
-          className="font-bold text-sm tracking-wider"
-          style={{ color: "var(--theme-accent)" }}
-        >
-          Admin
-        </span>
+      {/* Admin profile: avatar, name, email */}
+      <div className="flex items-center gap-3 px-5 pt-6 pb-6 border-b border-white/20 shrink-0">
+        <img
+          key={user?.avatar || "default"}
+          src={user?.avatar || "/avatar.png"}
+          alt={user?.name || "Admin"}
+          className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shrink-0"
+          crossOrigin="anonymous"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (target.src !== "/avatar.png" && !target.src.includes("avatar.png")) {
+              target.src = "/avatar.png";
+            }
+          }}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold leading-tight truncate text-white">
+            {user?.name || "Admin"}
+          </p>
+          <p className="text-sm text-white/80 truncate">
+            {user?.email || ""}
+          </p>
+        </div>
       </div>
 
       {/* MENU */}
