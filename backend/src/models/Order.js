@@ -26,6 +26,8 @@ const OrderSchema = new mongoose.Schema({
   type: { type: String, default: "Online" },
   bill: { type: Number, required: true },
   payment: { type: String, required: true },
+  taxAmount: { type: Number, default: 0 },
+  shippingCharges: { type: Number, default: 0 },
   status: { type: String, default: "Pending" },
   cancelledBy: { type: String, enum: ["user", "admin"], required: false }, // Track who cancelled
   cancelledAt: { type: Date, required: false }, // When it was cancelled

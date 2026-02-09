@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { RichTextEditor } from "@mantine/rte";
 import { getBanners, updateBanner, type Banner, type BannerSlot } from "@/api/banner.api";
 import { getAllContent, updateContent, getContentByType, type ContentPage, type ContentType } from "@/api/content.api";
+import { getCompany, updateCompany } from "@/api/company.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
@@ -55,7 +56,25 @@ const processAlignmentStyles = (html: string): string => {
   return tempDiv.innerHTML;
 };
 
-type TabType = "banners" | "privacy" | "terms" | "faq";
+type TabType = "banners" | "privacy" | "terms" | "faq" | "checkout";
+
+export type CheckoutSettings = {
+  codEnabled: boolean;
+  onlinePaymentEnabled: boolean;
+  taxEnabled: boolean;
+  taxRate: number;
+  shippingEnabled: boolean;
+  shippingCharges: number;
+};
+
+const defaultCheckoutSettings: CheckoutSettings = {
+  codEnabled: true,
+  onlinePaymentEnabled: true,
+  taxEnabled: false,
+  taxRate: 0,
+  shippingEnabled: false,
+  shippingCharges: 0,
+};
 
 export default function AssetsPage() {
   const { success, error } = useToast();
@@ -106,6 +125,11 @@ export default function AssetsPage() {
   const [newFAQ, setNewFAQ] = useState({ question: "", answer: "" });
   const [editingFAQIndex, setEditingFAQIndex] = useState<number | null>(null);
 
+  // Checkout settings state
+  const [checkoutSettings, setCheckoutSettings] = useState<CheckoutSettings>(defaultCheckoutSettings);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutSaving, setCheckoutSaving] = useState(false);
+
   // Load banners
   useEffect(() => {
     if (activeTab === "banners") {
@@ -119,6 +143,35 @@ export default function AssetsPage() {
       loadContent();
     }
   }, [activeTab]);
+
+  // Load checkout settings
+  useEffect(() => {
+    if (activeTab === "checkout") {
+      const load = async () => {
+        setCheckoutLoading(true);
+        try {
+          const data = await getCompany();
+          const c = (data as any)?.checkout;
+          if (c && typeof c === "object") {
+            setCheckoutSettings({
+              codEnabled: c.codEnabled !== false,
+              onlinePaymentEnabled: c.onlinePaymentEnabled !== false,
+              taxEnabled: !!c.taxEnabled,
+              taxRate: typeof c.taxRate === "number" ? c.taxRate : Number(c.taxRate) || 0,
+              shippingEnabled: !!c.shippingEnabled,
+              shippingCharges: typeof c.shippingCharges === "number" ? c.shippingCharges : Number(c.shippingCharges) || 0,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load checkout settings", err);
+          error("Failed to load checkout settings");
+        } finally {
+          setCheckoutLoading(false);
+        }
+      };
+      load();
+    }
+  }, [activeTab, error]);
 
   const loadBanners = async () => {
     setBannerLoading(true);
@@ -250,6 +303,18 @@ export default function AssetsPage() {
       loadBanners();
     } catch (err: any) {
       error(err.response?.data?.message || "Failed to update banner");
+    }
+  };
+
+  const saveCheckoutSettings = async () => {
+    setCheckoutSaving(true);
+    try {
+      await updateCompany({ checkout: checkoutSettings });
+      success("Checkout settings saved.");
+    } catch (err: any) {
+      error(err?.response?.data?.message || "Failed to save checkout settings");
+    } finally {
+      setCheckoutSaving(false);
     }
   };
 
@@ -435,6 +500,7 @@ export default function AssetsPage() {
               { id: "privacy", label: "Privacy Policy" },
               { id: "terms", label: "Terms & Conditions" },
               { id: "faq", label: "FAQ" },
+              { id: "checkout", label: "Checkout" },
             ]}
             activeTab={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as any)}
@@ -1037,6 +1103,120 @@ export default function AssetsPage() {
           ) : (
             <p>Loading...</p>
           )}
+        </div>
+      )}
+
+      {/* Checkout Tab */}
+      {activeTab === "checkout" && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-semibold mb-4 theme-heading">Checkout options</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Enable or disable payment methods and charges. Users will see only enabled options in the checkout modal; orders will reflect these settings.
+            </p>
+            {checkoutLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <div>
+                    <p className="font-medium">Cash on Delivery (COD)</p>
+                    <p className="text-sm text-gray-500">Allow customers to pay when the order is delivered.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checkoutSettings.codEnabled}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, codEnabled: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]" />
+                  </label>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <div>
+                    <p className="font-medium">Online payment</p>
+                    <p className="text-sm text-gray-500">Allow Credit / Debit card payment.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checkoutSettings.onlinePaymentEnabled}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, onlinePaymentEnabled: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]" />
+                  </label>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <div>
+                    <p className="font-medium">Tax</p>
+                    <p className="text-sm text-gray-500">Apply tax to order total (percentage).</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checkoutSettings.taxEnabled}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, taxEnabled: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]" />
+                  </label>
+                </div>
+                {checkoutSettings.taxEnabled && (
+                  <div className="pl-4">
+                    <label className="block text-sm font-medium mb-1">Tax rate (%)</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      value={checkoutSettings.taxRate}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, taxRate: Number(e.target.value) || 0 }))}
+                      className="w-32"
+                    />
+                  </div>
+                )}
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <div>
+                    <p className="font-medium">Shipping charges</p>
+                    <p className="text-sm text-gray-500">Add a fixed shipping amount to each order.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={checkoutSettings.shippingEnabled}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, shippingEnabled: e.target.checked }))}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]" />
+                  </label>
+                </div>
+                {checkoutSettings.shippingEnabled && (
+                  <div className="pl-4">
+                    <label className="block text-sm font-medium mb-1">Shipping amount</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={checkoutSettings.shippingCharges}
+                      onChange={(e) => setCheckoutSettings((s) => ({ ...s, shippingCharges: Number(e.target.value) || 0 }))}
+                      className="w-32"
+                    />
+                  </div>
+                )}
+                <div className="pt-4">
+                  <Button
+                    onClick={saveCheckoutSettings}
+                    disabled={checkoutSaving}
+                    className="theme-button text-white"
+                  >
+                    {checkoutSaving ? "Saving..." : "Save checkout settings"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

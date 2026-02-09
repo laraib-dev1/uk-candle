@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import TwoColumnLayout from "@/components/ui/TwoColumnLayout";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import CheckoutModal from "@/components/ui/modals/CheckoutModal";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/products/CartContext";
 import Banner from "@/components/hero/Banner";
 import { getBanners, type Banner as BannerType } from "@/api/banner.api";
@@ -144,6 +145,8 @@ const rightContent = (
 );
 
 
+  const isEmpty = cartItems.length === 0;
+
   return (
     <div className="bg-white min-h-screen flex flex-col">
       <Navbar />
@@ -152,7 +155,47 @@ const rightContent = (
         <section className={`w-full ${spacing.section.gap}`}>
           <div className={`max-w-[1232px] mx-auto ${spacing.container.paddingMobileContent}`}>
             <h2 className="text-2xl font-bold mb-6 theme-heading">Purchase List</h2>
-            <TwoColumnLayout left={leftContent} right={rightContent} />
+            {isEmpty ? (
+              <div
+                className="rounded-xl border-2 p-8 sm:p-12 text-center"
+                style={{
+                  borderColor: "var(--theme-primary)",
+                  backgroundColor: "var(--theme-light, #FDFBF8)",
+                }}
+              >
+                <div
+                  className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "var(--theme-primary)", color: "white" }}
+                >
+                  <ShoppingBag className="w-8 h-8" strokeWidth={1.5} />
+                </div>
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: "var(--theme-primary)" }}
+                >
+                  Your cart is empty
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto mb-6">
+                  No items in your cart yet. Browse our collection and add products you love.
+                </p>
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                  style={{ backgroundColor: "var(--theme-primary)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--theme-dark)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--theme-primary)";
+                  }}
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  Continue shopping
+                </Link>
+              </div>
+            ) : (
+              <TwoColumnLayout left={leftContent} right={rightContent} />
+            )}
             <CheckoutModal isOpen={openCheckout} onClose={() => setOpenCheckout(false)} />
           </div>
         </section>

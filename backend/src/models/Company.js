@@ -30,6 +30,15 @@ const CompanySchema = new mongoose.Schema({
   },
   copyright: { type: String, default: "" },
   description: { type: String, default: "" },
+  // Checkout settings (admin Assets > Checkout tab)
+  checkout: {
+    codEnabled: { type: Boolean, default: true },
+    onlinePaymentEnabled: { type: Boolean, default: true },
+    taxEnabled: { type: Boolean, default: false },
+    taxRate: { type: Number, default: 0 }, // e.g. 10 = 10%
+    shippingEnabled: { type: Boolean, default: false },
+    shippingCharges: { type: Number, default: 0 },
+  },
 }, { timestamps: true });
 
 export default mongoose.models.Company || mongoose.model("Company", CompanySchema);

@@ -65,6 +65,11 @@ export const updateCompany = async (data: any) => {
     formData.append("brandTheme", JSON.stringify(data.brandTheme));
   }
 
+  // Checkout settings (admin Assets > Checkout tab)
+  if (data.checkout !== undefined) {
+    formData.append("checkout", JSON.stringify(data.checkout));
+  }
+
   const res = await API.put("/company", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });

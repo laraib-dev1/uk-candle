@@ -5,6 +5,25 @@ import { createOrder } from "@/api/order.api";
 import { useToast } from "@/components/ui/toast";
 import { getUserAddresses, addUserAddress } from "@/api/user.api";
 import { useAuth } from "@/hooks/useAuth";
+import { getCompany } from "@/api/company.api";
+
+type CheckoutSettings = {
+  codEnabled: boolean;
+  onlinePaymentEnabled: boolean;
+  taxEnabled: boolean;
+  taxRate: number;
+  shippingEnabled: boolean;
+  shippingCharges: number;
+};
+
+const defaultCheckout: CheckoutSettings = {
+  codEnabled: true,
+  onlinePaymentEnabled: true,
+  taxEnabled: false,
+  taxRate: 0,
+  shippingEnabled: false,
+  shippingCharges: 0,
+};
 
 type CheckoutModalProps = {
   isOpen: boolean;
@@ -51,8 +70,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
     return sum + ((itemDiscount / 100) * itemSubtotal);
   }, 0);
 
-  const total = subtotal - discount;
+  const afterDiscount = subtotal - discount;
 
+  const [checkoutSettings, setCheckoutSettings] = useState<CheckoutSettings>(defaultCheckout);
   const [addressType, setAddressType] = useState<"new" | "existing">("new");
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
@@ -71,6 +91,44 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
   const [savingAddress, setSavingAddress] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
+
+  // Tax and shipping from admin checkout settings
+  const taxAmount = checkoutSettings.taxEnabled
+    ? Math.round(afterDiscount * (checkoutSettings.taxRate / 100) * 100) / 100
+    : 0;
+  const shippingAmount = checkoutSettings.shippingEnabled ? Number(checkoutSettings.shippingCharges) || 0 : 0;
+  const total = afterDiscount + taxAmount + shippingAmount;
+
+  // Load checkout settings and addresses when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const loadCheckoutSettings = async () => {
+        try {
+          const data = await getCompany();
+          const c = (data as any)?.checkout;
+          if (c && typeof c === "object") {
+            setCheckoutSettings({
+              codEnabled: c.codEnabled !== false,
+              onlinePaymentEnabled: c.onlinePaymentEnabled !== false,
+              taxEnabled: !!c.taxEnabled,
+              taxRate: typeof c.taxRate === "number" ? c.taxRate : Number(c.taxRate) || 0,
+              shippingEnabled: !!c.shippingEnabled,
+              shippingCharges: typeof c.shippingCharges === "number" ? c.shippingCharges : Number(c.shippingCharges) || 0,
+            });
+          }
+        } catch (err) {
+          console.warn("Failed to load checkout settings", err);
+        }
+      };
+      loadCheckoutSettings();
+    }
+  }, [isOpen]);
+
+  // Set default payment method when only one option is enabled
+  useEffect(() => {
+    if (!checkoutSettings.codEnabled && checkoutSettings.onlinePaymentEnabled) setPaymentMethod("card");
+    else if (checkoutSettings.codEnabled && !checkoutSettings.onlinePaymentEnabled) setPaymentMethod("cod");
+  }, [checkoutSettings.codEnabled, checkoutSettings.onlinePaymentEnabled]);
 
   // Load saved addresses from backend and localStorage when modal opens
   useEffect(() => {
@@ -318,6 +376,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                   <span>-${discount.toFixed(2)}</span>
                 </div>
               )}
+              {checkoutSettings.taxEnabled && taxAmount > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Tax ({checkoutSettings.taxRate}%)</span>
+                  <span>${taxAmount.toFixed(2)}</span>
+                </div>
+              )}
+              {checkoutSettings.shippingEnabled && shippingAmount > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Shipping</span>
+                  <span>${shippingAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold mt-2 pt-2 border-t border-gray-200">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
@@ -505,35 +575,43 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* 3️⃣ Payment Method */}
+        {/* 3️⃣ Payment Method (only show enabled options from admin) */}
         <div className="mb-4 p-4 border rounded-lg">
           <h3 className="font-semibold mb-2 text-lg">Payment Method</h3>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="payment"
-                value="card"
-                checked={paymentMethod === "card"}
-                onChange={() => setPaymentMethod("card")}
-              />
-              <span>Credit / Debit Card</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="payment"
-                value="cod"
-                checked={paymentMethod === "cod"}
-                onChange={() => setPaymentMethod("cod")}
-              />
-              <span>Cash on Delivery</span>
-            </label>
-          </div>
+          {checkoutSettings.codEnabled || checkoutSettings.onlinePaymentEnabled ? (
+            <div className="space-y-2">
+              {checkoutSettings.onlinePaymentEnabled && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="card"
+                    checked={paymentMethod === "card"}
+                    onChange={() => setPaymentMethod("card")}
+                  />
+                  <span>Credit / Debit Card</span>
+                </label>
+              )}
+              {checkoutSettings.codEnabled && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="cod"
+                    checked={paymentMethod === "cod"}
+                    onChange={() => setPaymentMethod("cod")}
+                  />
+                  <span>Cash on Delivery</span>
+                </label>
+              )}
+            </div>
+          ) : (
+            <p className="text-amber-600 text-sm">No payment methods are currently available. Please contact support.</p>
+          )}
         </div>
 
         {/* Payment Section */}
-        {paymentMethod === "card" && (
+        {paymentMethod === "card" && checkoutSettings.onlinePaymentEnabled && (
           <StripeCardForm
             amount={total > 0 ? total : 10}
             onBeforePayment={async () => {
@@ -542,7 +620,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                 throw new Error("Please fill all required address fields correctly.");
               }
 
-              // Use the address the user selected
+              const billAmount = total > 0 ? total : 10;
               const orderData = {
                 customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
                 address: {
@@ -562,12 +640,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                   price: i.price,
                 })),
                 type: "Online",
-                bill: total > 0 ? total : 10,
-                payment: paymentMethod,
+                bill: billAmount,
+                payment: "Credit/Debit Card",
+                taxAmount: checkoutSettings.taxEnabled ? taxAmount : 0,
+                shippingCharges: checkoutSettings.shippingEnabled ? shippingAmount : 0,
                 status: "Pending",
               };
 
-              // Create order first - this will throw if it fails
               await createOrder(orderData);
               success("Order created successfully!");
             }}
@@ -611,14 +690,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Cash on Delivery Section */}
-        {paymentMethod === "cod" && (
+        {paymentMethod === "cod" && checkoutSettings.codEnabled && (
           <div className="mb-4 p-4 border rounded-lg bg-blue-50">
             <p className="text-sm text-gray-700 mb-4">
               You will pay cash when the order is delivered to your address.
             </p>
             <button
               onClick={async () => {
-                // Validate address
                 if (addressType === "new" && !validateAddress()) {
                   error("Please fill all required address fields correctly.");
                   return;
@@ -628,7 +706,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
 
                 setPlacingOrder(true);
                 try {
-                  // Use the address the user selected
+                  const billAmount = total > 0 ? total : 10;
                   const orderData = {
                     customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
                     address: {
@@ -648,12 +726,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
                       price: i.price,
                     })),
                     type: "Online",
-                    bill: total > 0 ? total : 10,
+                    bill: billAmount,
                     payment: "Cash on Delivery",
+                    taxAmount: checkoutSettings.taxEnabled ? taxAmount : 0,
+                    shippingCharges: checkoutSettings.shippingEnabled ? shippingAmount : 0,
                     status: "Pending",
                   };
 
-                  // Create order
                   await createOrder(orderData);
 
                   // Only save address if it's a new address that wasn't already saved

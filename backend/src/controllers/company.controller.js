@@ -284,6 +284,27 @@ export const updateCompany = async (req, res) => {
       }
     }
 
+    // Checkout settings (admin Assets > Checkout tab)
+    if (req.body.checkout !== undefined) {
+      try {
+        const checkout = typeof req.body.checkout === 'string'
+          ? JSON.parse(req.body.checkout)
+          : req.body.checkout;
+        if (checkout && typeof checkout === 'object') {
+          updateData.checkout = {
+            codEnabled: checkout.codEnabled !== undefined ? !!checkout.codEnabled : true,
+            onlinePaymentEnabled: checkout.onlinePaymentEnabled !== undefined ? !!checkout.onlinePaymentEnabled : true,
+            taxEnabled: !!checkout.taxEnabled,
+            taxRate: typeof checkout.taxRate === 'number' ? checkout.taxRate : Number(checkout.taxRate) || 0,
+            shippingEnabled: !!checkout.shippingEnabled,
+            shippingCharges: typeof checkout.shippingCharges === 'number' ? checkout.shippingCharges : Number(checkout.shippingCharges) || 0,
+          };
+        }
+      } catch (e) {
+        console.error("Error parsing checkout:", e);
+      }
+    }
+
     // Handle file uploads
     // With upload.any(), req.files is an array, not an object
     if (req.files && Array.isArray(req.files)) {
