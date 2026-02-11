@@ -1,5 +1,6 @@
 import { RichTextEditor } from "@mantine/rte";
 import React, { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { z, ZodIssue } from "zod";
 import {
   Dialog,
@@ -338,19 +339,23 @@ const handleSubmit = () => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white text-black max-h-[90vh] overflow-y-auto overflow-x-hidden">
-        <DialogHeader>
-          <DialogTitle className="text-gray-900">
-            {mode === "add" && "Add Product"}
-            {mode === "edit" && "Edit Product"}
-            {mode === "view" && "View Product"}
-            
-          </DialogTitle>
+      <DialogContent className="admin-dialog-content bg-white text-black max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="admin-modal-header flex items-center justify-between text-left px-6 py-4 rounded-t-lg shrink-0">
+          <div>
+            <DialogTitle className="text-white font-semibold">
+              {mode === "add" && "Add Product"}
+              {mode === "edit" && "Edit Product"}
+              {mode === "view" && "View Product"}
+            </DialogTitle>
+            <DialogDescription className="text-white/90">
+              Fill in all product details below.
+            </DialogDescription>
+          </div>
+          <button type="button" onClick={onClose} className="p-1.5 rounded text-white hover:bg-white/20 transition-colors shrink-0" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
         </DialogHeader>
-<DialogDescription className="text-gray-700">
-      Fill in all product details below.
-    </DialogDescription>
-        <div className="p-4 space-y-4">
+        <div className="px-6 py-4 overflow-y-auto overflow-x-hidden flex-1 space-y-4">
           {/* Top row: name */}
           <div>
             <label className="text-sm font-medium text-gray-900">Product Title</label>
@@ -583,7 +588,8 @@ const handleSubmit = () => {
   onClose={() => setCropModalOpen(false)}
   file={selectedFileForCrop}
   onCropDone={handleCropDone}
-   aspect={3 / 4}
+  aspect={3 / 4}
+  usageLabel="product image"
 />
 
 
@@ -675,25 +681,16 @@ const handleSubmit = () => {
 
         </div>
 
-        {!isView && (
-          <DialogFooter>
-            <Button 
-              className="text-white" 
-              style={{ 
-                backgroundColor: "var(--theme-primary)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--theme-dark)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--theme-primary)";
-              }}
-              onClick={handleSubmit}
-            >
+        <DialogFooter className="admin-modal-footer rounded-b-lg px-6 py-4 gap-2 shrink-0">
+          <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={onClose}>
+            {isView ? "Close" : "Discard"}
+          </Button>
+          {!isView && (
+            <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={handleSubmit}>
               {mode === "add" ? "Add" : "Update"}
             </Button>
-          </DialogFooter>
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

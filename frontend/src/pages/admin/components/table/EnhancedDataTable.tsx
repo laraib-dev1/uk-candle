@@ -165,8 +165,8 @@ export default function EnhancedDataTable<T extends { id?: string }>({
     ignoreRowClick: true,
     allowOverflow: true,
     button: true,
-    minWidth: "140px",
-    width: "140px",
+    minWidth: "80px",
+    width: "80px",
   };
 
   const enhancedColumns: TableColumn<T>[] = [
@@ -178,7 +178,7 @@ export default function EnhancedDataTable<T extends { id?: string }>({
     table: {
       style: {
         width: "100%",
-        tableLayout: "auto" as const,
+        tableLayout: "fixed" as const,
         borderRadius: "0.5rem",
       },
     },

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -146,17 +147,22 @@ export default function BlogAuthorModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold theme-heading">
-              {mode === "add" ? "Add Author" : mode === "edit" ? "Edit Author" : "View Author"}
-            </DialogTitle>
-            <DialogDescription>
-              {mode === "add" ? "Create a new author profile" : mode === "edit" ? "Update author details" : "View author details"}
-            </DialogDescription>
+        <DialogContent className="admin-dialog-content max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-white">
+          <DialogHeader className="admin-modal-header flex items-center justify-between text-left px-6 py-4 rounded-t-lg shrink-0">
+            <div>
+              <DialogTitle className="text-xl font-bold text-white">
+                {mode === "add" ? "Add Author" : mode === "edit" ? "Edit Author" : "View Author"}
+              </DialogTitle>
+              <DialogDescription className="text-white/90">
+                {mode === "add" ? "Create a new author profile" : mode === "edit" ? "Update author details" : "View author details"}
+              </DialogDescription>
+            </div>
+            <button type="button" onClick={onClose} className="p-1.5 rounded text-white hover:bg-white/20 transition-colors shrink-0" aria-label="Close">
+              <X className="h-5 w-5" />
+            </button>
           </DialogHeader>
 
-          <div className="space-y-4 text-gray-900">
+          <div className="px-6 py-4 overflow-y-auto flex-1 space-y-4 text-gray-900">
             {/* Author Info */}
             <div>
               <h3 className="font-semibold mb-3 text-gray-900">Author</h3>
@@ -298,16 +304,12 @@ export default function BlogAuthorModal({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose}>
+          <DialogFooter className="admin-modal-footer rounded-b-lg px-6 py-4 gap-2 shrink-0">
+            <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={onClose}>
               {isView ? "Close" : "Discard"}
             </Button>
             {!isView && (
-              <Button
-                className="theme-button text-white"
-                onClick={handleSubmit}
-                disabled={loading}
-              >
+              <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={handleSubmit} disabled={loading}>
                 {loading ? "Saving..." : mode === "add" ? "Add Author" : "Update Profile"}
               </Button>
             )}
@@ -324,6 +326,7 @@ export default function BlogAuthorModal({
         onCropDone={handleCropDone}
         file={selectedFileForCrop}
         aspect={1}
+        usageLabel="author avatar"
       />
     </>
   );

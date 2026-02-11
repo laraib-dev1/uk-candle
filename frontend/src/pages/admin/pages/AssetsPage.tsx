@@ -1235,6 +1235,7 @@ export default function AssetsPage() {
             handleImageCrop(croppedFile);
           }}
           aspect={BANNER_CONFIG[currentBannerSlot].aspect}
+          usageLabel={BANNER_CONFIG[currentBannerSlot].label}
         />
       )}
     </div>

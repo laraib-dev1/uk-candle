@@ -10,6 +10,8 @@ type ImageCropperModalProps = {
   file: File | null;
   onCropDone: (croppedBlob: Blob) => void;
   aspect?: number;
+  /** Short label for where this image is used on the site (e.g. "category icon", "blog cover") */
+  usageLabel?: string;
 };
 
 const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
@@ -18,6 +20,7 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   file,
   onCropDone,
   aspect = 1,
+  usageLabel,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -82,27 +85,29 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     }
   };
 
-  // Calculate aspect ratio display
-  const getAspectRatioText = () => {
-    if (aspect === 1) {
-      return "1:1";
-    } else if (Math.abs(aspect - 4/3) < 0.01) {
-      return "4:3";
-    } else if (Math.abs(aspect - 3/4) < 0.01) {
-      return "3:4";
-    } else if (Math.abs(aspect - 16/9) < 0.01) {
-      return "16:9";
-    } else if (Math.abs(aspect - 1920/600) < 0.01) {
-      return "1920×600";
-    } else {
-      return `${Math.round(aspect * 100) / 100}:1`;
-    }
+  const EPS = 0.001;
+
+  // Required ratio text – must match how the image is displayed on the site
+  const getRequiredRatioText = (): string => {
+    const a = aspect || 1;
+    if (Math.abs(a - 1) < EPS) return "1:1";
+    if (Math.abs(a - 4 / 3) < EPS) return "4:3";
+    if (Math.abs(a - 3 / 4) < EPS) return "3:4";
+    if (Math.abs(a - 16 / 9) < EPS) return "16:9";
+    if (Math.abs(a - 9 / 16) < EPS) return "9:16";
+    if (Math.abs(a - 1920 / 600) < EPS) return "1920×600";
+    if (a >= 1) return `${Math.round(a * 100) / 100}:1`;
+    return `1:${Math.round((1 / a) * 100) / 100}`;
   };
 
-  // Get dimensions from cropped area
-  const getDimensions = () => {
-    if (!croppedAreaPixels) return "0000 x 0000";
-    return `${Math.round(croppedAreaPixels.width)} x ${Math.round(croppedAreaPixels.height)}`;
+  const requiredRatioText = getRequiredRatioText();
+
+  // Output dimensions from current crop (will match required ratio)
+  const getOutputDimensions = (): string => {
+    if (!croppedAreaPixels) return "— × —";
+    const w = Math.round(croppedAreaPixels.width);
+    const h = Math.round(croppedAreaPixels.height);
+    return `${w} × ${h}`;
   };
 
   const handleZoomIn = () => {
@@ -115,16 +120,16 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-white p-0 overflow-hidden flex flex-col [&>button]:hidden" style={{ height: "80vh", maxHeight: "90vh" }}>
-        <DialogHeader className="px-6 py-4 theme-bg-primary shrink-0">
+      <DialogContent className="admin-dialog-content max-w-4xl bg-white p-0 overflow-hidden flex flex-col [&>button]:hidden" style={{ height: "80vh", maxHeight: "90vh" }}>
+        <DialogHeader className="admin-modal-header text-left px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg text-black font-semibold">Adjust the image</DialogTitle>
+            <DialogTitle className="text-lg text-white font-semibold">Adjust the image</DialogTitle>
             <button
               onClick={onClose}
-              className="rounded-sm opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+              className="rounded-sm opacity-90 hover:opacity-100 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white text-white"
               aria-label="Close"
             >
-              <X className="h-5 w-5 text-white" />
+              <X className="h-5 w-5" />
             </button>
           </div>
         </DialogHeader>
@@ -165,15 +170,21 @@ const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
           </div>
         )}
 
-        {/* Footer */}
-        <div className="bg-gray-100 px-6 py-4 flex items-center justify-between border-t shrink-0">
-          <span className="text-sm text-gray-600">
-            Use {getDimensions()} or {getAspectRatioText()}
-          </span>
+        {/* Footer – required ratio matches how image is used on site */}
+        <div className="admin-modal-footer px-6 py-4 flex items-center justify-between shrink-0">
+          <div className="text-sm text-white/90 space-y-0.5">
+            <div className="font-medium text-white">
+              Required ratio: {requiredRatioText}
+              {usageLabel ? ` (used for ${usageLabel} on site)` : " (same as used on site)"}
+            </div>
+            <div>
+              Output dimensions: {getOutputDimensions()}
+            </div>
+          </div>
           <Button
             onClick={handleCropDone}
             disabled={loading}
-            className="theme-button text-white px-6"
+            className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium px-6 border-0"
           >
             {loading ? "Processing..." : "Add"}
           </Button>

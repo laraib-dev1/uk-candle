@@ -6,6 +6,16 @@ import { OrderModal } from "../product/OrderModal";
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FilterTabs from "@/components/ui/FilterTabs";
+/** Show at most maxWords then "...." (full text in title for hover) */
+function truncateWords(str: string, maxWords = 3): string {
+  if (!str || typeof str !== "string") return str;
+  const trimmed = str.trim();
+  if (!trimmed) return trimmed;
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return trimmed;
+  return words.slice(0, maxWords).join(" ") + " ....";
+}
+
 interface Address {
   firstName: string;
   lastName: string;
@@ -112,44 +122,91 @@ useEffect(() => {
     const allColumns = [
       {
         name: "SR",
-        cell: (_row: Order, index: number) => <span className="text-gray-600">{index + 1}</span>,
+        cell: (_row: Order, index: number) => (
+          <div className="w-12 min-w-0 flex justify-center" style={{ maxWidth: "60px" }}>
+            <span className="text-gray-600">{index + 1}</span>
+          </div>
+        ),
         minWidth: "60px",
+        maxWidth: "60px",
+        width: "60px",
       },
       {
         name: "Customer",
-        heading: (row: Order) => row.customerName,
-        subInfo: (row: Order) => row.phoneNumber,
-        minWidth: "150px",
-      },
-      {
-        name: "Address",
         cell: (row: Order) => {
-          const address = row.address
-            ? `${row.address.line1}, ${row.address.area || ""}, ${row.address.city}, ${row.address.province}`
-            : "N/A";
-          const words = address.split(" ");
-          const truncated = words.length > 4 ? words.slice(0, 4).join(" ") + "...." : address;
+          const name = row.customerName || "";
+          const phone = row.phoneNumber || "";
           return (
             <div className="py-1">
-              <div className="text-sm text-gray-900 line-clamp-2" title={address}>
-                {truncated}
+              <div className="font-medium text-gray-900 truncate" title={name}>
+                {truncateWords(name, 3)}
+              </div>
+              <div className="text-sm text-gray-500 truncate" title={phone}>
+                {truncateWords(phone, 3)}
               </div>
             </div>
           );
         },
-        minWidth: "200px",
+        minWidth: "120px",
+      },
+      {
+        name: "Address",
+        cell: (row: Order) => {
+          if (!row.address) {
+            return <div className="py-1 text-sm text-gray-500">N/A</div>;
+          }
+          const a = row.address;
+          const parts = [a.line1, a.area, a.city, a.province].filter(Boolean);
+          const addressText = parts.join("\n");
+          return (
+            <div
+              className="order-address-cell py-1 text-sm text-gray-900 min-w-0 max-w-[200px]"
+              style={{ whiteSpace: "pre-line", overflowWrap: "break-word", display: "block" }}
+              title={addressText}
+            >
+              {addressText}
+            </div>
+          );
+        },
+        minWidth: "140px",
       },
       {
         name: "Items",
-        heading: (row: Order) => row.items.map(i => `${i.name} x ${i.quantity}`).join(", "),
-        subInfo: (row: Order) => row.type,
-        minWidth: "200px",
+        cell: (row: Order) => {
+          const type = row.type || "";
+          const itemsText = row.items.map((i) => `${i.name} x ${i.quantity}`).join("\n");
+          return (
+            <div
+              className="order-items-cell py-1 text-sm text-gray-900 min-w-0 max-w-[200px]"
+              style={{ whiteSpace: "pre-line", overflowWrap: "break-word", display: "block" }}
+              title={itemsText + (type ? `\n${type}` : "")}
+            >
+              {itemsText}
+              {type && (
+                <span className="block text-xs text-gray-500 mt-0.5">{type}</span>
+              )}
+            </div>
+          );
+        },
+        minWidth: "140px",
       },
       {
         name: "Bill",
-        heading: (row: Order) => `$${row.bill}`,
-        subInfo: (row: Order) => row.payment,
-        minWidth: "120px",
+        cell: (row: Order) => {
+          const bill = `$${Number(row.bill).toFixed(2)}`;
+          const payment = row.payment || "";
+          return (
+            <div className="py-1">
+              <div className="font-medium text-gray-900 truncate" title={bill}>
+                {bill}
+              </div>
+              <div className="text-sm text-gray-500 truncate" title={payment}>
+                {truncateWords(payment, 3)}
+              </div>
+            </div>
+          );
+        },
+        minWidth: "100px",
       },
       {
         name: "Status",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import { Order } from "@/types/Order";
 import { updateOrderStatus, getOrderById } from "@/api/order.api";
 import { useToast } from "@/components/ui/toast";
@@ -68,10 +69,24 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 text-black">
-      <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4 theme-heading text-gray-900">Order Details</h2>
-
+    <div className="fixed inset-0 z-50 flex justify-center items-center text-black">
+      <div className="absolute inset-0 bg-black/70" aria-hidden />
+      <div className="relative z-10 bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col mx-4">
+        <header
+          className="admin-modal-header flex items-center justify-between text-left w-full shrink-0 px-6"
+          style={{ height: "72px", boxSizing: "border-box" }}
+        >
+          <h2 className="text-xl font-bold text-white">Order Details</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </header>
+        <div className="p-6 flex-1 overflow-y-auto">
         {fetchingOrder ? (
           <div className="text-center py-4">
             <p className="text-gray-900">Loading order details...</p>
@@ -157,18 +172,22 @@ export const OrderModal: React.FC<OrderModalProps> = ({ order, open, onClose, on
           </select>
           {statusError && <p className="text-red-500 text-xs mt-1">{statusError}</p>}
         </div>
+        </div>
 
-        <div className="flex justify-end mt-4 gap-2">
-          <button className="px-4 h-12 bg-gray-200 rounded text-black" onClick={onClose} disabled={loading}>Close</button>
+        <footer
+          className="admin-modal-footer flex justify-end items-center gap-4 shrink-0 w-full px-6"
+          style={{ height: "72px", boxSizing: "border-box" }}
+        >
+          <button className="px-4 h-9 bg-white text-[var(--theme-primary)] rounded font-medium hover:bg-gray-100 text-sm" onClick={onClose} disabled={loading}>Close</button>
           <button 
-            className="px-4 h-12 text-white rounded theme-button flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" 
+            className="px-4 h-9 bg-white text-[var(--theme-primary)] rounded font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-gray-100 text-sm" 
             onClick={handleSave}
             disabled={loading}
           >
-            {loading && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+            {loading && <span className="animate-spin h-4 w-4 border-2 border-[var(--theme-primary)] border-t-transparent rounded-full" />}
             Save
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );

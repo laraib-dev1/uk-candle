@@ -194,7 +194,8 @@ export default function BlogAuthorsTab() {
         }}
         onConfirm={confirmDelete}
         title="Delete Author"
-        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        itemName={deleteTarget?.name}
+        message="This action cannot be undone."
       />
     </div>
   );

@@ -291,7 +291,8 @@ export default function BlogCategoriesTab() {
         }}
         onConfirm={confirmDelete}
         title={`Delete ${deleteType === "category" ? "Category" : "Niche"}`}
-        message={`Are you sure you want to delete this ${deleteType}? This action cannot be undone.`}
+        itemName={deleteTarget?.name}
+        message="This action cannot be undone."
       />
     </div>
   );

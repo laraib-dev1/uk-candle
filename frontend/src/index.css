@@ -331,6 +331,18 @@ main[class*="developer"] a:not([class*="theme"]) {
   color: #000000 !important;
 }
 
+/* Orders table: Items column - each item on its own line */
+.rdt_TableCell .order-items-cell {
+  white-space: pre-line !important;
+  display: block !important;
+}
+
+/* Orders table: Address column - wrap long addresses to multiple lines */
+.rdt_TableCell .order-address-cell {
+  white-space: pre-line !important;
+  display: block !important;
+}
+
 .theme-button {
   background-color: var(--theme-primary, #8B5E3C);
   color: white !important;
@@ -384,6 +396,42 @@ main[class*="developer"] a:not([class*="theme"]) {
 /* Theme background accent */
 .theme-bg-accent {
   background-color: var(--theme-light, #f5f5f5);
+}
+
+/* Theme primary background (e.g. admin modal header/footer) */
+.theme-bg-primary {
+  background-color: var(--theme-primary, #8B5E3C);
+}
+
+/* Admin panel modals: header and footer use primary color, white text */
+.admin-modal-header {
+  background-color: var(--theme-primary, #8B5E3C);
+  color: white;
+  text-align: left;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+.admin-modal-header > div:first-child {
+  text-align: left;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.admin-modal-header .shrink-0,
+.admin-modal-header button[aria-label="Close"] {
+  flex-shrink: 0;
+}
+.admin-modal-footer {
+  background-color: var(--theme-primary, #8B5E3C);
+  color: white;
+  padding-right: 2rem; /* keep buttons away from right edge */
+}
+
+/* Admin dialog: hide close (X) icon in header – use footer Close/Cancel instead */
+.admin-dialog-content > button.absolute {
+  display: none !important;
 }
 
 /* Preserve text alignment in rich text content - only if no inline style */

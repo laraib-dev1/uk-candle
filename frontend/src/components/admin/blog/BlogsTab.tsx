@@ -292,7 +292,8 @@ export default function BlogsTab() {
         }}
         onConfirm={confirmDelete}
         title="Delete Blog"
-        message={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+        itemName={deleteTarget?.title}
+        message="This action cannot be undone."
       />
     </div>
   );

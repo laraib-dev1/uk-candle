@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -105,17 +106,22 @@ export default function BlogNicheModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold theme-heading">
-            {mode === "add" ? "Add Niche" : mode === "edit" ? "Edit Niche" : "View Niche"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "add" ? "Create a new blog niche" : mode === "edit" ? "Update niche details" : "View niche details"}
-          </DialogDescription>
+      <DialogContent className="admin-dialog-content max-w-md bg-white p-0 gap-0 overflow-hidden">
+        <DialogHeader className="admin-modal-header flex items-center justify-between text-left px-6 py-4 rounded-t-lg">
+          <div>
+            <DialogTitle className="text-xl font-bold text-white">
+              {mode === "add" ? "Add Niche" : mode === "edit" ? "Edit Niche" : "View Niche"}
+            </DialogTitle>
+            <DialogDescription className="text-white/90">
+              {mode === "add" ? "Create a new blog niche" : mode === "edit" ? "Update niche details" : "View niche details"}
+            </DialogDescription>
+          </div>
+          <button type="button" onClick={onClose} className="p-1.5 rounded text-white hover:bg-white/20 transition-colors shrink-0" aria-label="Close">
+            <X className="h-5 w-5" />
+          </button>
         </DialogHeader>
 
-        <div className="space-y-4 text-gray-900">
+        <div className="px-6 py-4 space-y-4 text-gray-900">
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-900">Niche Name</label>
             <Input
@@ -151,12 +157,12 @@ export default function BlogNicheModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="admin-modal-footer rounded-b-lg px-6 py-4 gap-2">
+          <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={onClose}>
             {isView ? "Close" : "Cancel"}
           </Button>
           {!isView && (
-            <Button className="theme-button text-white" onClick={handleSubmit} disabled={loading}>
+            <Button className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0" onClick={handleSubmit} disabled={loading}>
               {loading ? "Saving..." : mode === "add" ? "Add" : "Update"}
             </Button>
           )}

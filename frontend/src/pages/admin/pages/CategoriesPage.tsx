@@ -227,7 +227,8 @@ const getColumns = () => {
 <DeleteModal
   open={deleteOpen}
   title="Delete Category"
-  message={`Are you sure you want to delete "${deleteTarget?.name}"?`}
+  itemName={deleteTarget?.name}
+  message="This action cannot be undone."
   onClose={() => setDeleteOpen(false)}
   onConfirm={confirmDelete}
 />
