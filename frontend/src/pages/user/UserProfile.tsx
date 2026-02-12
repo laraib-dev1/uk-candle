@@ -1311,7 +1311,8 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
       setCancelConfirm(null);
       onUpdate(); // Refresh orders list
     } catch (err: any) {
-      error(err.message || "Failed to cancel order");
+      const msg = err?.response?.data?.message || err?.message || "Failed to cancel order";
+      error(msg);
       setCancelConfirm(null);
     } finally {
       setIsCancelling(false);
@@ -1358,7 +1359,7 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                  {order.status === "Pending" && (
+                  {(order.status === "Pending" || order.status?.toLowerCase() === "pending") && (
                     <button
                       onClick={() => handleCancelOrder(order._id)}
                       disabled={isCancelling}
@@ -1462,6 +1463,18 @@ function OrdersTab({ orders, onUpdate }: { orders: Order[]; onUpdate: () => void
           </div>
         </div>
       )}
+
+      {/* Cancel Order confirmation */}
+      <ConfirmDialog
+        open={cancelConfirm !== null}
+        title="Cancel Order"
+        message="Are you sure you want to cancel this order? This action cannot be undone."
+        onConfirm={confirmCancelOrder}
+        onCancel={() => setCancelConfirm(null)}
+        confirmText={isCancelling ? "Cancelling..." : "Yes, cancel order"}
+        cancelText="Keep order"
+        confirmButtonClass="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+      />
     </div>
   );
 }

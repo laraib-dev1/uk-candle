@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
 import { getAllReviews, deleteReview } from "../../../api/review.api";
+import { processReviewsForNotifications } from "@/utils/adminNotifications";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Star } from "lucide-react";
@@ -36,6 +37,7 @@ export default function ReviewsTable() {
     try {
       const data = await getAllReviews();
       setReviews(data);
+      processReviewsForNotifications(data);
     } catch (err) {
       console.error("Error fetching reviews:", err);
       error("Failed to load reviews");

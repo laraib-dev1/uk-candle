@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 import { fetchOrders } from "@/api/order.api";
 import { getProducts } from "@/api/product.api";
+import { getAllReviews } from "@/api/review.api";
+import { getQueries } from "@/api/query.api";
+import {
+  processOrdersForNotifications,
+  processReviewsForNotifications,
+  processQueriesForNotifications,
+} from "@/utils/adminNotifications";
 import PageLoader from "@/components/ui/PageLoader";
 
 interface DashboardStats {
@@ -45,23 +52,38 @@ export default function DashboardPage() {
 
         // Fetch orders
         const orders = await fetchOrders();
-        const allOrdersCount = orders.length;
-        
+        const mappedOrders = Array.isArray(orders) ? orders.map((o: any) => ({ ...o, id: o._id })) : [];
+        processOrdersForNotifications(mappedOrders);
+        const allOrdersCount = mappedOrders.length;
+
+        // Fetch reviews and queries for notifications (run in parallel)
+        Promise.all([
+          getAllReviews()
+            .then((reviews) => processReviewsForNotifications(Array.isArray(reviews) ? reviews : []))
+            .catch(() => {}),
+          getQueries()
+            .then((data) => {
+              const list = Array.isArray(data) ? data : (data as any)?.data ?? [];
+              processQueriesForNotifications(list);
+            })
+            .catch(() => {}),
+        ]);
+
         // Calculate revenue (sum of all completed orders)
-        const revenue = orders
+        const revenue = mappedOrders
           .filter((order: any) => order.status?.toLowerCase() === "complete")
           .reduce((sum: number, order: any) => sum + (order.bill || 0), 0);
 
         // Count orders by status
-        const completeOrders = orders.filter(
+        const completeOrders = mappedOrders.filter(
           (order: any) => order.status?.toLowerCase() === "complete"
         ).length;
-        
-        const canceledOrders = orders.filter(
-          (order: any) => order.status?.toLowerCase() === "cancel" || order.status?.toLowerCase() === "canceled"
+
+        const canceledOrders = mappedOrders.filter(
+          (order: any) => order.status?.toLowerCase() === "cancel" || order.status?.toLowerCase() === "cancelled"
         ).length;
-        
-        const pendingOrders = orders.filter(
+
+        const pendingOrders = mappedOrders.filter(
           (order: any) => order.status?.toLowerCase() === "pending"
         ).length;
 

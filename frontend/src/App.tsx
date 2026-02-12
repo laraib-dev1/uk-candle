@@ -25,6 +25,7 @@ import PageLoader from "./components/ui/PageLoader";
 const AdminLayout = React.lazy(() => import("./pages/admin/layout/Adminlayout"));
 const AdminProducts = React.lazy(() => import("./pages/admin/pages/ProductPage"));
 const AdminSettings = React.lazy(() => import("./pages/admin/pages/SettingsPage"));
+const AdminNotifications = React.lazy(() => import("./pages/admin/pages/NotificationsPage"));
 const AdminAssets = React.lazy(() => import("./pages/admin/pages/AssetsPage"));
 
 // const AdminCategories = React.lazy(() => import("@/pages/admin/pages/CategoriesPage"));
@@ -119,6 +120,7 @@ export default function App() {
             <Route path="blogs" element={<AdminBlogs />} />
             <Route path="assets" element={<AdminAssets />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="notifications" element={<AdminNotifications />} />
             <Route path="sp-console" element={<SpConsolePage />} />
           </Route>
 

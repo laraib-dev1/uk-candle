@@ -249,6 +249,7 @@ export const updateCompany = async (req, res) => {
     if (req.body.supportEmail !== undefined) updateData.supportEmail = req.body.supportEmail;
     if (req.body.address !== undefined) updateData.address = req.body.address;
     if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.currency !== undefined) updateData.currency = req.body.currency;
 
     // Handle social links (JSON string)
     if (req.body.socialLinks) {

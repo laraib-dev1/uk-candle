@@ -23,6 +23,7 @@ export default function CompanyPage() {
     favicon: "",
     copyright: "",
     description: "",
+    currency: "PKR",
     socialLinks: {
       facebook: "",
       tiktok: "",
@@ -717,6 +718,31 @@ export default function CompanyPage() {
                   e.currentTarget.style.boxShadow = "";
                 }}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Product currency
+              </label>
+              <p className="text-xs text-gray-500 mb-1">
+                Used in the admin product modal when adding/editing products.
+              </p>
+              <select
+                value={companyData.currency || "PKR"}
+                onChange={(e) => handleChange("currency", e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              >
+                {["PKR", "USD", "EUR", "GBP", "JPY", "CAD", "AUD"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">

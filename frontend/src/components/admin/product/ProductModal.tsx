@@ -1,6 +1,6 @@
 import { RichTextEditor } from "@mantine/rte";
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, ImageIcon } from "lucide-react";
 import { z, ZodIssue } from "zod";
 import {
   Dialog,
@@ -51,6 +51,8 @@ interface ProductModalProps {
   mode: "add" | "edit" | "view";
   categories: Category[];
   data?: Product;
+  /** When set (from Developer > Company), currency is fixed to this value and shown read-only in the modal */
+  companyCurrency?: string;
   onClose: () => void;
   onSubmit: (formData: ProductForm) => void;
 }
@@ -89,6 +91,7 @@ export default function ProductModal({
   mode,
   categories,
   data,
+  companyCurrency,
   onClose,
   onSubmit,
 }: ProductModalProps) {
@@ -114,7 +117,7 @@ const toggleSection = (name: keyof typeof toggles) => {
     description: data?.description || "",
     category: typeof data?.category === "object" ? data.category._id : data?.category || (categories[0]?._id ?? ""),
     price: data?.price || 0,
-    currency: data?.currency || "PKR",
+    currency: companyCurrency || data?.currency || "PKR",
     status: data?.status || "active",
     discount: data?.discount || 0,
     image1: data?.image1 || "",
@@ -139,7 +142,7 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
       description: data?.description || "",
       category: typeof data?.category === "object" ? data.category._id : data?.category || (categories[0]?._id ?? ""),
       price: data?.price || 0,
-      currency: data?.currency || "PKR",
+      currency: companyCurrency || data?.currency || "PKR",
       status: data?.status || "active",
       discount: data?.discount || 0,
       image1: data?.image1 || "",
@@ -155,13 +158,16 @@ type ImageField = "image1" | "image2" | "image3" | "image4" | "image5" | "image6
       imageFiles: {},
     });
     setError({});
-  }, [data, open]);
+  }, [data, open, companyCurrency]);
 
   // preview URL helper (prefer file preview if present)
   const previewFor = (key: `image${1|2|3|4|5|6}`) =>
     (form.imageFiles && (form.imageFiles as any)[key]
       ? URL.createObjectURL((form.imageFiles as any)[key] as File)
       : (form as any)[key]) || defaultImage;
+
+  const hasImage = (key: `image${1|2|3|4|5|6}`) =>
+    !!((form.imageFiles as any)?.[key] || (form as any)[key]);
 
   // const handleSelectFile = (key: `image${1|2|3|4|5|6}`, file?: File) => {
   //   if (!file) return;
@@ -339,7 +345,7 @@ const handleSubmit = () => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="admin-dialog-content bg-white text-black max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+      <DialogContent className="admin-dialog-content bg-white text-black max-w-5xl w-full max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         <DialogHeader className="admin-modal-header flex items-center justify-between text-left px-6 py-4 rounded-t-lg shrink-0">
           <div>
             <DialogTitle className="text-white font-semibold">
@@ -368,53 +374,73 @@ const handleSubmit = () => {
             {error.name && <p className="text-red-500 text-sm">{error.name}</p>}
           </div>
 
-          {/* Category / Price */}
+          {/* Category / Price / Currency – equal width and height */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
+            <div className="min-w-0 flex flex-col">
               <label className="text-sm font-medium text-gray-900">Category</label>
               <select
-  value={typeof form.category === "string" ? form.category : form.category._id}
-  onChange={(e) => setForm({ ...form, category: e.target.value })}
-  disabled={isView}
-  className="border rounded p-2 w-full"
->
-  
-  {categories.map((cat) => (
-    <option key={cat._id} value={cat._id}>
-      {cat.name}
-    </option>
-  ))}
-</select>
-
+                value={typeof form.category === "string" ? form.category : form.category._id}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                disabled={isView}
+                className="h-9 w-full rounded-md border border-gray-300 px-3 py-1 text-sm focus:outline-none"
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              >
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
               {error.category && <p className="text-red-500 text-sm">{error.category}</p>}
             </div>
 
-            <div>
+            <div className="min-w-0 flex flex-col">
               <label className="text-sm font-medium text-gray-900">Price</label>
               <Input
                 type="number"
                 value={form.price}
                 disabled={isView}
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className={error.price ? "border-red-500" : ""}
+                className={`h-9 w-full ${error.price ? "border-red-500" : ""}`}
               />
               {error.price && <p className="text-red-500 text-sm">{error.price}</p>}
             </div>
 
-            <div>
+            <div className="min-w-0 flex flex-col">
               <label className="text-sm font-medium text-gray-900">Currency</label>
-              <select
-                value={form.currency}
-                onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                disabled={isView}
-                className="border rounded p-2 w-full"
-              >
-                {currencies.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              {companyCurrency ? (
+                <div className="h-9 w-full rounded-md border border-gray-300 bg-gray-50 px-3 flex items-center text-sm text-gray-700">
+                  {form.currency}
+                </div>
+              ) : (
+                <select
+                  value={form.currency}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                  disabled={isView}
+                  className="h-9 w-full rounded-md border border-gray-300 px-3 py-1 text-sm focus:outline-none"
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                    e.currentTarget.style.boxShadow = "0 0 0 2px var(--theme-primary)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                >
+                  {currencies.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              )}
               {error.currency && <p className="text-red-500 text-sm">{error.currency}</p>}
             </div>
           </div>
@@ -477,20 +503,26 @@ const handleSubmit = () => {
 </div>
   </label>
     {toggles.images && (
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mt-3">
 
-    {/* MAIN LARGE IMAGE (image1) */}
-
+    {/* MAIN LARGE IMAGE (image1) – thori width kam */}
     <div
-      className="col-span-2 relative group cursor-pointer"
+      className="col-span-3 relative group cursor-pointer"
       onClick={() => !isView && document.getElementById("file-image1")?.click()}
     >
-      <div className="w-full h-[360px] bg-gray-50 rounded overflow-hidden border flex items-center justify-center">
-        <img src={previewFor("image1")} className="w-full h-full object-cover" />
+      <div className="w-full h-[360px] bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center">
+        {hasImage("image1") ? (
+          <img src={previewFor("image1")} className="w-full h-full object-cover" alt="" />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
+            <ImageIcon className="w-14 h-14 text-gray-400" strokeWidth={1.25} />
+            <span className="text-sm font-medium text-gray-500">placeholder</span>
+          </div>
+        )}
       </div>
 
       {/* Remove Button */}
-      {!isView && form.image1 && (
+      {!isView && hasImage("image1") && (
         <button
           onClick={(e) => { e.stopPropagation(); handleRemoveImage("image1"); }}
           className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
@@ -510,73 +542,48 @@ const handleSubmit = () => {
       {error.image1 && <p className="text-red-500 text-sm">{error.image1}</p>}
     </div>
 
-    {/* RIGHT-SIDE SMALL IMAGES */}
-    <div className="space-y-3">
-      {/* First row image2, image3 */}
-      <div className="grid grid-cols-2 gap-3">
-        {[2, 3].map((n) => (
-          <div
-            key={n}
-            className="relative group cursor-pointer h-36 bg-gray-50 rounded border overflow-hidden flex items-center justify-center"
-            onClick={() => !isView && document.getElementById(`file-image${n}`)?.click()}
-          >
+    {/* RIGHT-SIDE SMALL IMAGES – col-span-2, same height as main, 2×2 grid */}
+    <div className="col-span-2 h-[360px] grid grid-cols-2 grid-rows-2 gap-3">
+      {[2, 3, 4, 5].map((n) => {
+        const key = `image${n}` as ImageField;
+        return (
+        <div
+          key={n}
+          className="relative group cursor-pointer min-h-0 bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center"
+          onClick={() => !isView && document.getElementById(`file-image${n}`)?.click()}
+        >
+          {hasImage(key) ? (
             <img
-              src={previewFor(`image${n}` as ImageField)}
+              src={previewFor(key)}
               className="w-full h-full object-cover"
+              alt=""
             />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-1.5 text-gray-500 p-2">
+              <ImageIcon className="w-8 h-8 shrink-0 text-gray-400" strokeWidth={1.25} />
+              <span className="text-xs font-medium text-gray-500">placeholder</span>
+            </div>
+          )}
 
-            {!isView && form[`image${n}` as ImageField] && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
-                className="absolute top-1 right-1 bg-white text-gray-900 rounded-full w-6 h-6 flex items-center justify-center  group-hover:opacity-100 transition"
-              >
-                ✕
-              </button>
-            )}
+          {!isView && hasImage(key) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRemoveImage(key); }}
+              className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+            >
+              ✕
+            </button>
+          )}
 
-            <input
-              id={`file-image${n}`}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleSelectFile(`image${n}` as any, e.target.files?.[0])}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Second row image4, image5 */}
-      <div className="grid grid-cols-2 gap-3">
-        {[4, 5].map((n) => (
-          <div
-            key={n}
-            className="relative group cursor-pointer h-36 bg-gray-50 rounded border overflow-hidden flex items-center justify-center"
-            onClick={() => !isView && document.getElementById(`file-image${n}`)?.click()}
-          >
-            <img
-              src={previewFor(`image${n}` as ImageField)}
-              className="w-full h-full object-cover"
-            />
-
-            {!isView && form[`image${n}` as ImageField] && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleRemoveImage(`image${n}` as ImageField); }}
-                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-              >
-                ✕
-              </button>
-            )}
-
-            <input
-              id={`file-image${n}`}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleSelectFile(`image${n}` as any, e.target.files?.[0])}
-            />
-          </div>
-        ))}
-      </div>
+          <input
+            id={`file-image${n}`}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleSelectFile(`image${n}` as any, e.target.files?.[0])}
+          />
+        </div>
+        );
+      })}
     </div>
 
   </div>

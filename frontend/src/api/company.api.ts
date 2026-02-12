@@ -16,7 +16,8 @@ export const updateCompany = async (data: any) => {
   if (data.supportEmail !== undefined) formData.append("supportEmail", data.supportEmail);
   if (data.address !== undefined) formData.append("address", data.address);
   if (data.description !== undefined) formData.append("description", data.description);
-  
+  if (data.currency !== undefined) formData.append("currency", data.currency);
+
   // Append logo file
   if (data.logoFile instanceof File) {
     formData.append("logo", data.logoFile);

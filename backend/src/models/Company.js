@@ -30,6 +30,8 @@ const CompanySchema = new mongoose.Schema({
   },
   copyright: { type: String, default: "" },
   description: { type: String, default: "" },
+  // Default currency for products (set in Developer > Company; used in admin product modal)
+  currency: { type: String, default: "PKR" },
   // Checkout settings (admin Assets > Checkout tab)
   checkout: {
     codEnabled: { type: Boolean, default: true },

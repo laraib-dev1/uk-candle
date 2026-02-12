@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth"; // adjust path
 import PageLoader from "@/components/ui/PageLoader";
+import { getAdminNotificationUnreadCount } from "@/pages/admin/pages/NotificationsPage";
 
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
@@ -45,6 +46,18 @@ interface MenuItem {
   path: string;
 }
 
+function putNotificationsAboveSettings(items: MenuItem[]): MenuItem[] {
+  const notifIdx = items.findIndex((m) => m.path === "/admin/notifications");
+  const settingsIdx = items.findIndex((m) => m.path === "/admin/settings");
+  if (notifIdx === -1 || settingsIdx === -1) return items;
+  if (notifIdx === settingsIdx - 1) return items;
+  const notif = items[notifIdx];
+  const rest = items.filter((_, i) => i !== notifIdx);
+  const newSettingsIdx = rest.findIndex((m) => m.path === "/admin/settings");
+  rest.splice(newSettingsIdx, 0, notif);
+  return rest;
+}
+
 export default function AdminLayout() {
   const loc = useLocation();
   const navigate = useNavigate();
@@ -52,6 +65,7 @@ export default function AdminLayout() {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(() => getAdminNotificationUnreadCount());
 
   useEffect(() => {
     const loadAll = async () => {
@@ -125,11 +139,22 @@ export default function AdminLayout() {
           
           // Filter out Sp Console from menu items (it will be shown separately)
           const filteredMenu = menuItems.filter(item => item.path !== "/admin/sp-console");
-          
-          setMenu(filteredMenu);
+          // Ensure Queries, Reviews, and Notifications are always in the menu (add if missing from API)
+          const requiredItems = [
+            { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
+            { label: "Reviews", icon: Star, path: "/admin/reviews" },
+            { label: "Notifications", icon: Bell, path: "/admin/notifications" },
+          ];
+          let menuWithRequired = filteredMenu;
+          for (const item of requiredItems) {
+            if (!menuWithRequired.some(m => m.path === item.path)) {
+              menuWithRequired = [...menuWithRequired, item];
+            }
+          }
+          setMenu(putNotificationsAboveSettings(menuWithRequired));
         } else {
           // Fallback to default menu (without Sp Console)
-          setMenu([
+          setMenu(putNotificationsAboveSettings([
             { label: "Dashboard", icon: BarChart3, path: "/admin/dashboard" },
             { label: "Orders", icon: ShoppingCart, path: "/admin/orders" },
             { label: "Categories", icon: FolderTree, path: "/admin/categories" },
@@ -137,8 +162,9 @@ export default function AdminLayout() {
             { label: "Assets Panel", icon: ImageIcon, path: "/admin/assets" },
             { label: "Queries", icon: MessageSquare, path: "/admin/queries" },
             { label: "Reviews", icon: Star, path: "/admin/reviews" },
+            { label: "Notifications", icon: Bell, path: "/admin/notifications" },
             { label: "Settings", icon: Settings, path: "/admin/settings" },
-          ]);
+          ]));
         }
       } catch (err) {
         console.log(err);
@@ -150,6 +176,16 @@ export default function AdminLayout() {
 
     loadAll();
   }, [navigate]);
+
+  useEffect(() => {
+    setNotificationUnreadCount(getAdminNotificationUnreadCount());
+  }, [loc.pathname]);
+
+  useEffect(() => {
+    const onNotificationUpdated = () => setNotificationUnreadCount(getAdminNotificationUnreadCount());
+    window.addEventListener("adminNotificationUpdated", onNotificationUpdated);
+    return () => window.removeEventListener("adminNotificationUpdated", onNotificationUpdated);
+  }, []);
 
   if (initialLoading) {
     return <PageLoader message="GraceByAnu" />;
@@ -189,6 +225,7 @@ export default function AdminLayout() {
           const Icon = item.icon;
           const active = loc.pathname.startsWith(item.path);
 
+          const isNotifications = item.path === "/admin/notifications";
           return (
             <Link
               key={item.path}
@@ -202,6 +239,14 @@ export default function AdminLayout() {
             >
               <Icon size={18} />
               {item.label}
+              {isNotifications && notificationUnreadCount > 0 && (
+                <span
+                  className="min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold flex items-center justify-center text-white ml-auto"
+                  style={{ backgroundColor: "var(--theme-primary)" }}
+                >
+                  {notificationUnreadCount > 99 ? "99+" : notificationUnreadCount}
+                </span>
+              )}
             </Link>
           );
         })}

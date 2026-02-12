@@ -429,6 +429,36 @@ main[class*="developer"] a:not([class*="theme"]) {
   padding-right: 2rem; /* keep buttons away from right edge */
 }
 
+/* Admin panel modals: all form fields use theme primary when focused/active */
+.admin-dialog-content select:focus,
+.admin-dialog-content input:focus,
+.admin-dialog-content textarea:focus {
+  border-color: var(--theme-primary, #8B5E3C) !important;
+  box-shadow: 0 0 0 2px var(--theme-primary, #8B5E3C) !important;
+  outline: none !important;
+}
+/* Checkboxes: theme primary color (checked state) – override Tailwind forms blue */
+.admin-dialog-content input[type="checkbox"],
+.admin-dialog-content input[type="checkbox"]:checked,
+main[class*="admin"] input[type="checkbox"],
+main[class*="admin"] input[type="checkbox"]:checked,
+main[class*="developer"] input[type="checkbox"],
+main[class*="developer"] input[type="checkbox"]:checked {
+  accent-color: var(--theme-primary, #8B5E3C) !important;
+}
+.admin-dialog-content input[type="checkbox"]:focus,
+main[class*="admin"] input[type="checkbox"]:focus,
+main[class*="developer"] input[type="checkbox"]:focus {
+  outline: 2px solid var(--theme-primary, #8B5E3C);
+  outline-offset: 2px;
+}
+/* Radix Select trigger (button) inside admin modals */
+.admin-dialog-content [data-radix-select-trigger]:focus {
+  border-color: var(--theme-primary, #8B5E3C) !important;
+  box-shadow: 0 0 0 2px var(--theme-primary, #8B5E3C) !important;
+  outline: none !important;
+}
+
 /* Admin dialog: hide close (X) icon in header – use footer Close/Cancel instead */
 .admin-dialog-content > button.absolute {
   display: none !important;

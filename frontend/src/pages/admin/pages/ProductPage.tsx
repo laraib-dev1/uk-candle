@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import ProductModal from "../../../components/admin/product/ProductModal";
 import { getProducts, createProduct, updateProduct, deleteProduct as apiDelete } from "@/api/product.api";
 import { getCategories } from "@/api/category.api";
+import { getCompany } from "@/api/company.api";
 import DeleteModal from "../../../components/admin/product/DeleteModal";
 import PageLoader from "@/components/ui/PageLoader";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -66,6 +67,7 @@ export default function ProductPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [companyCurrency, setCompanyCurrency] = useState<string | null>(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
 useEffect(() => {
@@ -100,11 +102,14 @@ useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const cats = await getCategories();
+        const [cats, company, productsArray] = await Promise.all([
+          getCategories(),
+          getCompany().catch(() => ({ currency: "PKR" })),
+          getProducts(),
+        ]);
         setCategories(cats);
-
-        const productsArray = await getProducts();
-const mapped = productsArray.map((p: ProductAPI) => mapProduct(p, cats));
+        setCompanyCurrency(company?.currency ?? "PKR");
+        const mapped = productsArray.map((p: ProductAPI) => mapProduct(p, cats));
         setProducts(mapped);
         setFiltered(mapped);
       } catch (err) {
@@ -272,7 +277,7 @@ const getColumns = () => {
     </div>
 
 
-      <ProductModal open={modalOpen} mode={modalMode} categories={categories} data={selected ?? undefined} onClose={() => setModalOpen(false)}
+      <ProductModal open={modalOpen} mode={modalMode} categories={categories} data={selected ?? undefined} companyCurrency={companyCurrency ?? undefined} onClose={() => setModalOpen(false)}
         onSubmit={async payload => {
           const productPayload: Product = { ...payload, category: typeof payload.category === "object" ? payload.category._id : payload.category };
           if (modalMode === "add") await addProduct(productPayload);

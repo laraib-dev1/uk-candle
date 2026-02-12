@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { fetchOrders } from "../../../api/order.api";
+import { processOrdersForNotifications } from "@/utils/adminNotifications";
 import { Input } from "@/components/ui/input";
 import { OrderModal } from "../product/OrderModal";
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
@@ -64,6 +65,7 @@ const loadOrders = async () => {
     const mapped = data.map((o: Order) => ({ ...o, id: o._id }));
     setOrders(mapped);
     setFilteredOrders(mapped);
+    processOrdersForNotifications(mapped);
   } catch (err) {
     console.error("Error fetching orders:", err);
   }
