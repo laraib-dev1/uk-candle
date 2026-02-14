@@ -4,9 +4,9 @@
  */
 import { addAdminNotification } from "@/pages/admin/pages/NotificationsPage";
 
-const ORDERS_STATE_KEY = "adminNotificationOrdersState";
-const REVIEWS_STATE_KEY = "adminNotificationReviewsState";
-const QUERIES_STATE_KEY = "adminNotificationQueriesState";
+export const ORDERS_STATE_KEY = "adminNotificationOrdersState";
+export const REVIEWS_STATE_KEY = "adminNotificationReviewsState";
+export const QUERIES_STATE_KEY = "adminNotificationQueriesState";
 
 interface OrderLike {
   _id: string;
@@ -131,5 +131,35 @@ export function processQueriesForNotifications(queries: QueryLike[]): void {
     }
 
     localStorage.setItem(QUERIES_STATE_KEY, JSON.stringify(currentIds));
+  } catch (_) {}
+}
+
+/** Mark an order as seen (e.g. after real-time notification) so it is not notified again on next dashboard load. */
+export function markOrderSeen(orderId: string, status: string = "Pending"): void {
+  try {
+    const raw = localStorage.getItem(ORDERS_STATE_KEY);
+    const current: Record<string, string> = raw ? JSON.parse(raw) : {};
+    current[orderId] = (status || "Pending").toLowerCase();
+    localStorage.setItem(ORDERS_STATE_KEY, JSON.stringify(current));
+  } catch (_) {}
+}
+
+/** Mark a review as seen so it is not notified again on next load. */
+export function markReviewSeen(reviewId: string): void {
+  try {
+    const raw = localStorage.getItem(REVIEWS_STATE_KEY);
+    const current: Record<string, true> = raw ? JSON.parse(raw) : {};
+    current[reviewId] = true;
+    localStorage.setItem(REVIEWS_STATE_KEY, JSON.stringify(current));
+  } catch (_) {}
+}
+
+/** Mark a query as seen so it is not notified again on next load. */
+export function markQuerySeen(queryId: string): void {
+  try {
+    const raw = localStorage.getItem(QUERIES_STATE_KEY);
+    const current: Record<string, true> = raw ? JSON.parse(raw) : {};
+    current[queryId] = true;
+    localStorage.setItem(QUERIES_STATE_KEY, JSON.stringify(current));
   } catch (_) {}
 }

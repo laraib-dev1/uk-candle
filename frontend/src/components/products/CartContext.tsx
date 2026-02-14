@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 type CartItem = {
   id: string;
@@ -11,12 +12,12 @@ type CartItem = {
 
 type CartContextType = {
   cartItems: CartItem[];
-  totalItems: number; // ✅ total items in cart
+  totalItems: number;
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   increaseQuantity: (id: string) => void;
   decreaseQuantity: (id: string) => void;
-  clearCart: () => void; 
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,51 +28,61 @@ export const useCart = () => {
   return context;
 };
 
-// Get user-specific cart key
-const getCartKey = (): string => {
-  try {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      return `cartItems_${user.id}`;
-    }
-  } catch (err) {
-    console.warn("Failed to get user ID for cart", err);
+const GUEST_CART_ID_KEY = "guestCartId";
+
+function getGuestCartId(): string {
+  if (typeof sessionStorage === "undefined") return "guest";
+  let id = sessionStorage.getItem(GUEST_CART_ID_KEY);
+  if (!id) {
+    id = "guest_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+    sessionStorage.setItem(GUEST_CART_ID_KEY, id);
   }
-  return "cartItems_guest"; // Fallback for guests
-};
+  return id;
+}
+
+function getCartKey(user: { id?: string; _id?: string } | null): string {
+  if (user) {
+    const id = user.id || user._id;
+    if (id) return `cartItems_${id}`;
+  }
+  return `cartItems_${getGuestCartId()}`;
+}
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const cartKey = getCartKey();
-    const stored = localStorage.getItem(cartKey);
-    return stored ? JSON.parse(stored) : [];
-  });
+  const { user } = useAuth();
+  const cartKey = getCartKey(user);
 
-  // Save cartItems to localStorage whenever it changes (user-specific)
-  useEffect(() => {
-    const cartKey = getCartKey();
-    localStorage.setItem(cartKey, JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  // Reload cart when user changes (login/logout)
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const cartKey = getCartKey();
+  const loadCart = useCallback(() => {
+    try {
       const stored = localStorage.getItem(cartKey);
       setCartItems(stored ? JSON.parse(stored) : []);
-    };
+    } catch {
+      setCartItems([]);
+    }
+  }, [cartKey]);
 
-    // Listen for user changes
-    window.addEventListener("storage", handleStorageChange);
-    // Also check on focus (in case user logged in/out in another tab)
-    window.addEventListener("focus", handleStorageChange);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem(cartKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("focus", handleStorageChange);
-    };
-  }, []);
+  // When user changes (login/logout), load that user's cart
+  useEffect(() => {
+    loadCart();
+  }, [loadCart, cartKey]);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
+    } catch (e) {
+      console.warn("Failed to save cart", e);
+    }
+  }, [cartItems, cartKey]);
 
   const addToCart = (item: CartItem) => {
     setCartItems(prev => {

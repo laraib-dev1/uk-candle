@@ -173,17 +173,19 @@ export default function NotificationsPage() {
   };
 
   const markAsRead = (id: string) => {
-    const next = inbox.map((n) => (n.id === id ? { ...n, read: true } : n));
-    setInbox(next);
-    saveInbox(next);
+    const list = loadInbox();
+    const updated = list.map((n) => (n.id === id ? { ...n, read: true } : n));
+    saveInbox(updated);
+    setInbox(updated);
     window.dispatchEvent(new CustomEvent("adminNotificationUpdated"));
     success("Marked as read.");
   };
 
   const markAllAsRead = () => {
-    const next = inbox.map((n) => ({ ...n, read: true }));
-    setInbox(next);
-    saveInbox(next);
+    const list = loadInbox();
+    const updated = list.map((n) => ({ ...n, read: true }));
+    saveInbox(updated);
+    setInbox(updated);
     window.dispatchEvent(new CustomEvent("adminNotificationUpdated"));
     success("All marked as read.");
   };

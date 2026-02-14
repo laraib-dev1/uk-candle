@@ -19,7 +19,7 @@ import {
 } from "@/api/user.api";
 import { createQuery } from "@/api/query.api";
 import { spacing } from "@/utils/spacing";
-import { createReview } from "@/api/review.api";
+import { createReview, getUserReviews, updateReview, type Review } from "@/api/review.api";
 import { getProducts } from "@/api/product.api";
 import { getEnabledProfilePages, getProfilePageBySlug, getEnabledBaseProfileTabs } from "@/api/profilepage.api";
 import { useToast } from "@/components/ui/toast";
@@ -1652,6 +1652,8 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
   const { success, error } = useToast();
   const { user: authUser } = useAuth();
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<{ name: string; orderId: string; productId?: string } | null>(null);
   const [reviewData, setReviewData] = useState({
     rating: 0,
@@ -1659,18 +1661,41 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch user's reviews to know which products are already reviewed
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!authUser) return;
+      try {
+        const reviews = await getUserReviews();
+        setUserReviews(Array.isArray(reviews) ? reviews : []);
+      } catch {
+        setUserReviews([]);
+      }
+    };
+    loadReviews();
+  }, [authUser]);
+
   // Only show products from completed orders
   const completedOrders = orders.filter(o => o.status === "Complete" || o.status === "Completed");
-  
+
+  const getReviewForProduct = (productName: string) =>
+    userReviews.find((r) => r.productName === productName);
+
   const handleWriteReview = (item: { name: string; quantity: number; price: number }, orderId: string) => {
-    // Try to find product ID from the item (if available)
+    const existing = getReviewForProduct(item.name);
     setSelectedProduct({
       name: item.name,
       orderId: orderId,
       productId: (item as any).productId || (item as any).id || undefined,
     });
+    if (existing) {
+      setEditingReviewId(existing._id);
+      setReviewData({ rating: existing.rating, comment: existing.comment || "" });
+    } else {
+      setEditingReviewId(null);
+      setReviewData({ rating: 0, comment: "" });
+    }
     setShowReviewModal(true);
-    setReviewData({ rating: 0, comment: "" });
   };
 
   const handleSubmitReview = async () => {
@@ -1720,17 +1745,27 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
         return;
       }
 
-      await createReview({
-        productId: productId,
-        productName: selectedProduct.name,
-        orderId: selectedProduct.orderId,
-        rating: reviewData.rating,
-        comment: reviewData.comment,
-      });
-      success("Review submitted successfully!");
+      if (editingReviewId) {
+        await updateReview(editingReviewId, { rating: reviewData.rating, comment: reviewData.comment });
+        success("Review updated successfully!");
+        const reviews = await getUserReviews();
+        setUserReviews(Array.isArray(reviews) ? reviews : []);
+      } else {
+        await createReview({
+          productId: productId,
+          productName: selectedProduct.name,
+          orderId: selectedProduct.orderId,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        });
+        success("Review submitted successfully!");
+        const reviews = await getUserReviews();
+        setUserReviews(Array.isArray(reviews) ? reviews : []);
+      }
       setShowReviewModal(false);
       setReviewData({ rating: 0, comment: "" });
       setSelectedProduct(null);
+      setEditingReviewId(null);
     } catch (err: any) {
       console.error("Review submission error:", err);
       if (err?.response?.status === 401) {
@@ -1754,20 +1789,33 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
             <div key={order._id} className="border rounded-lg p-4">
               <p className="font-semibold mb-2 text-gray-900">Order #{order._id.substring(0, 8)}</p>
               <div className="space-y-3">
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center gap-3 border-b border-gray-200 pb-3">
-                    <div>
-                      <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                {order.items.map((item, idx) => {
+                  const existingReview = getReviewForProduct(item.name);
+                  return (
+                    <div key={idx} className="flex justify-between items-center gap-3 border-b border-gray-200 pb-3">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                        <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                        {existingReview && (
+                          <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                            <Star size={14} className="fill-current" />
+                            Already Reviewed
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleWriteReview(item, order._id)}
+                        className={`px-4 h-12 rounded-lg text-sm ${
+                          existingReview
+                            ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                            : "theme-button"
+                        }`}
+                      >
+                        {existingReview ? "Edit Review" : "Write Review"}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleWriteReview(item, order._id)}
-                      className="px-4 h-12 theme-button rounded-lg text-sm"
-                    >
-                      Write Review
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -1779,12 +1827,13 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold theme-heading">Write Review</h3>
+              <h3 className="text-2xl font-bold theme-heading">{editingReviewId ? "Edit Review" : "Write Review"}</h3>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
                   setSelectedProduct(null);
                   setReviewData({ rating: 0, comment: "" });
+                  setEditingReviewId(null);
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -1832,6 +1881,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                   setShowReviewModal(false);
                   setSelectedProduct(null);
                   setReviewData({ rating: 0, comment: "" });
+                  setEditingReviewId(null);
                 }}
                 className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
                 disabled={submitting}
@@ -1843,7 +1893,7 @@ function ReviewsTab({ orders }: { orders: Order[] }) {
                 disabled={submitting}
                 className="flex-1 px-4 h-12 theme-button rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? "Submitting..." : "Submit Review"}
+                {submitting ? (editingReviewId ? "Updating..." : "Submitting...") : editingReviewId ? "Update Review" : "Submit Review"}
               </button>
             </div>
           </div>

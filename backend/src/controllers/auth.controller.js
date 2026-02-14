@@ -102,7 +102,8 @@ export const loginUser = async (req) => {
   if (!email || !password)
     throw new Error("Email and password required");
 
-  const user = await User.findOne({ email });
+  const emailNorm = String(email).trim().toLowerCase();
+  const user = await User.findOne({ email: emailNorm });
   if (!user) throw new Error("Invalid credentials");
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -126,7 +127,8 @@ export const adminLoginUser = async (req) => {
   await connectDB();
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const emailNorm = email ? String(email).trim().toLowerCase() : "";
+  const user = await User.findOne({ email: emailNorm });
   if (!user) throw new Error("Invalid credentials");
   if (user.role !== "admin") throw new Error("Not an admin");
 

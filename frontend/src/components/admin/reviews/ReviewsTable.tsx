@@ -1,36 +1,18 @@
 import React, { useEffect, useState } from "react";
 import EnhancedDataTable from "../../../pages/admin/components/table/EnhancedDataTable";
 import { DataTableSkeleton } from "@/components/ui/TableSkeleton";
-import { getAllReviews, deleteReview } from "../../../api/review.api";
+import { getAllReviews, deleteReview, toggleReviewShowOnLanding, type Review } from "../../../api/review.api";
 import { processReviewsForNotifications } from "@/utils/adminNotifications";
 import { useToast } from "@/components/ui/toast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Star } from "lucide-react";
-
-interface Review {
-  _id: string;
-  userId: string | {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  productId: string | {
-    _id: string;
-    name: string;
-    image1?: string;
-  };
-  productName: string;
-  orderId: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
 
 export default function ReviewsTable() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const { success, error } = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const loadReviews = async () => {
     setLoading(true);
@@ -52,6 +34,19 @@ export default function ReviewsTable() {
 
   const handleDelete = (reviewId: string) => {
     setDeleteConfirm(reviewId);
+  };
+
+  const handleToggleShowOnLanding = async (reviewId: string) => {
+    setTogglingId(reviewId);
+    try {
+      await toggleReviewShowOnLanding(reviewId);
+      success("Updated. Review visibility on landing page changed.");
+      loadReviews();
+    } catch (err: any) {
+      error(err?.response?.data?.message || err.message || "Failed to update");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const confirmDelete = async () => {
@@ -105,6 +100,23 @@ export default function ReviewsTable() {
           </div>
         ),
         minWidth: "300px",
+      },
+      {
+        name: "Show on Landing",
+        cell: (row: Review) => (
+          <button
+            onClick={() => handleToggleShowOnLanding(row._id)}
+            disabled={togglingId === row._id}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              row.showOnLanding
+                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {togglingId === row._id ? "..." : row.showOnLanding ? "Yes" : "No"}
+          </button>
+        ),
+        minWidth: "140px",
       },
     ];
   };

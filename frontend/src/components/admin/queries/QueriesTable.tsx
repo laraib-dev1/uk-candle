@@ -290,7 +290,7 @@ function QueryViewDialog({
           </Button>
           <Button
             onClick={handleUpdate}
-            disabled={!(id && selectedStatus) || (id && updatingId === id)}
+            disabled={Boolean(!(id && selectedStatus) || (id && updatingId === id))}
             className="bg-white text-[var(--theme-primary)] hover:bg-gray-100 font-medium border-0"
           >
             Update status

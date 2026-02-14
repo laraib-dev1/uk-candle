@@ -1,4 +1,6 @@
+import http from "http";
 import express from "express";
+import { Server } from "socket.io";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import path from "path";
@@ -82,7 +84,17 @@ const startServer = async () => {
     app.use("/api/blogs", blogRoutes);
 
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+
+    const io = new Server(server, {
+      cors: {
+        origin: allowedOrigins,
+        credentials: true,
+      },
+    });
+    app.set("io", io);
+
+    server.listen(PORT, () => {
       console.log(`✅ Server running on http://localhost:${PORT}`);
     });
   } catch (error) {

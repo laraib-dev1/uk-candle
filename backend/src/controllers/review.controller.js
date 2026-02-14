@@ -82,6 +82,32 @@ export const getAllReviews = async (req) => {
   return reviews;
 };
 
+// Get reviews for landing page (public - only showOnLanding: true)
+export const getLandingReviews = async () => {
+  await connectDB();
+  const reviews = await Review.find({ showOnLanding: true })
+    .sort({ createdAt: -1 })
+    .populate("userId", "name avatar")
+    .limit(20);
+  return reviews;
+};
+
+// Toggle showOnLanding (admin only)
+export const toggleReviewShowOnLanding = async (req) => {
+  await connectDB();
+  const { id } = req.params;
+
+  const review = await Review.findById(id);
+  if (!review) {
+    throw new Error("Review not found");
+  }
+
+  review.showOnLanding = !review.showOnLanding;
+  await review.save();
+
+  return review;
+};
+
 // Get product reviews (public)
 export const getProductReviews = async (req) => {
   await connectDB();
@@ -93,6 +119,48 @@ export const getProductReviews = async (req) => {
     .limit(50);
 
   return reviews;
+};
+
+// Update review (user can update their own)
+export const updateReview = async (req) => {
+  await connectDB();
+  const { id } = req.params;
+  const { rating, comment } = req.body;
+
+  if (!req.user || !req.user.id) {
+    throw new Error("User not authenticated");
+  }
+
+  const review = await Review.findById(id);
+  if (!review) {
+    throw new Error("Review not found");
+  }
+
+  if (review.userId.toString() !== req.user.id) {
+    throw new Error("You can only edit your own reviews");
+  }
+
+  const updateData = {};
+  if (rating !== undefined) {
+    if (rating < 1 || rating > 5) {
+      throw new Error("Rating must be between 1 and 5");
+    }
+    updateData.rating = rating;
+  }
+  if (comment !== undefined) {
+    if (!comment || !comment.trim()) {
+      throw new Error("Comment is required");
+    }
+    updateData.comment = comment.trim();
+  }
+
+  const updated = await Review.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true }
+  );
+
+  return updated;
 };
 
 // Delete review (admin only)

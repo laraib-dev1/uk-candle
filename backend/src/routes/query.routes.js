@@ -18,6 +18,15 @@ router.get("/", protect, isAdmin, async (req, res) => {
 router.post("/create", async (req, res) => {
   try {
     const query = await createQuery(req);
+    const io = req.app.get("io");
+    if (io) {
+      const msg = (query.subject ? `${query.subject}: ` : "") + (query.description ? String(query.description).slice(0, 80) + (String(query.description).length > 80 ? "…" : "") : "");
+      io.emit("admin:newQuery", {
+        queryId: query._id?.toString?.() || query._id,
+        title: "New query received",
+        message: msg,
+      });
+    }
     res.json(query);
   } catch (err) {
     res.status(400).json({ message: err.message });

@@ -18,6 +18,14 @@ router.get("/", protect, isAdmin, async (req, res) => {
 router.post("/create", protect, async (req, res) => {
   try {
     const order = await createOrder(req);
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("admin:newOrder", {
+        orderId: order._id?.toString?.() || order._id,
+        title: "New order received",
+        message: `Order from ${order.customerName || "Customer"}`,
+      });
+    }
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -48,6 +56,14 @@ router.get("/:id", protect, async (req, res) => {
 router.patch("/:id/cancel", protect, async (req, res) => {
   try {
     const order = await cancelOrder(req);
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("admin:orderCancelled", {
+        orderId: order._id?.toString?.() || order._id,
+        title: "Order cancelled",
+        message: `Order ${order._id} was cancelled.`,
+      });
+    }
     res.json({ message: "Order cancelled successfully", order });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -58,6 +74,17 @@ router.patch("/:id/cancel", protect, async (req, res) => {
 router.patch("/:id/status", protect, isAdmin, async (req, res) => {
   try {
     const order = await updateOrderStatus(req);
+    const status = (req.body?.status || "").toLowerCase();
+    if (status === "cancelled" || status === "cancel") {
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("admin:orderCancelled", {
+          orderId: order._id?.toString?.() || order._id,
+          title: "Order cancelled",
+          message: `Order ${order._id} was cancelled by admin.`,
+        });
+      }
+    }
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });

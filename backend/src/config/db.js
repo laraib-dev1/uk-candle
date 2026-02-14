@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+import dns from "dns";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(__dirname, "../..");
+dotenv.config({ path: path.join(root, ".env") });
+dotenv.config({ path: path.join(root, ".env.local"), override: true });
+
+// Use Google DNS so Atlas hostnames resolve (fixes querySrv ENOTFOUND when router DNS fails)
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 let cached = global.mongoose;
 
@@ -11,12 +21,12 @@ if (!cached) {
 const connectDB = async () => {
   if (cached.conn) return cached.conn;
 
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(process.env.MONGO_URI)
-      .then((m) => m);
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    throw new Error("MONGO_URI is not set in .env");
   }
 
+  cached.promise = mongoose.connect(uri).then((m) => m);
   cached.conn = await cached.promise;
   console.log("MongoDB connected:", cached.conn.connection.host);
   return cached.conn;

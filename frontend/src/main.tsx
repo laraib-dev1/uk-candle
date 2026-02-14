@@ -73,8 +73,8 @@ createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <LightDarkThemeProvider>
         <BrandThemeProvider>
-          <CartProvider>
             <AuthProvider>
+              <CartProvider>
               <ToastProvider>
                 <BrowserRouter>
                 {/* Wrap your app in Elements for Stripe */}
@@ -83,8 +83,8 @@ createRoot(document.getElementById("root")!).render(
                 </Elements>
               </BrowserRouter>
               </ToastProvider>
+              </CartProvider>
             </AuthProvider>
-          </CartProvider>
         </BrandThemeProvider>
       </LightDarkThemeProvider>
     </HelmetProvider>

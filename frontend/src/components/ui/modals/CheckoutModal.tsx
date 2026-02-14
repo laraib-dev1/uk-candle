@@ -615,62 +615,57 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
           <StripeCardForm
             amount={total > 0 ? total : 10}
             onBeforePayment={async () => {
-              // Validate address before creating order
+              // Validate address only - order is created only after payment succeeds
               if (addressType === "new" && !validateAddress()) {
                 throw new Error("Please fill all required address fields correctly.");
               }
-
-              const billAmount = total > 0 ? total : 10;
-              const orderData = {
-                customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
-                address: {
-                  firstName: addressToUse.firstName,
-                  lastName: addressToUse.lastName,
-                  line1: addressToUse.line1,
-                  area: addressToUse.area,
-                  city: addressToUse.city,
-                  province: addressToUse.province,
-                  postalCode: addressToUse.postalCode,
-                  phone: addressToUse.phone,
-                },
-                phoneNumber: addressToUse.phone,
-                items: cartItems.map(i => ({
-                  name: i.name,
-                  quantity: i.quantity,
-                  price: i.price,
-                })),
-                type: "Online",
-                bill: billAmount,
-                payment: "Credit/Debit Card",
-                taxAmount: checkoutSettings.taxEnabled ? taxAmount : 0,
-                shippingCharges: checkoutSettings.shippingEnabled ? shippingAmount : 0,
-                status: "Pending",
-              };
-
-              await createOrder(orderData);
-              success("Order created successfully!");
             }}
             onSuccess={async () => {
               try {
-                // Only save address if it's a new address that wasn't already saved
-                // Check if address already exists in the addresses list
+                // Create order ONLY after payment succeeds - prevents false "new order" notifications when card fails
+                const billAmount = total > 0 ? total : 10;
+                const orderData = {
+                  customerName: `${addressToUse.firstName} ${addressToUse.lastName}`,
+                  address: {
+                    firstName: addressToUse.firstName,
+                    lastName: addressToUse.lastName,
+                    line1: addressToUse.line1,
+                    area: addressToUse.area,
+                    city: addressToUse.city,
+                    province: addressToUse.province,
+                    postalCode: addressToUse.postalCode,
+                    phone: addressToUse.phone,
+                  },
+                  phoneNumber: addressToUse.phone,
+                  items: cartItems.map(i => ({
+                    name: i.name,
+                    quantity: i.quantity,
+                    price: i.price,
+                  })),
+                  type: "Online",
+                  bill: billAmount,
+                  payment: "Credit/Debit Card",
+                  taxAmount: checkoutSettings.taxEnabled ? taxAmount : 0,
+                  shippingCharges: checkoutSettings.shippingEnabled ? shippingAmount : 0,
+                  status: "Pending",
+                };
+
+                await createOrder(orderData);
+
+                // Save address if new
                 if (!addressExists(addressToUse, addresses)) {
-                  // Save the address used in the order to backend (if user is logged in) or localStorage
                   if (user) {
                     try {
-                      // Try to save to backend first
                       const updatedAddresses = await addUserAddress(addressToUse);
                       setAddresses(updatedAddresses);
                     } catch (err) {
                       console.warn("Failed to save address to backend:", err);
-                      // Fallback to localStorage
                       const updatedAddresses = [...addresses];
                       updatedAddresses.push(addressToUse);
                       setAddresses(updatedAddresses);
                       saveAddressesToStorage(updatedAddresses);
                     }
                   } else {
-                    // Save to localStorage for guests
                     const updatedAddresses = [...addresses];
                     updatedAddresses.push(addressToUse);
                     setAddresses(updatedAddresses);

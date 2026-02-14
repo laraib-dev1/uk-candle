@@ -29,12 +29,12 @@ const StripeCardForm = ({
     setLoading(true);
 
     try {
-      // First, create the order (if callback provided)
+      // Validate only before payment (no order creation - order is created only after payment succeeds)
       if (onBeforePayment) {
         await onBeforePayment();
       }
 
-      // Then, process payment
+      // Process payment first - only create order after payment succeeds
       const res = await createPaymentIntent(Math.round(amount * 100));
       const clientSecret = res.clientSecret;
 
@@ -45,9 +45,8 @@ const StripeCardForm = ({
       });
 
       if (result.error) {
-        error(result.error.message || "Payment failed");
+        error(result.error.message || "Payment failed. Please check your card details.");
       } else if (result.paymentIntent.status === "succeeded") {
-        success("Payment Successful!");
         onSuccess();
       }
     } catch (err: any) {

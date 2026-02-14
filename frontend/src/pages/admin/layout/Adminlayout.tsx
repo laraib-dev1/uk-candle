@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth"; // adjust path
 import PageLoader from "@/components/ui/PageLoader";
 import { getAdminNotificationUnreadCount } from "@/pages/admin/pages/NotificationsPage";
+import { useAdminSocket } from "@/hooks/useAdminSocket";
 
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
@@ -66,6 +67,8 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [notificationUnreadCount, setNotificationUnreadCount] = useState(() => getAdminNotificationUnreadCount());
+
+  useAdminSocket();
 
   useEffect(() => {
     const loadAll = async () => {
